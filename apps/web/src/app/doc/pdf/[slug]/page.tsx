@@ -73,6 +73,7 @@ export default async function PdfComparativoPage({
         titulo="PDF comparativo"
         volverHref="/propuestas"
         volverTexto="Propuestas"
+        pdfUrl={process.env.API_URL ? `${process.env.API_URL}/pdf/analisis/${propuesta.slug}` : null}
       />
 
       <div className="flex grow items-start justify-center overflow-auto p-8 print:p-0">

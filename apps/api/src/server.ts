@@ -11,6 +11,8 @@ import {
 import { config, modoMock } from "./config";
 import { origenConfigurado } from "./datos";
 import { rutas } from "./rutas";
+import { rutasPdf } from "./rutas-pdf";
+import { cerrarNavegador } from "./pdf/navegador";
 
 /**
  * API de Casa Cruz OS.
@@ -56,6 +58,7 @@ export async function construirServidor() {
           name: "Gobierno del dato",
           description: "Historial, validaciones y cola de aprobación.",
         },
+        { name: "Documentos", description: "Fichas y análisis en PDF, listos para enviar." },
       ],
     },
     transform: jsonSchemaTransform,
@@ -74,6 +77,11 @@ export async function construirServidor() {
   });
 
   await app.register(rutas);
+  await app.register(rutasPdf);
+
+  app.addHook("onClose", async () => {
+    await cerrarNavegador();
+  });
 
   return app;
 }

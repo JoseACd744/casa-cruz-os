@@ -58,6 +58,27 @@ La especificación cruda está en `/openapi.json`, lista para importar en Postma
 | GET | `/cambios?estado=pendiente` | Cola de aprobación |
 | POST | `/cambios` | Registrar un cambio con su fuente y evidencia |
 | POST | `/cambios/:id/aprobar` | Aprobar un cambio pendiente |
+| GET | `/pdf/ficha/:id` | Ficha de propiedad en PDF (1440 × 810 pt) |
+| GET | `/pdf/analisis/:slug` | Análisis de propiedades en PDF (carta) |
+
+## Los PDFs
+
+Se imprimen con Chromium (Playwright) desde plantillas HTML que viven en
+`src/pdf/`. La paleta y los tamaños salen de los documentos originales del
+diseñador: tan `#AE9479`, fondo del análisis `#DFDAD6`, fondo de la ficha
+`#F9F8F6`, y la ficha mide 1440 × 810 pt, igual que el archivo original.
+Montserrat viaja embebida en el PDF, así que no hace falta instalarla en el
+servidor.
+
+Para ajustar el diseño sin generar el PDF: `?html=1` devuelve el HTML.
+
+```bash
+curl "http://localhost:4000/pdf/ficha/playa-park?tipologia=pp-3hab" -o ficha.pdf
+curl "http://localhost:4000/pdf/analisis/berenice-fabian" -o analisis.pdf
+```
+
+En desarrollo hace falta bajar el navegador una vez: `pnpm exec playwright install chromium`.
+En producción se usa la imagen de Playwright del Dockerfile, que ya lo trae.
 
 ## La regla que vive aquí, no en la interfaz
 

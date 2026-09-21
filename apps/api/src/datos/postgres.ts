@@ -17,6 +17,7 @@ const incluirDesarrollo = {
   condiciones: true,
   comercial: true,
   interna: { include: { documentos: true } },
+  multimedia: { orderBy: { orden: "asc" } },
   validaciones: { include: { validadoPor: true } },
 } satisfies Prisma.DesarrolloInclude;
 
@@ -39,6 +40,11 @@ function aDesarrollo(d: FilaDesarrollo): Desarrollo {
     responsableId: d.responsableId,
     amenidades: d.amenidades,
     aConsiderar: d.aConsiderar,
+    multimedia: d.multimedia.map((m) => ({
+      tipo: m.tipo as "foto" | "render" | "plano" | "video" | "brochure" | "mapa",
+      url: m.url,
+      orden: m.orden,
+    })),
     tipologias: d.tipologias.map((t) => ({
       id: t.id,
       desarrolloId: t.desarrolloId,

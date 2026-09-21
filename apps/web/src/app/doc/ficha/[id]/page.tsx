@@ -35,6 +35,11 @@ export default async function FichaPage({
         titulo={`Ficha · ${d.nombre}`}
         volverHref={`/propiedades/${d.id}`}
         volverTexto={d.nombre}
+        pdfUrl={
+          process.env.API_URL
+            ? `${process.env.API_URL}/pdf/ficha/${d.id}${tipologia ? `?tipologia=${tipologia.id}` : ""}`
+            : null
+        }
       />
 
       <div className="flex grow items-start justify-center overflow-auto p-8 print:p-0">

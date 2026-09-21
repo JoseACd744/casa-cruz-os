@@ -94,6 +94,15 @@ export const desarrolloSchema = z
     aConsiderar: z.array(z.string()).meta({
       description: "Advertencias que sí se muestran al cliente, como torres sin elevador.",
     }),
+    multimedia: z
+      .array(
+        z.object({
+          tipo: z.enum(["foto", "render", "plano", "video", "brochure", "mapa"]),
+          url: z.string(),
+          orden: z.number(),
+        }),
+      )
+      .optional(),
     tipologias: z.array(tipologiaSchema),
     condiciones: z.object({
       enganchePct: z.number().nullable(),

@@ -95,6 +95,12 @@ export interface InfoInterna {
   documentos: { nombre: string; tipo: FuenteTipo; cargadoHaceDias: number }[];
 }
 
+export interface Multimedia {
+  tipo: "foto" | "render" | "plano" | "video" | "brochure" | "mapa";
+  url: string;
+  orden: number;
+}
+
 export interface Validacion {
   campo: CampoValidable;
   validadoPor: string;
@@ -118,6 +124,8 @@ export interface Desarrollo {
   entregaIso: string | null;
   responsableId: string;
   amenidades: string[];
+  /** Fotos, renders y planos, en orden. Vacío mientras nadie los suba. */
+  multimedia?: Multimedia[];
   tipologias: Tipologia[];
   condiciones: CondicionComercial;
   comercial: InfoComercial;
