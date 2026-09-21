@@ -1,0 +1,388 @@
+// Base Maestra de Casa Cruz OS.
+//
+// Reglas que el esquema debe sostener, no sólo la aplicación:
+//  · todo cambio queda registrado con su valor anterior, su autor y su fuente;
+//  · los campos sensibles se guardan como cambio pendiente hasta que alguien los aprueba;
+//  · la propuesta congela el precio de cada opción al enviarse;
+//  · la confiabilidad se calcula desde las validaciones, nunca se captura.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  cliente
+  cerrador
+  gerente
+  corporativo
+}
+
+enum EstatusListing {
+  borrador
+  revision
+  due_diligence
+  aprobado
+  publicado
+}
+
+enum TipoPropiedad {
+  departamento
+  casa
+  terreno
+  local
+}
+
+enum Objetivo {
+  vivienda
+  inversion
+  retiro
+}
+
+enum CampoValidable {
+  precio
+  disponibilidad
+  promocion
+  entrega
+  comision
+}
+
+enum FuenteTipo {
+  lista_precios
+  brochure
+  correo
+  whatsapp
+  convenio
+  llamada
+  contrato
+  otro
+}
+
+enum EstadoCambio {
+  publicado
+  pendiente
+  rechazado
+}
+
+enum EstadoPropuesta {
+  borrador
+  enviada
+  vista
+  negociacion
+  sin_respuesta
+}
+
+enum FormatoPropuesta {
+  ficha
+  presentacion
+  web
+  pdf
+}
+
+enum DueDiligence {
+  validado
+  en_proceso
+  pendiente
+}
+
+model Plaza {
+  id        String  @id
+  nombre    String
+  activa    Boolean @default(true)
+  gerente   Usuario? @relation("GerenteDePlaza", fields: [gerenteId], references: [id])
+  gerenteId String?
+
+  desarrollos Desarrollo[]
+  usuarios    UsuarioPlaza[]
+
+  @@map("plazas")
+}
+
+model Usuario {
+  id           String   @id @default(cuid())
+  nombre       String
+  correo       String   @unique
+  rol          Rol      @default(cerrador)
+  activo       Boolean  @default(true)
+  ultimoAcceso DateTime?
+  creadoEl     DateTime @default(now())
+
+  plazas          UsuarioPlaza[]
+  plazasAsuCargo  Plaza[]        @relation("GerenteDePlaza")
+  desarrollos     Desarrollo[]   @relation("ResponsableDeDesarrollo")
+  cambios         Cambio[]       @relation("AutorDelCambio")
+  cambiosAprobados Cambio[]      @relation("AprobadorDelCambio")
+  validaciones    Validacion[]
+  propuestas      Propuesta[]
+
+  @@map("usuarios")
+}
+
+/// Certificación de un cerrador en una plaza: sin ella puede consultar, no vender.
+model UsuarioPlaza {
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId   String
+  plaza       Plaza    @relation(fields: [plazaId], references: [id], onDelete: Cascade)
+  plazaId     String
+  certificado Boolean  @default(false)
+  progreso    Int      @default(0)
+  venceEl     DateTime?
+
+  @@id([usuarioId, plazaId])
+  @@map("usuarios_plazas")
+}
+
+model Desarrollo {
+  id            String         @id
+  nombre        String
+  plaza         Plaza          @relation(fields: [plazaId], references: [id])
+  plazaId       String
+  ciudad        String
+  zona          String?
+  direccion     String?
+  mapaUrl       String?
+  tipo          TipoPropiedad  @default(departamento)
+  desarrollador String?
+  estatus       EstatusListing @default(borrador)
+  entrega       String?
+  entregaIso    String?
+  amenidades    String[]       @default([])
+  /// Advertencias que sí deben viajar al cliente (ej. torres sin elevador).
+  aConsiderar   String[]       @default([])
+  responsable   Usuario        @relation("ResponsableDeDesarrollo", fields: [responsableId], references: [id])
+  responsableId String
+  creadoEl      DateTime       @default(now())
+  actualizadoEl DateTime       @updatedAt
+
+  tipologias   Tipologia[]
+  condiciones  CondicionComercial?
+  comercial    InfoComercial?
+  interna      InfoInterna?
+  multimedia   Multimedia[]
+  validaciones Validacion[]
+  cambios      Cambio[]
+
+  @@index([plazaId])
+  @@index([estatus])
+  @@map("desarrollos")
+}
+
+model Tipologia {
+  id              String  @id
+  desarrollo      Desarrollo @relation(fields: [desarrolloId], references: [id], onDelete: Cascade)
+  desarrolloId    String
+  nombre          String
+  recamaras       Int?
+  banos           Float?
+  m2Construccion  Float?
+  m2Terreno       Float?
+  estacionamientos Int?
+  planoUrl        String?
+  orden           Int     @default(0)
+
+  niveles       NivelPrecio[]
+  propuestaItems PropuestaItem[]
+
+  @@index([desarrolloId])
+  @@map("tipologias")
+}
+
+/// Un precio por nivel: planta baja, primer nivel, etc.
+model NivelPrecio {
+  id           String    @id @default(cuid())
+  tipologia    Tipologia @relation(fields: [tipologiaId], references: [id], onDelete: Cascade)
+  tipologiaId  String
+  nombre       String
+  precioLista  Decimal?  @db.Decimal(14, 2)
+  precioVenta  Decimal?  @db.Decimal(14, 2)
+  moneda       String    @default("MXN")
+  disponibles  Int?
+  vigenteDesde DateTime?
+  orden        Int       @default(0)
+
+  @@index([tipologiaId])
+  @@map("niveles_precio")
+}
+
+model CondicionComercial {
+  desarrollo       Desarrollo @relation(fields: [desarrolloId], references: [id], onDelete: Cascade)
+  desarrolloId     String     @id
+  enganchePct      Float?
+  engancheNota     String?
+  restoPct         Float?
+  restoNota        String?
+  mensualidades    String?
+  formasPago       String[]   @default([])
+  promocionVigente String?
+  descuentoContado String?
+
+  @@map("condiciones_comerciales")
+}
+
+model InfoComercial {
+  desarrollo         Desarrollo @relation(fields: [desarrolloId], references: [id], onDelete: Cascade)
+  desarrolloId       String     @id
+  buyerPersona       String?
+  clienteIdeal       String?
+  argumentos         String[]   @default([])
+  diferenciadores    String[]   @default([])
+  objeciones         String[]   @default([])
+  comparables        String[]   @default([])
+  noDeberiaComprarlo String[]   @default([])
+
+  @@map("info_comercial")
+}
+
+/// Sólo gerente y corporativo. Nunca viaja a fichas ni propuestas.
+model InfoInterna {
+  desarrollo        Desarrollo   @relation(fields: [desarrolloId], references: [id], onDelete: Cascade)
+  desarrolloId      String       @id
+  comisionPct       Float?
+  contactoComercial String?
+  convenioFirmado   Boolean?
+  dueDiligence      DueDiligence @default(pendiente)
+  notasInternas     String?
+
+  documentos Documento[]
+
+  @@map("info_interna")
+}
+
+model Documento {
+  id            String      @id @default(cuid())
+  interna       InfoInterna @relation(fields: [desarrolloId], references: [desarrolloId], onDelete: Cascade)
+  desarrolloId  String
+  nombre        String
+  tipo          FuenteTipo
+  url           String?
+  cargadoEl     DateTime    @default(now())
+
+  @@index([desarrolloId])
+  @@map("documentos")
+}
+
+model Multimedia {
+  id           String     @id @default(cuid())
+  desarrollo   Desarrollo @relation(fields: [desarrolloId], references: [id], onDelete: Cascade)
+  desarrolloId String
+  tipo         String
+  url          String
+  orden        Int        @default(0)
+
+  @@index([desarrolloId])
+  @@map("multimedia")
+}
+
+/// Cada vez que alguien confirma que un campo sigue vigente.
+model Validacion {
+  id           String         @id @default(cuid())
+  desarrollo   Desarrollo     @relation(fields: [desarrolloId], references: [id], onDelete: Cascade)
+  desarrolloId String
+  campo        CampoValidable
+  validadoPor  Usuario        @relation(fields: [usuarioId], references: [id])
+  usuarioId    String
+  validadoEl   DateTime       @default(now())
+
+  @@index([desarrolloId, campo])
+  @@map("validaciones")
+}
+
+/// Historial: ningún dato cambia sin dejar aquí quién, cuándo y con qué fuente.
+model Cambio {
+  id            String       @id @default(cuid())
+  desarrollo    Desarrollo   @relation(fields: [desarrolloId], references: [id], onDelete: Cascade)
+  desarrolloId  String
+  campo         String
+  valorAnterior String
+  valorNuevo    String
+  autor         Usuario      @relation("AutorDelCambio", fields: [usuarioId], references: [id])
+  usuarioId     String
+  fecha         DateTime     @default(now())
+  fuente        FuenteTipo
+  evidenciaUrl  String?
+  nota          String?
+  estado        EstadoCambio @default(pendiente)
+  aprobadoPor   Usuario?     @relation("AprobadorDelCambio", fields: [aprobadoPorId], references: [id])
+  aprobadoPorId String?
+  aprobadoEl    DateTime?
+
+  @@index([desarrolloId])
+  @@index([estado])
+  @@map("cambios")
+}
+
+model Cliente {
+  id               String    @id @default(cuid())
+  nombre           String
+  correo           String?
+  telefono         String?
+  ciudadResidencia String?
+  presupuestoMin   Decimal?  @db.Decimal(14, 2)
+  presupuestoMax   Decimal?  @db.Decimal(14, 2)
+  recamaras        String?
+  objetivo         Objetivo?
+  plazasInteres    String[]  @default([])
+  kommoLeadId      String?   @unique
+  kommoEtapa       String?
+  notas            String?
+  creadoEl         DateTime  @default(now())
+
+  propuestas Propuesta[]
+  actividad  Actividad[]
+
+  @@map("clientes")
+}
+
+model Actividad {
+  id        String   @id @default(cuid())
+  cliente   Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  clienteId String
+  fecha     DateTime @default(now())
+  texto     String
+
+  @@index([clienteId])
+  @@map("actividad")
+}
+
+model Propuesta {
+  id          String           @id @default(cuid())
+  slug        String           @unique
+  cliente     Cliente          @relation(fields: [clienteId], references: [id])
+  clienteId   String
+  autor       Usuario          @relation(fields: [usuarioId], references: [id])
+  usuarioId   String
+  formato     FormatoPropuesta @default(web)
+  opciones    Json             @default("{}")
+  creadaEl    DateTime         @default(now())
+  enviadaEl   DateTime?
+  estado      EstadoPropuesta  @default(borrador)
+  vistas      Int              @default(0)
+  kommoLeadId String?
+
+  items PropuestaItem[]
+
+  @@index([clienteId])
+  @@map("propuestas")
+}
+
+model PropuestaItem {
+  id          String     @id @default(cuid())
+  propuesta   Propuesta  @relation(fields: [propuestaId], references: [id], onDelete: Cascade)
+  propuestaId String
+  /// El desarrollo se guarda por id aunque la tipología aún no exista.
+  desarrolloId String
+  tipologia   Tipologia? @relation(fields: [tipologiaId], references: [id])
+  tipologiaId String?
+  nivel       String?
+  /// Precio congelado al enviar: lo que vio el cliente no cambia después.
+  precioCongelado Decimal? @db.Decimal(14, 2)
+  razon       String?
+  orden       Int        @default(0)
+
+  @@index([propuestaId])
+  @@map("propuesta_items")
+}

@@ -1,26 +1,21 @@
 {
   "name": "casa-cruz-os",
-  "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@9.9.0",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "next": "16.3.5",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=@casacruz/web",
+    "dev:api": "turbo run dev --filter=@casacruz/api",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "db:generate": "pnpm --filter @casacruz/db generate",
+    "db:push": "pnpm --filter @casacruz/db push",
+    "db:seed": "pnpm --filter @casacruz/db seed",
+    "db:studio": "pnpm --filter @casacruz/db studio"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.5",
-    "tailwindcss": "^4",
+    "turbo": "^2.5.8",
     "typescript": "^5"
   }
 }
