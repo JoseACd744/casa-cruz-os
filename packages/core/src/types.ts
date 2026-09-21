@@ -115,6 +115,9 @@ export interface Desarrollo {
   zona: string | null;
   direccion: string | null;
   mapaUrl: string | null;
+  /** Coordenadas para el mapa de los documentos. Null mientras no se capturen. */
+  lat: number | null;
+  lng: number | null;
   tipo: TipoPropiedad;
   desarrollador: string | null;
   estatus: EstatusListing;

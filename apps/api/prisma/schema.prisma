@@ -145,6 +145,8 @@ model Desarrollo {
   zona          String?
   direccion     String?
   mapaUrl       String?
+  lat           Float?
+  lng           Float?
   tipo          TipoPropiedad  @default(departamento)
   desarrollador String?
   estatus       EstatusListing @default(borrador)

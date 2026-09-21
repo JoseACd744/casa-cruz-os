@@ -32,6 +32,8 @@ function aDesarrollo(d: FilaDesarrollo): Desarrollo {
     zona: d.zona,
     direccion: d.direccion,
     mapaUrl: d.mapaUrl,
+    lat: num(d.lat),
+    lng: num(d.lng),
     tipo: d.tipo,
     desarrollador: d.desarrollador,
     estatus: d.estatus,

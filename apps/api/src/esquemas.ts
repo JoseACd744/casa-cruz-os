@@ -84,6 +84,8 @@ export const desarrolloSchema = z
     zona: z.string().nullable(),
     direccion: z.string().nullable(),
     mapaUrl: z.string().nullable(),
+    lat: z.number().nullable().meta({ example: 20.6274 }),
+    lng: z.number().nullable().meta({ example: -87.0799 }),
     tipo: tipoPropiedad,
     desarrollador: z.string().nullable(),
     estatus: estatusListing,

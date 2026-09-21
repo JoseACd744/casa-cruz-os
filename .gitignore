@@ -34,3 +34,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# salidas de scripts de desarrollo
+apps/api/mapa-demo.*

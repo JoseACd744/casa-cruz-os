@@ -8,6 +8,7 @@ export const config = {
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean),
+  googleMapsKey: process.env.GOOGLE_MAPS_API_KEY?.trim() || null,
   kommo: {
     subdominio: process.env.KOMMO_SUBDOMINIO?.trim() || null,
     token: process.env.KOMMO_TOKEN?.trim() || null,

@@ -1,6 +1,7 @@
 import { money } from "@casacruz/core";
 import type { Cliente, Desarrollo, Propuesta, Tipologia } from "@casacruz/core";
 import { DISCLAIMER, baseCss, escapar, iconos, imagen, marca, monograma } from "./estilo";
+import { mapaHtml } from "./mapa";
 
 /**
  * Análisis de propiedades: el documento que se le manda al cliente, con el
@@ -164,8 +165,12 @@ export function analisisHtml(
   cliente: Cliente | null,
   desarrollos: Desarrollo[],
   asesor: string,
+  claveGoogle: string | null = null,
 ): string {
   const conMapa = desarrollos.length > 1;
+  const ubicados = desarrollos
+    .filter((d) => d.lat !== null && d.lng !== null)
+    .map((d) => ({ nombre: d.nombre, lat: d.lat as number, lng: d.lng as number }));
 
   return `<!doctype html>
 <html lang="es">
@@ -196,17 +201,19 @@ section { background: ${marca.fondoAnalisis}; }
     conMapa
       ? `<section style="padding:40px ${PADDING}px;">
            <h2 style="font-size:34px;font-weight:800;text-align:center;text-transform:uppercase;">Ubicaciones</h2>
-           ${imagen(null, "Mapa de ubicaciones", `height:430px;margin-top:22px;width:${ANCHO_UTIL}px;`)}
-           <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px;">
-             ${desarrollos
-               .map(
-                 (d) =>
-                   `<span style="display:flex;align-items:center;gap:7px;background:#2B2B2B;color:#fff;padding:7px 13px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
-                      ${iconos.pin(14, "#E05A47")} ${escapar(d.nombre)}
-                    </span>`,
-               )
-               .join("")}
+           <div style="margin-top:22px;">
+             ${mapaHtml({ puntos: ubicados, ancho: ANCHO_UTIL, alto: 430, claveGoogle })}
            </div>
+           ${
+             ubicados.length < desarrollos.length
+               ? `<div style="text-align:center;margin-top:14px;font-size:11px;font-weight:700;color:#96402F;text-transform:uppercase;letter-spacing:0.06em;">
+                    Sin coordenadas: ${desarrollos
+                      .filter((d) => d.lat === null || d.lng === null)
+                      .map((d) => escapar(d.nombre))
+                      .join(" · ")}
+                  </div>`
+               : ""
+           }
            <div style="text-align:center;margin-top:26px;font-size:11px;letter-spacing:0.06em;color:#6E675F;text-transform:uppercase;">
              Documento generado por Casa Cruz OS · ${escapar(propuesta.creadaEl)}
            </div>

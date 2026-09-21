@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import { config } from "./config";
 import { fuente } from "./datos";
 import { analisisHtml, ANALISIS_ALTO, ANALISIS_ANCHO } from "./pdf/analisis";
 import { fichaHtml, FICHA_ALTO, FICHA_ANCHO } from "./pdf/ficha";
@@ -93,7 +94,7 @@ export async function rutasPdf(instancia: FastifyInstance) {
         if (d) desarrollos.push(d);
       }
 
-      const html = analisisHtml(propuesta, cliente, desarrollos, asesor);
+      const html = analisisHtml(propuesta, cliente, desarrollos, asesor, config.googleMapsKey);
 
       if (peticion.query.html === "1") {
         return respuesta.type("text/html; charset=utf-8").send(html);
