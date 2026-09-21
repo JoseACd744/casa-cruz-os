@@ -1,0 +1,22 @@
+import Link from "next/link";
+
+export default function NoEncontrado() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-ground px-8 text-center">
+      <span className="flex size-12 items-center justify-center border-[1.5px] border-ink text-[14px] font-bold">
+        CC
+      </span>
+      <h1 className="text-[28px] font-extrabold tracking-[-0.015em]">Esta página no existe</h1>
+      <p className="max-w-115 text-[13.5px] leading-relaxed text-ink-2">
+        El enlace puede estar mal escrito, o la propuesta que buscas se dio de baja. Si un cliente te
+        compartió este enlace, pídele al asesor que lo genere de nuevo.
+      </p>
+      <Link
+        href="/inicio"
+        className="flex h-11.5 items-center rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
+      >
+        VOLVER A CASA CRUZ OS
+      </Link>
+    </div>
+  );
+}

@@ -29,13 +29,22 @@ npx tsc --noEmit && npx eslint src   # tipos y lint
 | `/propiedades/[id]/simulador` | Simulador de crédito (cálculo real) |
 | `/propiedades/[id]/cambio` | Registrar un cambio con su fuente y evidencia |
 | `/comparar` | Comparador de las propiedades seleccionadas |
+| `/propuestas` | Listado de propuestas con su estado y sus salidas |
 | `/propuestas/nueva` | Generador de propuestas |
+| `/clientes` | Listado de clientes y leads de Kommo |
 | `/clientes/[id]` | Cliente, propuestas enviadas y sincronía con Kommo |
 | `/capacitacion` | Certificaciones por plaza y biblioteca comercial |
 | `/control` | Pipeline de alta, aprobaciones, permisos y responsabilidad por cerrador |
 | `/control/usuarios` | Usuarios, roles y auditoría |
 | `/alta` | Alta de un nuevo desarrollo (paso 3 de 6) |
+| `/preguntar` | Capa de IA sobre la Base Maestra (etapa 10) |
 | `/p/[slug]` | **Micrositio público** de la propuesta (el enlace que recibe el cliente) |
+| `/doc/ficha/[id]` | Ficha automática en formato Casa Cruz (imprimible) |
+| `/doc/pdf/[slug]` | Propuesta comparativa tamaño carta (imprimible) |
+| `/doc/presentacion/[slug]` | Presentación navegable de la propuesta |
+
+Las tres vistas bajo `/doc` son documentos: se ven a tamaño real, se reducen solas en pantallas
+chicas y el botón “Descargar PDF” usa la impresión del navegador.
 
 ## Reglas de negocio que ya están en código
 
@@ -57,6 +66,6 @@ comentario en `ConstructorPropuesta.generar()`.
 
 ## Pendiente
 
-- Generación real de PDF y presentación (hoy son formatos seleccionables en el generador).
+- Persistencia real: hoy nada se guarda, cada recarga vuelve al estado inicial.
 - Autenticación real y permisos por rol aplicados en servidor.
 - Analítica del micrositio (vistas por propiedad) y webhooks de Kommo.

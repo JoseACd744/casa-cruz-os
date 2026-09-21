@@ -38,13 +38,13 @@ interface ItemResuelto {
 function Bloque({ resuelto, orden }: { resuelto: ItemResuelto; orden: number }) {
   const { desarrollo: d, item } = resuelto;
   return (
-    <section className="flex flex-col gap-5 border-t border-line-strong px-16 py-11">
+    <section className="flex flex-col gap-5 border-t border-line-strong px-6 py-8 md:px-16 md:py-11">
       <div className="flex items-end gap-3.5">
         <div className="flex flex-col gap-2">
           <span className="text-[11px] font-bold tracking-[0.22em] text-tan-deep">
             OPCIÓN {orden}
           </span>
-          <h2 className="text-[34px] font-extrabold tracking-[-0.01em]">{d.nombre}</h2>
+          <h2 className="text-[26px] font-extrabold tracking-[-0.01em] md:text-[34px]">{d.nombre}</h2>
           <span className="text-[12px] font-semibold tracking-[0.1em] text-ink-2 uppercase">
             {d.ciudad} · {d.tipo}s
           </span>
@@ -62,16 +62,16 @@ function Bloque({ resuelto, orden }: { resuelto: ItemResuelto; orden: number }) 
         </div>
       </div>
 
-      <Foto label="Render / video" className="h-60" />
+      <Foto label="Render / video" className="h-44 md:h-60" />
       <div className="grid grid-cols-3 gap-3">
         <Foto className="h-23" />
         <Foto className="h-23" />
         <Foto className="h-23" />
       </div>
 
-      <div className="flex gap-6">
-        <div className="flex w-107 shrink-0 flex-col gap-3 rounded-[3px] border border-line bg-panel p-4.5">
-          <div className="flex gap-6.5">
+      <div className="flex flex-col gap-6 md:flex-row">
+        <div className="flex flex-col gap-3 rounded-[3px] border border-line bg-panel p-4.5 md:w-107 md:shrink-0">
+          <div className="flex flex-wrap gap-5 md:gap-6.5">
             {[
               ["RECÁMARAS", resuelto.recamaras ?? "—"],
               ["BAÑOS", resuelto.banos ?? "—"],
@@ -179,7 +179,7 @@ export default async function PropuestaPublicaPage({
 
   return (
     <main className="mx-auto w-full max-w-250 bg-ground">
-      <header className="flex flex-col bg-ink px-16 py-13 text-white">
+      <header className="flex flex-col bg-ink px-6 py-10 text-white md:px-16 md:py-13">
         <div className="flex items-center gap-3">
           <span className="flex size-9.5 items-center justify-center border-[1.5px] border-ground text-[12px] font-bold">
             CC
@@ -189,7 +189,7 @@ export default async function PropuestaPublicaPage({
         <span className="pt-11 text-[11px] font-bold tracking-[0.24em] text-tan">
           PROPUESTA PERSONALIZADA · SEPTIEMBRE 2026
         </span>
-        <h1 className="pt-3.5 text-[52px] leading-none font-extrabold tracking-[-0.02em] whitespace-pre-line">
+        <h1 className="pt-3.5 text-[34px] leading-none font-extrabold tracking-[-0.02em] whitespace-pre-line md:text-[52px]">
           Hola {nombreCorto.split(" ").slice(0, 1)[0]}
           {cliente?.nombre.includes(" y ") ? `\ny ${cliente.nombre.split(" y ")[1].split(" ")[0]}` : ""}
         </h1>
@@ -209,11 +209,11 @@ export default async function PropuestaPublicaPage({
         </div>
       </header>
 
-      <section className="flex flex-col gap-5.5 bg-surface px-16 py-11">
+      <section className="flex flex-col gap-5.5 bg-surface px-6 py-8 md:px-16 md:py-11">
         <span className="text-[11px] font-bold tracking-[0.22em] text-tan-deep">
           POR QUÉ CASA CRUZ
         </span>
-        <div className="grid grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
           {[
             [
               "Due diligence",
@@ -242,13 +242,13 @@ export default async function PropuestaPublicaPage({
 
       <section
         id="comparativo"
-        className="flex flex-col gap-5 border-t border-line-strong bg-surface px-16 py-11"
+        className="flex flex-col gap-5 border-t border-line-strong bg-surface px-6 py-8 md:px-16 md:py-11"
       >
         <h2 className="text-[26px] font-extrabold tracking-[-0.01em]">
           Comparativo de las opciones
         </h2>
-        <div className="overflow-hidden rounded-[3px] border border-line bg-panel">
-          <div className="flex bg-tan">
+        <div className="overflow-x-auto rounded-[3px] border border-line bg-panel">
+          <div className="flex min-w-160 bg-tan">
             <span className="w-45 px-4 py-3" />
             {resueltos.map((r) => (
               <span
@@ -260,7 +260,7 @@ export default async function PropuestaPublicaPage({
             ))}
           </div>
           {filas.map((f) => (
-            <div key={f.campo} className="flex border-b border-line last:border-0">
+            <div key={f.campo} className="flex min-w-160 border-b border-line last:border-0">
               <span className="w-45 px-4 py-3.5 text-[11.5px] font-bold tracking-[0.06em] text-muted">
                 {f.campo}
               </span>
@@ -279,15 +279,15 @@ export default async function PropuestaPublicaPage({
         </div>
       </section>
 
-      <section className="flex items-center gap-6 px-16 py-11">
-        <Foto label="Mapa de ubicaciones" className="h-50 w-107 shrink-0" />
+      <section className="flex flex-col items-start gap-6 px-6 py-8 md:flex-row md:items-center md:px-16 md:py-11">
+        <Foto label="Mapa de ubicaciones" className="h-44 w-full md:h-50 md:w-107 md:shrink-0" />
         <div className="flex grow flex-col gap-3.5">
           <h2 className="text-[24px] font-extrabold tracking-[-0.01em]">¿Seguimos?</h2>
           <p className="text-[13.5px] leading-relaxed text-ink-2">
             Podemos agendar una videollamada para revisar juntos las opciones, o coordinar una
             visita cuando vengan a México.
           </p>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <a
               href="#comparativo"
               className="flex h-12.5 items-center rounded-[3px] bg-ink px-6.5 text-[11.5px] font-bold tracking-[0.1em] text-white"
@@ -304,7 +304,7 @@ export default async function PropuestaPublicaPage({
         </div>
       </section>
 
-      <footer className="flex items-center gap-4 bg-ink px-16 py-6.5 text-[#A09991]">
+      <footer className="flex items-center gap-4 bg-ink px-6 py-6.5 text-[#A09991] md:px-16">
         <span className="flex size-8 shrink-0 items-center justify-center border border-[#A09991] text-[10px] font-bold">
           CC
         </span>

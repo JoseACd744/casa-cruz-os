@@ -6,10 +6,11 @@ import { usePathname } from "next/navigation";
 const nav = [
   { href: "/inicio", label: "Inicio", icon: "casa" },
   { href: "/propiedades", label: "Propiedades", icon: "edificio" },
-  { href: "/propuestas/nueva", label: "Propuestas", icon: "documento" },
-  { href: "/clientes/c-berenice-fabian", label: "Clientes", icon: "persona" },
+  { href: "/propuestas", label: "Propuestas", icon: "documento" },
+  { href: "/clientes", label: "Clientes", icon: "persona" },
   { href: "/capacitacion", label: "Capacitación", icon: "libro" },
   { href: "/control", label: "Control del dato", icon: "barras" },
+  { href: "/preguntar", label: "Preguntar", icon: "chispa" },
 ] as const;
 
 function Icono({ nombre, color }: { nombre: string; color: string }) {
@@ -52,6 +53,12 @@ function Icono({ nombre, color }: { nombre: string; color: string }) {
       return (
         <svg {...props}>
           <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H19v16H5.5A1.5 1.5 0 0 1 4 18.5zM9 8h6M9 12h6" />
+        </svg>
+      );
+    case "chispa":
+      return (
+        <svg {...props}>
+          <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM18 16l.8 2.2L21 19l-2.2.8L18 22l-.8-2.2L15 19l2.2-.8z" />
         </svg>
       );
     default:

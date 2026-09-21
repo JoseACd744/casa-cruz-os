@@ -81,7 +81,15 @@ export function ConstructorPropuesta({
     setGenerando(true);
     // Aquí es donde, con backend, se guarda la propuesta, se congela el precio
     // de cada ítem y se escribe la nota en el lead de Kommo.
-    setTimeout(() => router.push(`/p/${cliente.slug}`), 600);
+    const destino =
+      formato === "pdf"
+        ? `/doc/pdf/${cliente.slug}`
+        : formato === "presentacion"
+          ? `/doc/presentacion/${cliente.slug}`
+          : formato === "ficha"
+            ? `/doc/ficha/${items[0]?.id ?? "playa-park"}`
+            : `/p/${cliente.slug}`;
+    setTimeout(() => router.push(destino), 600);
   }
 
   return (

@@ -79,13 +79,20 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
                     <Campo label="Vistas">{p.vistas || "—"}</Campo>
                     <Campo label="Formato">{p.formato}</Campo>
                     <div className="grow" />
-                    <Link
-                      href={`/p/${p.slug}`}
-                      target="_blank"
-                      className="flex h-9 items-center rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface"
-                    >
-                      ABRIR MICROSITIO
-                    </Link>
+                    {[
+                      ["MICROSITIO", `/p/${p.slug}`],
+                      ["PDF", `/doc/pdf/${p.slug}`],
+                      ["DECK", `/doc/presentacion/${p.slug}`],
+                    ].map(([texto, href]) => (
+                      <Link
+                        key={texto}
+                        href={href}
+                        target="_blank"
+                        className="flex h-9 items-center rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface"
+                      >
+                        {texto}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               ))}

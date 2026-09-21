@@ -290,12 +290,16 @@ export default async function PropiedadPage({
 
         <div className="flex w-86 shrink-0 flex-col gap-4">
           <Card className="flex flex-col gap-2.5 p-4.5">
-            <button className="flex h-11.5 items-center justify-center gap-2.5 rounded-[3px] bg-ink text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125">
+            <Link
+              href={`/doc/ficha/${d.id}`}
+              target="_blank"
+              className="flex h-11.5 items-center justify-center gap-2.5 rounded-[3px] bg-ink text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8">
                 <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5" />
               </svg>
               GENERAR FICHA
-            </button>
+            </Link>
             <Link
               href="/propuestas/nueva"
               className="flex h-11.5 items-center justify-center gap-2.5 rounded-[3px] bg-tan text-[11.5px] font-bold tracking-[0.1em] text-ink hover:brightness-105"
