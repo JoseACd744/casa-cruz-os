@@ -452,7 +452,7 @@ export const usuarios: Usuario[] = [
   {
     id: "u-gerente-rm",
     nombre: "[GERENTE RIVIERA MAYA]",
-    correo: "[CORREO]",
+    correo: "gerente.rivieramaya@casacruz.mx",
     rol: "gerente",
     plazasCertificadas: ["riviera-maya"],
     plazasEnProgreso: [],
@@ -463,7 +463,7 @@ export const usuarios: Usuario[] = [
   {
     id: "u-corp",
     nombre: "[DIRECCIÓN CASA CRUZ]",
-    correo: "[CORREO]",
+    correo: "direccion@casacruz.mx",
     rol: "corporativo",
     plazasCertificadas: ["riviera-maya", "puebla", "queretaro"],
     plazasEnProgreso: [],

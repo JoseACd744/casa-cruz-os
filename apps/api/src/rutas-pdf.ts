@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import { exigir } from "./auth";
 import { config } from "./config";
 import { fuente } from "./datos";
 import { analisisHtml, ANALISIS_ALTO, ANALISIS_ANCHO } from "./pdf/analisis";
@@ -33,6 +34,7 @@ export async function rutasPdf(instancia: FastifyInstance) {
   app.get(
     "/pdf/ficha/:id",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Documentos"],
         summary: "Ficha de propiedad en PDF",
@@ -71,6 +73,7 @@ export async function rutasPdf(instancia: FastifyInstance) {
   app.get(
     "/pdf/analisis/:slug",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Documentos"],
         summary: "Análisis de propiedades en PDF",

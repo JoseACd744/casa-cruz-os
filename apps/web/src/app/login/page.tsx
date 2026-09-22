@@ -1,6 +1,52 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import Link from "next/link";
+import { COOKIE_SESION } from "@/lib/sesion";
 
-export default function LoginPage() {
+/**
+ * Acceso.
+ *
+ * El token lo emite la API y se guarda en una cookie httpOnly. Sin API_URL la
+ * pantalla sigue existiendo pero entra directo: es el modo de demostración.
+ */
+async function entrar(datos: FormData) {
+  "use server";
+
+  const api = process.env.API_URL?.replace(/\/$/, "");
+  if (!api) redirect("/inicio");
+
+  const respuesta = await fetch(`${api}/sesion`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      correo: String(datos.get("correo") ?? ""),
+      contrasena: String(datos.get("contrasena") ?? ""),
+    }),
+    cache: "no-store",
+  }).catch(() => null);
+
+  if (!respuesta?.ok) redirect("/login?error=1");
+
+  const { token } = (await respuesta.json()) as { token: string };
+  const almacen = await cookies();
+  almacen.set(COOKIE_SESION, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 12,
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  redirect("/inicio");
+}
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+
   return (
     <div className="flex min-h-screen bg-ground">
       <div className="flex w-155 shrink-0 flex-col bg-ink px-15 py-14 text-white">
@@ -44,13 +90,19 @@ export default function LoginPage() {
       </div>
 
       <div className="flex grow items-center justify-center">
-        <form action="/inicio" className="flex w-105 flex-col gap-5.5">
+        <form action={entrar} className="flex w-105 flex-col gap-5.5">
           <div className="flex flex-col gap-2">
             <h1 className="text-[28px] font-extrabold tracking-[-0.01em]">Entrar</h1>
             <span className="text-[13px] text-ink-2">
               Tu acceso define qué información ves y qué plazas puedes vender.
             </span>
           </div>
+
+          {error ? (
+            <div className="rounded-[3px] border border-alert/40 bg-alert-soft px-4 py-3 text-[12.5px] font-semibold text-alert-ink">
+              Usuario o contraseña incorrectos.
+            </div>
+          ) : null}
 
           <div className="flex flex-col gap-2">
             <label htmlFor="correo" className="eyebrow">
@@ -60,20 +112,22 @@ export default function LoginPage() {
               id="correo"
               name="correo"
               type="email"
+              required
               defaultValue="jorge.diaz@casacruz.mx"
               className="h-12.5 rounded-[3px] border border-[#C9C1B6] bg-panel px-4 text-[14px]"
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="clave" className="eyebrow">
+            <label htmlFor="contrasena" className="eyebrow">
               Contraseña
             </label>
             <input
-              id="clave"
-              name="clave"
+              id="contrasena"
+              name="contrasena"
               type="password"
-              defaultValue="demo1234"
+              required
+              defaultValue="casacruz"
               className="h-12.5 rounded-[3px] border border-[#C9C1B6] bg-panel px-4 text-[14px]"
             />
           </div>
@@ -85,21 +139,16 @@ export default function LoginPage() {
             ENTRAR A CASA CRUZ OS
           </button>
 
-          <div className="flex items-center gap-3.5">
-            <div className="h-px grow bg-line-strong" />
-            <span className="text-[10.5px] tracking-[0.12em] text-faint">O BIEN</span>
-            <div className="h-px grow bg-line-strong" />
-          </div>
-
-          <Link
-            href="/inicio"
-            className="flex h-12.5 items-center justify-center rounded-[3px] border border-[#C9C1B6] bg-panel text-[12px] font-semibold"
-          >
-            Continuar con Google Workspace
-          </Link>
-
           <div className="flex items-start gap-2.5 rounded-[3px] border border-line bg-surface p-3.5">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B563E" strokeWidth="1.8" className="mt-0.5 shrink-0">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#6B563E"
+              strokeWidth="1.8"
+              className="mt-0.5 shrink-0"
+            >
               <rect x="4" y="10" width="16" height="11" rx="2" />
               <path d="M8 10V7a4 4 0 0 1 8 0v3" />
             </svg>
@@ -108,6 +157,10 @@ export default function LoginPage() {
               y el valor anterior.
             </span>
           </div>
+
+          <Link href="/inicio" className="text-center text-[12px]">
+            Entrar sin sesión (sólo demostración)
+          </Link>
         </form>
       </div>
     </div>

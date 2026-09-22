@@ -10,6 +10,7 @@ import {
   type Propuesta,
   type Usuario,
 } from "@casacruz/core";
+import { tokenDeSesion } from "@/lib/sesion";
 
 /**
  * Acceso a datos de la web.
@@ -29,9 +30,13 @@ export const usandoApi = Boolean(API);
 async function pedir<T>(ruta: string): Promise<T | null> {
   if (!API) return null;
   try {
+    const token = await tokenDeSesion();
     const respuesta = await fetch(`${API}${ruta}`, {
       cache: "no-store",
-      headers: { accept: "application/json" },
+      headers: {
+        accept: "application/json",
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
     });
     if (!respuesta.ok) return null;
     return (await respuesta.json()) as T;

@@ -1,4 +1,7 @@
 import cors from "@fastify/cors";
+import jwt from "@fastify/jwt";
+import multipart from "@fastify/multipart";
+import rateLimit from "@fastify/rate-limit";
 import swagger from "@fastify/swagger";
 import scalar from "@scalar/fastify-api-reference";
 import Fastify from "fastify";
@@ -8,10 +11,15 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
-import { config, modoMock } from "./config";
+import { config, jwtInseguro, modoMock } from "./config";
 import { origenConfigurado } from "./datos";
+import { almacenamientoConfigurado } from "./almacenamiento";
+import { kommoConfigurado } from "./kommo";
 import { rutas } from "./rutas";
+import { rutasArchivos } from "./rutas-archivos";
+import { rutasEscritura } from "./rutas-escritura";
 import { rutasPdf } from "./rutas-pdf";
+import { rutasSesion } from "./rutas-sesion";
 import { cerrarNavegador } from "./pdf/navegador";
 
 /**
@@ -28,7 +36,13 @@ export async function construirServidor() {
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
-  await app.register(cors, { origin: config.corsOrigin });
+  await app.register(cors, { origin: config.corsOrigin, credentials: true });
+  await app.register(jwt, { secret: config.jwtSecret });
+  await app.register(multipart, { limits: { fileSize: 15 * 1024 * 1024, files: 1 } });
+  await app.register(rateLimit, {
+    max: Number(process.env.LIMITE_PETICIONES ?? 300),
+    timeWindow: "1 minute",
+  });
 
   await app.register(swagger, {
     openapi: {
@@ -59,6 +73,10 @@ export async function construirServidor() {
           description: "Historial, validaciones y cola de aprobación.",
         },
         { name: "Documentos", description: "Fichas y análisis en PDF, listos para enviar." },
+        { name: "Sesión", description: "Entrar y saber con qué rol." },
+        { name: "Alta de producto", description: "Crear, editar y publicar desarrollos." },
+        { name: "Comercial", description: "Clientes y generación de propuestas." },
+        { name: "Archivos", description: "Renders, planos y fotos en el bucket." },
       ],
     },
     transform: jsonSchemaTransform,
@@ -76,7 +94,10 @@ export async function construirServidor() {
     },
   });
 
+  await app.register(rutasSesion);
   await app.register(rutas);
+  await app.register(rutasEscritura);
+  await app.register(rutasArchivos);
   await app.register(rutasPdf);
 
   app.addHook("onClose", async () => {
@@ -95,7 +116,16 @@ if (esEjecucionDirecta) {
     app.log.info(`Origen de datos: ${origenConfigurado}`);
     app.log.info(`Documentación: http://localhost:${config.puerto}/docs`);
     if (modoMock) {
-      app.log.warn("Sin DATABASE_URL: datos de demostración, las escrituras no se guardan.");
+      app.log.warn("Sin DATABASE_URL: datos de demostración, las escrituras se pierden al reiniciar.");
+    }
+    if (!almacenamientoConfigurado) {
+      app.log.warn("Sin bucket configurado: la carga de imágenes responde 503.");
+    }
+    if (!kommoConfigurado) {
+      app.log.warn("Sin Kommo configurado: las propuestas no escriben nota en el lead.");
+    }
+    if (jwtInseguro) {
+      app.log.error("JWT_SECRET sin definir en producción: los tokens se firman con la clave de desarrollo.");
     }
   } catch (error) {
     app.log.error(error);

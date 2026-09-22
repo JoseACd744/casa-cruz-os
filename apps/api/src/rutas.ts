@@ -2,6 +2,8 @@ import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { confiabilidad, estadoValidaciones, requiereAprobacion } from "@casacruz/core";
+import { exigir, sesionOpcional } from "./auth";
+import { desarrolloSegunRol, desarrollosSegunRol } from "./visibilidad";
 import { modoMock } from "./config";
 import { fuente, origenConfigurado } from "./datos";
 import {
@@ -70,6 +72,7 @@ export async function rutas(instancia: FastifyInstance) {
   app.get(
     "/plazas",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Inventario"],
         summary: "Plazas donde opera Casa Cruz",
@@ -91,7 +94,10 @@ export async function rutas(instancia: FastifyInstance) {
         response: { 200: z.array(desarrolloSchema) },
       },
     },
-    async (peticion) => datos.listarDesarrollos(peticion.query),
+    async (peticion) => {
+      const sesion = await sesionOpcional(peticion);
+      return desarrollosSegunRol(await datos.listarDesarrollos(peticion.query), sesion?.rol ?? null);
+    },
   );
 
   app.get(
@@ -107,13 +113,15 @@ export async function rutas(instancia: FastifyInstance) {
     async (peticion, respuesta) => {
       const desarrollo = await datos.obtenerDesarrollo(peticion.params.id);
       if (!desarrollo) return respuesta.code(404).send({ error: "Desarrollo no encontrado" });
-      return desarrollo;
+      const sesion = await sesionOpcional(peticion);
+      return desarrolloSegunRol(desarrollo, sesion?.rol ?? null);
     },
   );
 
   app.get(
     "/desarrollos/:id/confiabilidad",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Inventario", "Gobierno del dato"],
         summary: "Confiabilidad del desarrollo",
@@ -133,6 +141,7 @@ export async function rutas(instancia: FastifyInstance) {
   app.get(
     "/pipeline",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Inventario"],
         summary: "Conteo por etapa de alta",
@@ -145,6 +154,7 @@ export async function rutas(instancia: FastifyInstance) {
   app.get(
     "/novedades",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Inventario"],
         summary: "Últimos cambios publicados",
@@ -158,6 +168,7 @@ export async function rutas(instancia: FastifyInstance) {
   app.get(
     "/usuarios",
     {
+      preHandler: exigir("gerente"),
       schema: {
         tags: ["Personas"],
         summary: "Equipo comercial",
@@ -170,6 +181,7 @@ export async function rutas(instancia: FastifyInstance) {
   app.get(
     "/usuarios/actual",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Personas"],
         summary: "Usuario de la sesión",
@@ -177,12 +189,16 @@ export async function rutas(instancia: FastifyInstance) {
         response: { 200: usuarioSchema },
       },
     },
-    async () => datos.obtenerUsuarioActual(),
+    async (peticion) => {
+      const usuarios = await datos.listarUsuarios();
+      return usuarios.find((u) => u.id === peticion.user.id) ?? datos.obtenerUsuarioActual();
+    },
   );
 
   app.get(
     "/clientes",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Personas"],
         summary: "Clientes y leads",
@@ -195,6 +211,7 @@ export async function rutas(instancia: FastifyInstance) {
   app.get(
     "/clientes/:id",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Personas"],
         summary: "Un cliente",
@@ -213,6 +230,7 @@ export async function rutas(instancia: FastifyInstance) {
   app.get(
     "/propuestas",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Propuestas"],
         summary: "Propuestas generadas",
@@ -265,6 +283,7 @@ export async function rutas(instancia: FastifyInstance) {
   app.get(
     "/cambios",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Gobierno del dato"],
         summary: "Historial y cola de aprobación",
@@ -278,6 +297,7 @@ export async function rutas(instancia: FastifyInstance) {
   app.get(
     "/desarrollos/:id/cambios",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Gobierno del dato"],
         summary: "Historial de un desarrollo",
@@ -291,6 +311,7 @@ export async function rutas(instancia: FastifyInstance) {
   app.post(
     "/cambios",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Gobierno del dato"],
         summary: "Registrar un cambio",
@@ -301,7 +322,8 @@ export async function rutas(instancia: FastifyInstance) {
       },
     },
     async (peticion, respuesta) => {
-      const cambio = await datos.registrarCambio(peticion.body);
+      // El autor sale del token: nadie firma un cambio a nombre de otro.
+      const cambio = await datos.registrarCambio({ ...peticion.body, usuarioId: peticion.user.id });
       return respuesta.code(201).send({
         cambio,
         requiereAprobacion: requiereAprobacion(
@@ -316,16 +338,35 @@ export async function rutas(instancia: FastifyInstance) {
   app.post(
     "/cambios/:id/aprobar",
     {
+      preHandler: exigir("gerente"),
       schema: {
         tags: ["Gobierno del dato"],
         summary: "Aprobar un cambio pendiente",
         params: z.object({ id: z.string() }),
-        body: z.object({ aprobadorId: z.string().min(1) }),
         response: { 200: cambioSchema, ...noEncontrado },
       },
     },
     async (peticion, respuesta) => {
-      const cambio = await datos.aprobarCambio(peticion.params.id, peticion.body.aprobadorId);
+      const cambio = await datos.aprobarCambio(peticion.params.id, peticion.user.id);
+      if (!cambio) return respuesta.code(404).send({ error: "Cambio no encontrado" });
+      return cambio;
+    },
+  );
+
+  app.post(
+    "/cambios/:id/rechazar",
+    {
+      preHandler: exigir("gerente"),
+      schema: {
+        tags: ["Gobierno del dato"],
+        summary: "Rechazar un cambio pendiente",
+        description: "El valor anterior se queda como está, y el rechazo queda en el historial.",
+        params: z.object({ id: z.string() }),
+        response: { 200: cambioSchema, ...noEncontrado },
+      },
+    },
+    async (peticion, respuesta) => {
+      const cambio = await datos.rechazarCambio(peticion.params.id, peticion.user.id);
       if (!cambio) return respuesta.code(404).send({ error: "Cambio no encontrado" });
       return cambio;
     },
@@ -334,6 +375,7 @@ export async function rutas(instancia: FastifyInstance) {
   app.post(
     "/desarrollos/:id/validaciones",
     {
+      preHandler: exigir("cerrador"),
       schema: {
         tags: ["Gobierno del dato"],
         summary: "Confirmar que un campo sigue vigente",
@@ -350,11 +392,7 @@ export async function rutas(instancia: FastifyInstance) {
       const desarrollo = await datos.obtenerDesarrollo(peticion.params.id);
       if (!desarrollo) return respuesta.code(404).send({ error: "Desarrollo no encontrado" });
 
-      await datos.registrarValidacion(
-        peticion.params.id,
-        peticion.body.campo,
-        peticion.body.usuarioId,
-      );
+      await datos.registrarValidacion(peticion.params.id, peticion.body.campo, peticion.user.id);
       const actualizado = await datos.obtenerDesarrollo(peticion.params.id);
       return { ok: true, confiabilidad: actualizado ? confiabilidad(actualizado) : null };
     },

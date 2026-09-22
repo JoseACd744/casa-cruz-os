@@ -8,6 +8,16 @@ export const prisma = new PrismaClient();
 
 const num = (v: unknown): number | null => (v === null || v === undefined ? null : Number(v));
 
+/** Id legible a partir del nombre, como los que ya existen (playa-park). */
+function idDesde(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+}
+
 function diasDesde(fecha: Date): number {
   return Math.max(0, Math.floor((Date.now() - fecha.getTime()) / 86_400_000));
 }
@@ -204,6 +214,14 @@ export function fuentePostgres(): FuenteDeDatos {
       }));
     },
 
+    async hashDeContrasena(usuarioId: string) {
+      const fila = await prisma.usuario.findUnique({
+        where: { id: usuarioId },
+        select: { contrasenaHash: true },
+      });
+      return fila?.contrasenaHash ?? null;
+    },
+
     async obtenerUsuarioActual() {
       // Sin autenticación todavía: el primer cerrador activo.
       const todos = await this.listarUsuarios();
@@ -364,6 +382,196 @@ export function fuentePostgres(): FuenteDeDatos {
           usuarioId,
         },
       });
+    },
+
+    async rechazarCambio(id, aprobadorId) {
+      const actualizado = await prisma.cambio.update({
+        where: { id },
+        data: { estado: "rechazado", aprobadoPorId: aprobadorId, aprobadoEl: new Date() },
+        include: incluirCambio,
+      });
+      return aCambio(actualizado);
+    },
+
+    async crearDesarrollo(entrada) {
+      const id = idDesde(entrada.nombre);
+      const creado = await prisma.desarrollo.create({
+        data: {
+          id,
+          nombre: entrada.nombre,
+          plazaId: entrada.plazaId,
+          ciudad: entrada.ciudad,
+          zona: entrada.zona ?? null,
+          tipo: entrada.tipo,
+          entrega: entrada.entrega ?? null,
+          responsableId: entrada.responsableId,
+          estatus: "borrador",
+          condiciones: { create: {} },
+          comercial: { create: {} },
+          interna: { create: {} },
+        },
+        include: incluirDesarrollo,
+      });
+      return aDesarrollo(creado);
+    },
+
+    async actualizarDesarrollo(id, parche) {
+      const { condiciones, comercial, interna, ...resto } = parche;
+      await prisma.desarrollo.update({
+        where: { id },
+        data: {
+          ...resto,
+          ...(condiciones
+            ? { condiciones: { upsert: { create: condiciones, update: condiciones } } }
+            : {}),
+          ...(comercial ? { comercial: { upsert: { create: comercial, update: comercial } } } : {}),
+          ...(interna ? { interna: { upsert: { create: interna, update: interna } } } : {}),
+        },
+      });
+      return this.obtenerDesarrollo(id);
+    },
+
+    async cambiarEstatus(id, estatus) {
+      await prisma.desarrollo.update({ where: { id }, data: { estatus } });
+      return this.obtenerDesarrollo(id);
+    },
+
+    async guardarTipologia(desarrolloId, entrada) {
+      const id = entrada.id ?? idDesde(`${desarrolloId}-${entrada.nombre}`);
+      const datosTipologia = {
+        nombre: entrada.nombre,
+        recamaras: entrada.recamaras ?? null,
+        banos: entrada.banos ?? null,
+        m2Construccion: entrada.m2Construccion ?? null,
+        m2Terreno: entrada.m2Terreno ?? null,
+        estacionamientos: entrada.estacionamientos ?? null,
+        planoUrl: entrada.planoUrl ?? null,
+      };
+
+      await prisma.$transaction(async (tx) => {
+        await tx.tipologia.upsert({
+          where: { id },
+          create: { id, desarrolloId, ...datosTipologia },
+          update: datosTipologia,
+        });
+        // Los niveles se reemplazan completos: es una lista, no un parche.
+        await tx.nivelPrecio.deleteMany({ where: { tipologiaId: id } });
+        await tx.nivelPrecio.createMany({
+          data: entrada.niveles.map((n, orden) => ({
+            tipologiaId: id,
+            nombre: n.nombre,
+            precioLista: n.precioLista ?? n.precioVenta,
+            precioVenta: n.precioVenta,
+            disponibles: n.disponibles ?? null,
+            orden,
+          })),
+        });
+      });
+
+      const desarrollo = await this.obtenerDesarrollo(desarrolloId);
+      return desarrollo?.tipologias.find((t) => t.id === id) ?? null;
+    },
+
+    async eliminarTipologia(desarrolloId, tipologiaId) {
+      const { count } = await prisma.tipologia.deleteMany({
+        where: { id: tipologiaId, desarrolloId },
+      });
+      return count > 0;
+    },
+
+    async agregarMultimedia(desarrolloId, item) {
+      await prisma.multimedia.create({
+        data: { desarrolloId, tipo: item.tipo, url: item.url, orden: item.orden },
+      });
+      const desarrollo = await this.obtenerDesarrollo(desarrolloId);
+      return desarrollo?.multimedia ?? null;
+    },
+
+    async eliminarMultimedia(desarrolloId, url) {
+      await prisma.multimedia.deleteMany({ where: { desarrolloId, url } });
+      const desarrollo = await this.obtenerDesarrollo(desarrolloId);
+      return desarrollo?.multimedia ?? null;
+    },
+
+    async crearCliente(entrada) {
+      const creado = await prisma.cliente.create({
+        data: {
+          nombre: entrada.nombre,
+          correo: entrada.correo ?? null,
+          telefono: entrada.telefono ?? null,
+          ciudadResidencia: entrada.ciudadResidencia ?? null,
+          presupuestoMin: entrada.presupuestoMin ?? null,
+          presupuestoMax: entrada.presupuestoMax ?? null,
+          recamaras: entrada.recamaras ?? null,
+          objetivo: entrada.objetivo ?? null,
+          plazasInteres: entrada.plazasInteres ?? [],
+          kommoLeadId: entrada.kommoLeadId ?? null,
+          kommoEtapa: entrada.kommoEtapa ?? null,
+          notas: entrada.notas ?? null,
+        },
+      });
+      const cliente = await this.obtenerCliente(creado.id);
+      return cliente!;
+    },
+
+    async actualizarCliente(id, parche) {
+      await prisma.cliente.update({ where: { id }, data: parche });
+      return this.obtenerCliente(id);
+    },
+
+    async crearPropuesta(entrada) {
+      const cliente = await this.obtenerCliente(entrada.clienteId);
+
+      // El precio se congela aquí: lo que ve el cliente no cambia después.
+      const items = [];
+      for (const [orden, item] of entrada.items.entries()) {
+        const desarrollo = await this.obtenerDesarrollo(item.desarrolloId);
+        const tipologia = desarrollo?.tipologias.find((t) => t.id === item.tipologiaId);
+        const precios = (tipologia?.niveles ?? [])
+          .filter((n) => (item.nivel ? n.nombre === item.nivel : true))
+          .map((n) => n.precioVenta)
+          .filter((precio): precio is number => precio !== null);
+        items.push({
+          desarrolloId: item.desarrolloId,
+          tipologiaId: item.tipologiaId || null,
+          nivel: item.nivel ?? null,
+          precioCongelado: precios.length ? Math.min(...precios) : null,
+          razon: item.razon ?? null,
+          orden,
+        });
+      }
+
+      const creada = await prisma.propuesta.create({
+        data: {
+          slug: idDesde(`${cliente?.nombre ?? "propuesta"}-${Date.now().toString(36)}`),
+          clienteId: entrada.clienteId,
+          usuarioId: entrada.usuarioId,
+          formato: entrada.formato,
+          opciones: {
+            esquemaPagos: true,
+            costosCierre: false,
+            comparativo: true,
+            videoInstitucional: false,
+            mapa: true,
+            ...entrada.opciones,
+          },
+          estado: entrada.enviar ? "enviada" : "borrador",
+          enviadaEl: entrada.enviar ? new Date() : null,
+          kommoLeadId: cliente?.kommoLeadId ?? null,
+          items: { create: items },
+        },
+      });
+
+      const propuesta = await this.obtenerPropuesta(creada.slug);
+      return propuesta!;
+    },
+
+    async marcarPropuestaEnviada(slug) {
+      await prisma.propuesta.update({
+        where: { slug },
+        data: { estado: "enviada", enviadaEl: new Date() },
+      });
+      return this.obtenerPropuesta(slug);
     },
 
     async sumarVistaPropuesta(slug) {

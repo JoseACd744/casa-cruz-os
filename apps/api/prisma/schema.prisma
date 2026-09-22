@@ -106,6 +106,8 @@ model Usuario {
   id           String   @id @default(cuid())
   nombre       String
   correo       String   @unique
+  /// Hash scrypt. Nulo mientras el usuario no haya definido contraseña.
+  contrasenaHash String?
   rol          Rol      @default(cerrador)
   activo       Boolean  @default(true)
   ultimoAcceso DateTime?

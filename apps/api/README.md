@@ -36,6 +36,30 @@ Con el servicio arriba: **http://localhost:4000/docs** — referencia Scalar gen
 mismos esquemas (zod) que validan cada petición, así que no puede quedar desactualizada.
 La especificación cruda está en `/openapi.json`, lista para importar en Postman o n8n.
 
+## Sesión y permisos
+
+Todo lo interno exige token. Se obtiene en `POST /sesion` y se manda como
+`Authorization: Bearer …`.
+
+| Rol | Puede |
+| --- | --- |
+| cliente | Ver una propuesta por su enlace. Nada más. |
+| cerrador | Inventario completo, argumentos, información interna, alta y edición de producto, propuestas, carga de archivos. |
+| gerente | Todo lo anterior más aprobar o rechazar cambios pendientes y ver el equipo. |
+| corporativo | Todo lo anterior más mover un desarrollo a due diligence, aprobado o publicado. |
+
+Dos reglas que el servidor no negocia:
+
+- **La autoría sale del token, no del cuerpo.** `POST /cambios` firma el cambio
+  con el usuario de la sesión: nadie registra un cambio a nombre de otro.
+- **Sin sesión de cerrador, la información interna y los argumentos salen
+  vacíos** del endpoint de desarrollos (`src/visibilidad.ts`). Las advertencias
+  que el cliente sí debe conocer, como "torres sin elevador", siguen viajando.
+
+Mientras no haya base de datos, cualquier usuario del catálogo entra con
+`CLAVE_DEMO` (por omisión `casacruz`). Con Postgres se valida el hash scrypt de
+cada usuario.
+
 ## Endpoints
 
 | Método | Ruta | Para qué |
@@ -58,6 +82,20 @@ La especificación cruda está en `/openapi.json`, lista para importar en Postma
 | GET | `/cambios?estado=pendiente` | Cola de aprobación |
 | POST | `/cambios` | Registrar un cambio con su fuente y evidencia |
 | POST | `/cambios/:id/aprobar` | Aprobar un cambio pendiente |
+| POST | `/sesion` | Iniciar sesión |
+| GET | `/sesion` | Quién soy |
+| POST | `/desarrollos` | Crear un desarrollo (nace en borrador) |
+| PATCH | `/desarrollos/:id` | Editar datos generales |
+| GET | `/desarrollos/:id/requisitos` | Qué le falta para publicarse |
+| POST | `/desarrollos/:id/estatus` | Mover el flujo de alta |
+| PUT | `/desarrollos/:id/tipologias` | Crear o actualizar tipología con sus niveles |
+| DELETE | `/desarrollos/:id/tipologias/:tipologiaId` | Eliminar tipología |
+| POST | `/desarrollos/:id/multimedia` | Subir imagen o documento al bucket |
+| DELETE | `/desarrollos/:id/multimedia` | Quitar un archivo |
+| POST | `/clientes`, PATCH `/clientes/:id` | Crear y editar clientes |
+| POST | `/propuestas` | Generar propuesta (congela precios, avisa a Kommo) |
+| POST | `/propuestas/:slug/enviar` | Marcar como enviada |
+| POST | `/cambios/:id/rechazar` | Rechazar un cambio pendiente |
 | GET | `/pdf/ficha/:id` | Ficha de propiedad en PDF (1440 × 810 pt) |
 | GET | `/pdf/analisis/:slug` | Análisis de propiedades en PDF (carta) |
 
@@ -87,8 +125,25 @@ esquema, rendimiento) o la fuente no admite evidencia documental, el cambio
 queda `pendiente` aunque la web diga otra cosa. El criterio está en
 `@casacruz/core` (`requiereAprobacion`) para que ambos lados coincidan.
 
+## Archivos
+
+Los renders, planos y fotos van a un bucket compatible con S3 (el de Railway),
+no al disco del servidor: la API puede reiniciarse o cambiar de máquina sin
+perder el material. Lo que se guarda en la Base Maestra es la URL.
+
+El orden importa: el primer archivo es la fachada o el render principal de la
+ficha. Sin `S3_ENDPOINT` y credenciales, la carga responde 503 y lo dice.
+
+## Kommo
+
+Al enviar una propuesta se escribe una nota en el lead con la fecha, las
+propiedades presentadas y el enlace. Si Kommo no está configurado queda en el
+log y la propuesta se genera igual: que falte el CRM no debe tumbar una venta.
+
 ## Pendiente
 
-- Autenticación y permisos por rol (hoy `usuarioId` viaja en el cuerpo).
-- Integración con Kommo: escribir en el lead al generar una propuesta.
-- Subida de evidencias y multimedia a almacenamiento externo.
+- Conectar Postgres: el esquema y el seed están listos, pero **todavía no se ha
+  ejecutado ni una migración**. Mientras tanto las escrituras viven en memoria y
+  se pierden al reiniciar.
+- Refrescar el token (hoy dura 12 horas y hay que volver a entrar).
+- Webhooks de Kommo hacia Casa Cruz OS (hoy sólo escribimos nosotros).

@@ -303,7 +303,6 @@ export const nuevoCambioSchema = z
     campo: z.string().min(1).meta({ example: "precio" }),
     valorAnterior: z.string(),
     valorNuevo: z.string().min(1),
-    usuarioId: z.string().min(1),
     fuente: fuenteTipo,
     evidenciaUrl: z.string().min(1).nullish().meta({
       description: "Documento que respalda el cambio. Sin él, queda pendiente de aprobación.",
@@ -315,7 +314,6 @@ export const nuevoCambioSchema = z
 export const nuevaValidacionSchema = z
   .object({
     campo: campoValidable,
-    usuarioId: z.string().min(1),
   })
   .meta({ id: "NuevaValidacion" });
 

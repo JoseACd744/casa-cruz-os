@@ -12,7 +12,8 @@
     "db:generate": "pnpm --filter @casacruz/db generate",
     "db:push": "pnpm --filter @casacruz/db push",
     "db:seed": "pnpm --filter @casacruz/db seed",
-    "db:studio": "pnpm --filter @casacruz/db studio"
+    "db:studio": "pnpm --filter @casacruz/db studio",
+    "test": "turbo run test"
   },
   "devDependencies": {
     "turbo": "^2.5.8",

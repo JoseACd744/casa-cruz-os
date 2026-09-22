@@ -129,6 +129,16 @@ export function Sidebar() {
             <span className="text-[12px] font-semibold text-white">Jorge Díaz</span>
             <span className="text-[10px] text-[#A09991]">Cerrador certificado</span>
           </span>
+          <div className="grow" />
+          <a
+            href="/salir"
+            aria-label="Cerrar sesión"
+            className="flex size-8 items-center justify-center rounded-[3px] text-[#A09991] hover:bg-[#2E2C28] hover:text-white"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+            </svg>
+          </a>
         </div>
       </div>
     </aside>

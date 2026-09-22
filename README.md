@@ -20,7 +20,7 @@ pnpm install
 pnpm dev                 # web en :3000 y API en :4000
 pnpm dev:web             # sólo la web
 pnpm dev:api             # sólo la API
-pnpm typecheck && pnpm lint
+pnpm typecheck && pnpm lint && pnpm test
 ```
 
 La web usa la API si existe `API_URL` (ver `apps/web/.env.example`); si no, trabaja con los
@@ -34,6 +34,18 @@ Con la API levantada: **http://localhost:4000/docs** (Scalar). La especificació
 mismos esquemas que validan cada petición, así que no puede quedar desactualizada; se puede
 importar en Postman, Insomnia o n8n desde `/openapi.json`.
 
+## Sesión
+
+La web pide entrar cuando hay `API_URL`: el token lo emite la API y vive en una
+cookie httpOnly. Sin base de datos, cualquier usuario del catálogo entra con la
+clave `casacruz`:
+
+| Correo | Rol |
+| --- | --- |
+| jorge.diaz@casacruz.mx | cerrador |
+| gerente.rivieramaya@casacruz.mx | gerente |
+| direccion@casacruz.mx | corporativo |
+
 ## Reglas que ya están en código
 
 - **La confiabilidad no se captura, se calcula** (`packages/core/src/confiabilidad.ts`): cada
@@ -45,6 +57,11 @@ importar en Postman, Insomnia o n8n desde `/openapi.json`.
   campo es sensible (comisión, entrega, esquema, rendimiento) o la fuente no admite evidencia
   documental, el cambio queda pendiente de aprobación (`packages/core/src/reglas.ts`).
 - **La propuesta congela el precio** de cada opción al enviarse.
+- **Nada se publica a medias**: `POST /desarrollos/:id/estatus` rechaza publicar
+  un desarrollo sin precio, sin imágenes, sin argumentos o sin due diligence
+  (`requisitosParaPublicar`, la misma lista que muestra el asistente de alta).
+- **El rol decide qué se devuelve**: sin sesión de cerrador, la información
+  interna y los argumentos comerciales salen vacíos de la API.
 
 ## Rutas de la web
 
@@ -76,7 +93,10 @@ Son dos despliegues distintos y no dependen uno del otro:
 
 ## Pendiente
 
-- Conectar Postgres (el esquema y el seed ya están listos en `apps/api/prisma`).
-- Autenticación real y permisos por rol aplicados en el servidor.
-- Generación de PDF desde el servidor, para adjuntarlos sin pasar por el navegador.
-- Integración con Kommo: escribir en el lead al generar una propuesta.
+Sólo queda la base de datos. Todo lo demás está en pie:
+
+- **Conectar Postgres.** El esquema, el seed y el adaptador están escritos, pero
+  no se ha corrido ninguna migración: hoy las escrituras viven en memoria y se
+  pierden al reiniciar la API.
+- Configurar el bucket de archivos (Railway) y la clave de Google Maps.
+- Refresco de token y webhooks de Kommo hacia Casa Cruz OS.
