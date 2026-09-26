@@ -38,6 +38,7 @@ export interface NuevoDesarrollo {
   responsableId: string;
   zona?: string | null;
   entrega?: string | null;
+  entregaIso?: string | null;
 }
 
 /** Campos que se pueden editar de un desarrollo ya creado. */
@@ -146,6 +147,12 @@ export interface FuenteDeDatos {
   eliminarTipologia(desarrolloId: string, tipologiaId: string): Promise<boolean>;
   agregarMultimedia(desarrolloId: string, item: Multimedia): Promise<Multimedia[] | null>;
   eliminarMultimedia(desarrolloId: string, url: string): Promise<Multimedia[] | null>;
+  /** Reordena la multimedia: la primera URL queda como fachada. */
+  ordenarMultimedia(desarrolloId: string, urls: string[]): Promise<Multimedia[] | null>;
+  agregarDocumento(
+    desarrolloId: string,
+    documento: { nombre: string; tipo: FuenteTipo; url: string },
+  ): Promise<Desarrollo["interna"]["documentos"] | null>;
 
   // ── Comercial ────────────────────────────────────────────────────────
   crearCliente(entrada: EntradaCliente): Promise<Cliente>;

@@ -13,7 +13,7 @@ import {
 } from "./almacenamiento";
 import { exigir } from "./auth";
 import { fuente } from "./datos";
-import { errorSchema } from "./esquemas";
+import { errorSchema, fuenteTipo } from "./esquemas";
 
 /**
  * Carga de renders, planos, fotos, brochures y evidencias.
@@ -141,6 +141,79 @@ export async function rutasArchivos(instancia: FastifyInstance) {
 
       app.log.info({ desarrollo: desarrollo.id, clave }, "Archivo subido");
       return respuesta.code(201).send({ multimedia: multimedia ?? [item] });
+    },
+  );
+
+  app.put(
+    "/desarrollos/:id/multimedia/orden",
+    {
+      preHandler: exigir("cerrador"),
+      schema: {
+        tags: ["Archivos"],
+        summary: "Reordenar la multimedia",
+        description: "La primera foto o render queda como fachada en la ficha, el análisis y el micrositio.",
+        params: z.object({ id: z.string() }),
+        body: z.object({ urls: z.array(z.string()).min(1) }),
+        response: { 200: z.object({ multimedia: z.array(multimediaSchema) }), 404: errorSchema },
+      },
+    },
+    async (peticion, respuesta) => {
+      const multimedia = await datos.ordenarMultimedia(peticion.params.id, peticion.body.urls);
+      if (!multimedia) return respuesta.code(404).send({ error: "Desarrollo no encontrado" });
+      return { multimedia };
+    },
+  );
+
+  app.post(
+    "/desarrollos/:id/documentos",
+    {
+      preHandler: exigir("cerrador"),
+      schema: {
+        tags: ["Archivos"],
+        summary: "Subir documentación legal o comercial",
+        description:
+          "multipart/form-data con el campo `archivo`: convenio, contrato, lista de precios. Queda en la información interna, que no viaja a fichas ni propuestas.",
+        params: z.object({ id: z.string() }),
+        querystring: z.object({
+          tipo: fuenteTipo.default("otro"),
+          nombre: z.string().trim().min(2).max(120).optional(),
+        }),
+        response: {
+          201: z.object({
+            documentos: z.array(
+              z.object({
+                nombre: z.string(),
+                tipo: fuenteTipo,
+                cargadoHaceDias: z.number(),
+                url: z.string().nullable(),
+              }),
+            ),
+          }),
+          400: errorSchema,
+          404: errorSchema,
+          503: errorSchema,
+        },
+      },
+    },
+    async (peticion, respuesta) => {
+      if (!almacenamientoConfigurado) return respuesta.code(503).send({ error: SIN_BUCKET });
+      const desarrollo = await datos.obtenerDesarrollo(peticion.params.id);
+      if (!desarrollo) return respuesta.code(404).send({ error: "Desarrollo no encontrado" });
+
+      const archivo = await recibirArchivo(peticion, respuesta);
+      if (!archivo) return respuesta;
+
+      const url = await subirArchivo(
+        claveDeArchivo(`desarrollos/${desarrollo.id}/documentos`, peticion.query.tipo, archivo.tipo),
+        archivo.contenido,
+        archivo.tipo,
+      );
+      const documentos = await datos.agregarDocumento(desarrollo.id, {
+        nombre: peticion.query.nombre ?? archivo.nombre,
+        tipo: peticion.query.tipo,
+        url,
+      });
+      return respuesta.code(201).send({ documentos: documentos ?? [] });
     },
   );
 

@@ -40,11 +40,13 @@ const ACEPTA = ".pdf,.png,.jpg,.jpeg,.webp,.eml,application/pdf,image/*,message/
  */
 export function FormCambio({
   desarrollo,
+  campoInicial,
   usuario,
   ahora,
   puedeAdjuntar,
 }: {
   desarrollo: Desarrollo;
+  campoInicial: CampoCambiable;
   usuario: string;
   /** Hora del servidor, ya formateada: evita que el navegador y el servidor difieran. */
   ahora: string;
@@ -53,7 +55,7 @@ export function FormCambio({
   const [estado, accion, enviando] = useActionState(registrarCambio, ESTADO_INICIAL);
 
   const conNiveles = desarrollo.tipologias.filter((t) => t.niveles.length > 0);
-  const [campo, setCampo] = useState<CampoCambiable>("precio");
+  const [campo, setCampo] = useState<CampoCambiable>(campoInicial);
   const [tipologiaId, setTipologiaId] = useState(conNiveles[0]?.id ?? "");
   const [nivel, setNivel] = useState(conNiveles[0]?.niveles[0]?.nombre ?? "");
   const [valor, setValor] = useState("");

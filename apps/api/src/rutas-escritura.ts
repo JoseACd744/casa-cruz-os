@@ -1,7 +1,15 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { alcanza, requisitosParaPublicar } from "@casacruz/core";
+import {
+  alcanza,
+  cambiosProtegidosEnParche,
+  cambiosProtegidosEnTipologia,
+  camposProtegidos,
+  entregaDe,
+  motivoParaNoMover,
+  requisitosParaPublicar,
+} from "@casacruz/core";
 import { exigir } from "./auth";
 import { fuente } from "./datos";
 import { avisarPropuestaEnKommo } from "./kommo";
@@ -39,19 +47,30 @@ export async function rutasEscritura(instancia: FastifyInstance) {
         summary: "Crear un desarrollo",
         description: "Nace en estado borrador, a nombre de quien lo crea.",
         body: z.object({
-          nombre: z.string().min(2),
+          nombre: z.string().trim().min(2),
           plazaId: z.string().min(1),
-          ciudad: z.string().min(2),
+          ciudad: z.string().trim().min(2),
           tipo: tipoPropiedad,
           zona: z.string().nullish(),
-          entrega: z.string().nullish(),
+          entrega: z.string().nullish().meta({ example: "Marzo 2027" }),
         }),
-        response: { 201: desarrolloSchema },
+        response: { 201: desarrolloSchema, 400: errorSchema },
       },
     },
     async (peticion, respuesta) => {
+      const plazas = await datos.listarPlazas();
+      if (!plazas.some((p) => p.id === peticion.body.plazaId)) {
+        return respuesta.code(400).send({ error: "Esa plaza no existe" });
+      }
+      const entrega = peticion.body.entrega ? entregaDe(peticion.body.entrega) : null;
+      if (peticion.body.entrega && !entrega) {
+        return respuesta.code(400).send({ error: "Escribe el mes y el año de entrega, por ejemplo Marzo 2027." });
+      }
+
       const desarrollo = await datos.crearDesarrollo({
         ...peticion.body,
+        entrega: entrega?.texto ?? null,
+        entregaIso: entrega?.iso ?? null,
         responsableId: peticion.user.id,
       });
       return respuesta.code(201).send(desarrollo);
@@ -66,11 +85,12 @@ export async function rutasEscritura(instancia: FastifyInstance) {
         tags: ["Alta de producto"],
         summary: "Editar un desarrollo",
         description:
-          "Edita los datos generales. Los campos sensibles (comisión, entrega contractual) deben pasar por POST /cambios para quedar con su fuente y su aprobación.",
+          "Edita los datos generales mientras el desarrollo se captura. Desde que se aprueba, precio, disponibilidad, entrega, promoción y enganche sólo cambian con POST /cambios (responde 409). La comisión siempre es un cambio con aprobación. El due diligence lo marca corporativo.",
         params: idParam,
         body: z.object({
-          nombre: z.string().min(2).optional(),
-          ciudad: z.string().min(2).optional(),
+          nombre: z.string().trim().min(2).optional(),
+          tipo: tipoPropiedad.optional(),
+          ciudad: z.string().trim().min(2).optional(),
           zona: z.string().nullish(),
           direccion: z.string().nullish(),
           lat: z.number().min(-90).max(90).nullish(),
@@ -102,14 +122,55 @@ export async function rutasEscritura(instancia: FastifyInstance) {
               noDeberiaComprarlo: z.array(z.string()).optional(),
             })
             .optional(),
+          interna: z
+            .object({
+              contactoComercial: z.string().nullish(),
+              convenioFirmado: z.boolean().nullish(),
+              notasInternas: z.string().nullish(),
+              dueDiligence: z.enum(["validado", "en_proceso", "pendiente"]).optional(),
+            })
+            .optional(),
         }),
-        response: { 200: desarrolloSchema, ...noEncontrado },
+        response: { 200: desarrolloSchema, 400: errorSchema, 403: errorSchema, 409: errorSchema, ...noEncontrado },
       },
     },
     async (peticion, respuesta) => {
-      const desarrollo = await datos.actualizarDesarrollo(peticion.params.id, peticion.body);
-      if (!desarrollo) return respuesta.code(404).send({ error: "Desarrollo no encontrado" });
-      return desarrollo;
+      const d = await datos.obtenerDesarrollo(peticion.params.id);
+      if (!d) return respuesta.code(404).send({ error: "Desarrollo no encontrado" });
+
+      const parche: Parameters<typeof datos.actualizarDesarrollo>[1] = { ...peticion.body };
+      if (peticion.body.entrega) {
+        const entrega = entregaDe(peticion.body.entrega);
+        if (!entrega) {
+          return respuesta.code(400).send({ error: "Escribe el mes y el año de entrega, por ejemplo Marzo 2027." });
+        }
+        parche.entrega = entrega.texto;
+        parche.entregaIso = entrega.iso;
+      } else if (peticion.body.entrega === null) {
+        parche.entregaIso = null;
+      }
+
+      const protegidos = cambiosProtegidosEnParche(d, {
+        entrega: parche.entrega,
+        condiciones: parche.condiciones,
+      });
+      if (protegidos.length) {
+        return respuesta.code(409).send({
+          error: "Estos datos ya los ve el cliente: se cambian registrando un cambio con su fuente.",
+          detalle: protegidos,
+        });
+      }
+
+      const dueDiligence = peticion.body.interna?.dueDiligence;
+      if (
+        dueDiligence !== undefined &&
+        dueDiligence !== d.interna.dueDiligence &&
+        !alcanza(peticion.user.rol, "corporativo")
+      ) {
+        return respuesta.code(403).send({ error: "El due diligence lo valida corporativo." });
+      }
+
+      return (await datos.actualizarDesarrollo(peticion.params.id, parche))!;
     },
   );
 
@@ -148,7 +209,7 @@ export async function rutasEscritura(instancia: FastifyInstance) {
         tags: ["Alta de producto"],
         summary: "Mover el desarrollo en el flujo de alta",
         description:
-          "Borrador y revisión los mueve el cerrador. Due diligence, aprobado y publicado son de corporativo. No se publica nada que no cumpla los requisitos.",
+          "Paso por paso: borrador → revisión (la envía el cerrador) → due diligence (lo decide el gerente) → aprobado (corporativo, con el due diligence validado) → publicado (corporativo, con los requisitos completos). Cada paso puede regresar al anterior.",
         params: idParam,
         body: z.object({ estatus: estatusListing }),
         response: { 200: desarrolloSchema, 403: errorSchema, 409: errorSchema, ...noEncontrado },
@@ -159,23 +220,10 @@ export async function rutasEscritura(instancia: FastifyInstance) {
       if (!desarrollo) return respuesta.code(404).send({ error: "Desarrollo no encontrado" });
 
       const { estatus } = peticion.body;
-      const deCorporativo = ["due_diligence", "aprobado", "publicado"].includes(estatus);
-      if (deCorporativo && !alcanza(peticion.user.rol, "corporativo")) {
-        return respuesta
-          .code(403)
-          .send({ error: `Pasar a ${estatus} es de corporativo; tu rol es ${peticion.user.rol}.` });
+      const motivo = motivoParaNoMover(desarrollo, estatus, peticion.user.rol);
+      if (motivo) {
+        return respuesta.code(motivo.codigo).send({ error: motivo.mensaje, detalle: motivo.detalle });
       }
-
-      if (estatus === "publicado") {
-        const faltantes = requisitosParaPublicar(desarrollo).filter((r) => !r.cumple);
-        if (faltantes.length) {
-          return respuesta.code(409).send({
-            error: "El desarrollo no está listo para publicarse",
-            detalle: faltantes.map((r) => r.texto),
-          });
-        }
-      }
-
       return (await datos.cambiarEstatus(peticion.params.id, estatus))!;
     },
   );
@@ -210,13 +258,27 @@ export async function rutasEscritura(instancia: FastifyInstance) {
             )
             .min(1),
         }),
-        response: { 200: tipologiaSchema, ...noEncontrado },
+        response: { 200: tipologiaSchema, 400: errorSchema, 409: errorSchema, ...noEncontrado },
       },
     },
     async (peticion, respuesta) => {
-      const tipologia = await datos.guardarTipologia(peticion.params.id, peticion.body);
-      if (!tipologia) return respuesta.code(404).send({ error: "Desarrollo no encontrado" });
-      return tipologia;
+      const d = await datos.obtenerDesarrollo(peticion.params.id);
+      if (!d) return respuesta.code(404).send({ error: "Desarrollo no encontrado" });
+
+      const nombres = peticion.body.niveles.map((n) => n.nombre.trim().toLowerCase());
+      if (new Set(nombres).size !== nombres.length) {
+        return respuesta.code(400).send({ error: "Hay niveles repetidos en la tipología." });
+      }
+
+      const protegidos = cambiosProtegidosEnTipologia(d, peticion.body);
+      if (protegidos.length) {
+        return respuesta.code(409).send({
+          error: "El desarrollo ya está aprobado: precio y disponibilidad se cambian registrando un cambio.",
+          detalle: protegidos,
+        });
+      }
+
+      return (await datos.guardarTipologia(peticion.params.id, peticion.body))!;
     },
   );
 
@@ -228,10 +290,17 @@ export async function rutasEscritura(instancia: FastifyInstance) {
         tags: ["Alta de producto"],
         summary: "Eliminar una tipología",
         params: z.object({ id: z.string(), tipologiaId: z.string() }),
-        response: { 200: z.object({ ok: z.boolean() }), ...noEncontrado },
+        response: { 200: z.object({ ok: z.boolean() }), 409: errorSchema, ...noEncontrado },
       },
     },
     async (peticion, respuesta) => {
+      const d = await datos.obtenerDesarrollo(peticion.params.id);
+      if (!d) return respuesta.code(404).send({ error: "Desarrollo no encontrado" });
+      if (camposProtegidos(d.estatus).length) {
+        return respuesta.code(409).send({
+          error: "El desarrollo ya está aprobado: una tipología no se borra, se registra sin disponibilidad.",
+        });
+      }
       const ok = await datos.eliminarTipologia(peticion.params.id, peticion.params.tipologiaId);
       if (!ok) return respuesta.code(404).send({ error: "Tipología no encontrada" });
       return { ok };

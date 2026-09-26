@@ -150,6 +150,12 @@ export default async function PropiedadPage({
         <span className="text-[11.5px] font-semibold tracking-[0.06em] uppercase">{d.nombre}</span>
         <div className="grow" />
         <span className="font-mono text-[11px] text-muted">ID {d.id}</span>
+        <Link
+          href={`/propiedades/${d.id}/editar`}
+          className="flex h-9 items-center rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.08em] hover:bg-surface"
+        >
+          EDITAR
+        </Link>
       </header>
 
       <div className="flex items-start gap-7 overflow-auto p-7">

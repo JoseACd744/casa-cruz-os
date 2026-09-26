@@ -197,7 +197,7 @@ export function fuenteMock(): FuenteDeDatos {
         desarrollador: null,
         estatus: "borrador",
         entrega: entrada.entrega ?? null,
-        entregaIso: null,
+        entregaIso: entrada.entregaIso ?? null,
         responsableId: entrada.responsableId,
         amenidades: [],
         multimedia: [],
@@ -302,6 +302,28 @@ export function fuenteMock(): FuenteDeDatos {
       if (!d) return null;
       d.multimedia = (d.multimedia ?? []).filter((m) => m.url !== url);
       return d.multimedia;
+    },
+
+    async ordenarMultimedia(desarrolloId, urls) {
+      const d = buscar(desarrolloId);
+      if (!d) return null;
+      const lista = d.multimedia ?? [];
+      // Lo que no venga en la lista conserva su lugar relativo, al final.
+      const posicion = (url: string) => {
+        const i = urls.indexOf(url);
+        return i >= 0 ? i : urls.length + lista.findIndex((m) => m.url === url);
+      };
+      d.multimedia = [...lista]
+        .sort((x, y) => posicion(x.url) - posicion(y.url))
+        .map((m, orden) => ({ ...m, orden }));
+      return d.multimedia;
+    },
+
+    async agregarDocumento(desarrolloId, documento) {
+      const d = buscar(desarrolloId);
+      if (!d) return null;
+      d.interna.documentos = [{ ...documento, cargadoHaceDias: 0 }, ...d.interna.documentos];
+      return d.interna.documentos;
     },
 
     // ── Comercial ──────────────────────────────────────────────────────

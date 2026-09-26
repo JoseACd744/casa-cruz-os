@@ -94,7 +94,7 @@ export interface InfoInterna {
   convenioFirmado: boolean | null;
   dueDiligence: "validado" | "en_proceso" | "pendiente";
   notasInternas: string | null;
-  documentos: { nombre: string; tipo: FuenteTipo; cargadoHaceDias: number }[];
+  documentos: { nombre: string; tipo: FuenteTipo; cargadoHaceDias: number; url: string | null }[];
 }
 
 export interface Multimedia {

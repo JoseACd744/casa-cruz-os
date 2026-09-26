@@ -13,6 +13,7 @@ export function BotonAccion({
   className = "",
   enCurso = "…",
   confirmar,
+  bloque = false,
 }: {
   accion: (previo: EstadoAccion, datos: FormData) => Promise<EstadoAccion>;
   children: ReactNode;
@@ -20,6 +21,8 @@ export function BotonAccion({
   enCurso?: string;
   /** Pregunta antes de ejecutar, para lo que no tiene vuelta atrás. */
   confirmar?: string;
+  /** Ocupa todo el ancho en lugar de alinearse a la derecha. */
+  bloque?: boolean;
 }) {
   const [estado, ejecutar, pendiente] = useActionState(accion, ESTADO_INICIAL);
 
@@ -29,7 +32,7 @@ export function BotonAccion({
       onSubmit={(e) => {
         if (confirmar && !window.confirm(confirmar)) e.preventDefault();
       }}
-      className="flex flex-col items-end gap-1"
+      className={`flex flex-col gap-1 ${bloque ? "items-stretch" : "items-end"}`}
     >
       <button type="submit" disabled={pendiente} className={`${className} disabled:opacity-50`}>
         {pendiente ? enCurso : children}

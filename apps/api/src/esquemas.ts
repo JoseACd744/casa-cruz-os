@@ -154,6 +154,7 @@ export const desarrolloSchema = z
             nombre: z.string(),
             tipo: fuenteTipo,
             cargadoHaceDias: z.number(),
+            url: z.string().nullable(),
           }),
         ),
       })

@@ -109,8 +109,8 @@ export const desarrollos: Desarrollo[] = [
       dueDiligence: "validado",
       notasInternas: null,
       documentos: [
-        { nombre: "Lista de precios oficial", tipo: "lista_precios", cargadoHaceDias: 4 },
-        { nombre: "Brochure del desarrollo", tipo: "brochure", cargadoHaceDias: 12 },
+        { nombre: "Lista de precios oficial", tipo: "lista_precios", cargadoHaceDias: 4, url: null },
+        { nombre: "Brochure del desarrollo", tipo: "brochure", cargadoHaceDias: 12, url: null },
       ],
     },
     validaciones: [
@@ -198,8 +198,8 @@ export const desarrollos: Desarrollo[] = [
       dueDiligence: "validado",
       notasInternas: null,
       documentos: [
-        { nombre: "Brochure del desarrollo", tipo: "brochure", cargadoHaceDias: 9 },
-        { nombre: "Fotos del proyecto anterior", tipo: "otro", cargadoHaceDias: 9 },
+        { nombre: "Brochure del desarrollo", tipo: "brochure", cargadoHaceDias: 9, url: null },
+        { nombre: "Fotos del proyecto anterior", tipo: "otro", cargadoHaceDias: 9, url: null },
       ],
     },
     validaciones: [

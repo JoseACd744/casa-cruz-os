@@ -118,6 +118,7 @@ function aDesarrollo(d: FilaDesarrollo): Desarrollo {
         nombre: doc.nombre,
         tipo: doc.tipo,
         cargadoHaceDias: diasDesde(doc.cargadoEl),
+        url: doc.url,
       })),
     },
     // Sólo la validación más reciente de cada campo: de ahí sale la confiabilidad.
@@ -411,6 +412,7 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
           zona: entrada.zona ?? null,
           tipo: entrada.tipo,
           entrega: entrada.entrega ?? null,
+          entregaIso: entrada.entregaIso ?? null,
           responsableId: entrada.responsableId,
           estatus: "borrador",
           condiciones: { create: {} },
@@ -498,6 +500,37 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
       await db.multimedia.deleteMany({ where: { desarrolloId, url } });
       const desarrollo = await this.obtenerDesarrollo(desarrolloId);
       return desarrollo?.multimedia ?? null;
+    },
+
+    async ordenarMultimedia(desarrolloId, urls) {
+      const actual = await this.obtenerDesarrollo(desarrolloId);
+      if (!actual) return null;
+      const lista = actual.multimedia ?? [];
+      const posicion = (url: string) => {
+        const i = urls.indexOf(url);
+        return i >= 0 ? i : urls.length + lista.findIndex((m) => m.url === url);
+      };
+      const ordenada = [...lista].sort((x, y) => posicion(x.url) - posicion(y.url));
+      await enLote(async (tx) => {
+        for (const [orden, m] of ordenada.entries()) {
+          await tx.multimedia.updateMany({ where: { desarrolloId, url: m.url }, data: { orden } });
+        }
+      });
+      const desarrollo = await this.obtenerDesarrollo(desarrolloId);
+      return desarrollo?.multimedia ?? null;
+    },
+
+    async agregarDocumento(desarrolloId, documento) {
+      const existe = await db.desarrollo.findUnique({ where: { id: desarrolloId }, select: { id: true } });
+      if (!existe) return null;
+      await db.infoInterna.upsert({
+        where: { desarrolloId },
+        create: { desarrolloId },
+        update: {},
+      });
+      await db.documento.create({ data: { desarrolloId, ...documento } });
+      const desarrollo = await this.obtenerDesarrollo(desarrolloId);
+      return desarrollo?.interna.documentos ?? null;
     },
 
     async crearCliente(entrada) {
