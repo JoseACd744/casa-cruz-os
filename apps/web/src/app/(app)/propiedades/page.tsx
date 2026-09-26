@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BarraSeleccion } from "@/components/Seleccion";
 import { TarjetaPropiedad, type VistaPropiedad } from "@/components/TarjetaPropiedad";
-import { confiabilidad, semaforo } from "@casacruz/core";
+import { confiabilidad, galeria, semaforo } from "@casacruz/core";
 import { hace, money } from "@casacruz/core";
 import { etiquetaEstatus } from "@casacruz/core";
 import {
@@ -69,6 +69,7 @@ export default async function PropiedadesPage({
     return {
       id: d.id,
       nombre: d.nombre,
+      foto: galeria(d).principal,
       zona: `${d.ciudad} · ${d.entrega ? `entrega ${d.entrega}` : "[ENTREGA]"}`,
       estatus: etiquetaEstatus[d.estatus],
       precio: money(desde, "[PRECIO DESDE]"),

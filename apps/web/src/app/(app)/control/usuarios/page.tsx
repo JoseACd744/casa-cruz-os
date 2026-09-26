@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { alcanza } from "@casacruz/core";
 import { Badge, Card, Eyebrow, Seccion } from "@/components/ui";
-import { listarCambios, listarPlazas, listarUsuarios } from "@/lib/repo";
+import { listarCambios, listarPlazas, listarUsuarios, obtenerUsuarioActual } from "@/lib/repo";
 
 const ROLES = [
   {
@@ -29,9 +31,14 @@ const ROLES = [
 ];
 
 export default async function UsuariosPage() {
-  const usuarios = await listarUsuarios();
-  const plazas = await listarPlazas();
-  const cambios = await listarCambios();
+  const actual = await obtenerUsuarioActual();
+  if (!alcanza(actual.rol, "gerente")) redirect("/control");
+
+  const [usuarios, plazas, cambios] = await Promise.all([
+    listarUsuarios(),
+    listarPlazas(),
+    listarCambios(),
+  ]);
 
   const nombrePlaza = (id: string) => plazas.find((p) => p.id === id)?.nombre ?? id;
 
@@ -51,7 +58,7 @@ export default async function UsuariosPage() {
         <span className="text-[11.5px] font-semibold tracking-[0.06em]">USUARIOS Y PERMISOS</span>
         <div className="grow" />
         <span className="text-[11px] font-semibold tracking-[0.08em] text-muted">
-          VISTA CORPORATIVO
+          VISTA {actual.rol.toUpperCase()}
         </span>
       </header>
 

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Foto } from "@/components/ui";
-import { money } from "@casacruz/core";
-import { obtenerCliente, obtenerDesarrollo, obtenerPropuesta } from "@/lib/repo";
+import { galeria, iniciales, mesAnio, money } from "@casacruz/core";
+import { obtenerPropuestaPublica } from "@/lib/repo";
 import type { Desarrollo, PropuestaItem } from "@casacruz/core";
 
 export async function generateMetadata({
@@ -11,9 +11,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const propuesta = await obtenerPropuesta(slug);
-  const cliente = propuesta ? await obtenerCliente(propuesta.clienteId) : undefined;
-  const nombre = cliente?.nombre.split(" y ")[0] ?? "ti";
+  const publica = await obtenerPropuestaPublica(slug);
+  const nombre = publica?.cliente?.nombre.split(" y ")[0] ?? "ti";
   return {
     title: `Propuesta Casa Cruz para ${nombre}`,
     description:
@@ -24,6 +23,12 @@ export async function generateMetadata({
       type: "website",
     },
   };
+}
+
+/** "Playa del Carmen", "Playa del Carmen y Puebla", "A, B y C". */
+function enumerar(lista: string[]): string {
+  if (lista.length <= 1) return lista[0] ?? "";
+  return `${lista.slice(0, -1).join(", ")} y ${lista[lista.length - 1]}`;
 }
 
 interface ItemResuelto {
@@ -37,6 +42,7 @@ interface ItemResuelto {
 
 function Bloque({ resuelto, orden }: { resuelto: ItemResuelto; orden: number }) {
   const { desarrollo: d, item } = resuelto;
+  const fotos = galeria(d);
   return (
     <section className="flex flex-col gap-5 border-t border-line-strong px-6 py-8 md:px-16 md:py-11">
       <div className="flex items-end gap-3.5">
@@ -62,11 +68,11 @@ function Bloque({ resuelto, orden }: { resuelto: ItemResuelto; orden: number }) 
         </div>
       </div>
 
-      <Foto label="Render / video" className="h-44 md:h-60" />
+      <Foto src={fotos.principal} label="Render / video" className="h-44 w-full md:h-60" />
       <div className="grid grid-cols-3 gap-3">
-        <Foto className="h-23" />
-        <Foto className="h-23" />
-        <Foto className="h-23" />
+        {[0, 1, 2].map((i) => (
+          <Foto key={i} src={fotos.secundarias[i]} className="h-23 w-full" />
+        ))}
       </div>
 
       <div className="flex flex-col gap-6 md:flex-row">
@@ -128,13 +134,13 @@ export default async function PropuestaPublicaPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const propuesta = await obtenerPropuesta(slug);
-  if (!propuesta) notFound();
-  const cliente = await obtenerCliente(propuesta.clienteId);
+  const publica = await obtenerPropuestaPublica(slug);
+  if (!publica) notFound();
+  const { propuesta, cliente, asesor } = publica;
 
   const resueltos: ItemResuelto[] = [];
   for (const item of propuesta.items) {
-    const d = await obtenerDesarrollo(item.desarrolloId);
+    const d = publica.desarrollos.find((x) => x.id === item.desarrolloId);
     if (!d) continue;
     const t = d.tipologias.find((x) => x.id === item.tipologiaId);
     resueltos.push({
@@ -148,6 +154,7 @@ export default async function PropuestaPublicaPage({
   }
 
   const nombreCorto = (cliente?.nombre ?? "").replace(" y ", " y\n");
+  const ciudades = enumerar([...new Set(resueltos.map((r) => r.desarrollo.ciudad))]);
 
   const filas: { campo: string; valores: string[] }[] = [
     {
@@ -187,26 +194,31 @@ export default async function PropuestaPublicaPage({
           <span className="text-[12px] font-bold tracking-[0.28em]">CASA CRUZ</span>
         </div>
         <span className="pt-11 text-[11px] font-bold tracking-[0.24em] text-tan">
-          PROPUESTA PERSONALIZADA · SEPTIEMBRE 2026
+          PROPUESTA PERSONALIZADA · {mesAnio(new Date(propuesta.creadaIso)).toUpperCase()}
         </span>
         <h1 className="pt-3.5 text-[34px] leading-none font-extrabold tracking-[-0.02em] whitespace-pre-line md:text-[52px]">
           Hola {nombreCorto.split(" ").slice(0, 1)[0]}
           {cliente?.nombre.includes(" y ") ? `\ny ${cliente.nombre.split(" y ")[1].split(" ")[0]}` : ""}
         </h1>
         <p className="max-w-155 pt-4.5 text-[16px] leading-relaxed text-[#D4CEC6]">
-          Con base en lo que nos compartieron —{cliente?.recamaras ?? ""} habitaciones en{" "}
-          {cliente?.plazasInteres.length ? "Playa del Carmen" : "México"}, con crédito hipotecario—
-          seleccionamos {resueltos.length} desarrollos que cumplen lo que buscan.
+          Con base en lo que nos compartieron
+          {cliente?.recamaras ? ` —${cliente.recamaras} habitaciones en ${ciudades}—` : ""},
+          seleccionamos {resueltos.length}{" "}
+          {resueltos.length === 1 ? "desarrollo que cumple" : "desarrollos que cumplen"} lo que buscan.
         </p>
-        <div className="flex items-center gap-3 pt-6.5">
-          <span className="flex size-10 items-center justify-center rounded-full bg-tan text-[12px] font-bold text-ink">
-            JD
-          </span>
-          <span className="flex flex-col gap-0.5">
-            <span className="text-[13px] font-semibold">Jorge Díaz</span>
-            <span className="text-[11px] text-[#A09991]">Su asesor certificado · Riviera Maya</span>
-          </span>
-        </div>
+        {asesor ? (
+          <div className="flex items-center gap-3 pt-6.5">
+            <span className="flex size-10 items-center justify-center rounded-full bg-tan text-[12px] font-bold text-ink">
+              {iniciales(asesor.nombre)}
+            </span>
+            <span className="flex flex-col gap-0.5">
+              <span className="text-[13px] font-semibold">{asesor.nombre}</span>
+              <span className="text-[11px] text-[#A09991]">
+                Su asesor certificado{asesor.plazas.length ? ` · ${asesor.plazas.join(" · ")}` : ""}
+              </span>
+            </span>
+          </div>
+        ) : null}
       </header>
 
       <section className="flex flex-col gap-5.5 bg-surface px-6 py-8 md:px-16 md:py-11">

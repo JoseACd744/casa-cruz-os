@@ -18,6 +18,7 @@ export interface OpcionTipologia {
 export interface OpcionDesarrollo {
   id: string;
   nombre: string;
+  foto: string | null;
   ciudad: string;
   entrega: string | null;
   confiabilidad: number;
@@ -154,7 +155,7 @@ export function ConstructorPropuesta({
                   key={d.id}
                   className="flex items-center gap-4 rounded-[3px] border border-line p-3"
                 >
-                  <Foto className="h-14 w-19 shrink-0" />
+                  <Foto src={d.foto} className="h-14 w-19 shrink-0" />
                   <div className="flex w-44 flex-col gap-1">
                     <span className="text-[14.5px] font-bold">{d.nombre}</span>
                     <span className="text-[11px] text-muted">

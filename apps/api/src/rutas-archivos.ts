@@ -1,12 +1,14 @@
 import { z } from "zod";
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import type { Multimedia } from "@casacruz/core";
 import {
   TIPOS_PERMITIDOS,
   almacenamientoConfigurado,
+  almacenamientoLocal,
   borrarArchivo,
   claveDeArchivo,
+  leerArchivoLocal,
   subirArchivo,
 } from "./almacenamiento";
 import { exigir } from "./auth";
@@ -14,7 +16,7 @@ import { fuente } from "./datos";
 import { errorSchema } from "./esquemas";
 
 /**
- * Carga de renders, planos, fotos y brochures.
+ * Carga de renders, planos, fotos, brochures y evidencias.
  *
  * Sin material real, los documentos salen con marcadores grises; esto es lo que
  * los llena. El archivo va al bucket y lo que se guarda en la Base Maestra es su
@@ -31,9 +33,71 @@ const multimediaSchema = z.object({
   orden: z.number(),
 });
 
+const SIN_BUCKET =
+  "El bucket de archivos no está configurado. Falta S3_ENDPOINT, S3_BUCKET y las credenciales.";
+
+/** Lee el único archivo de la petición y valida tipo y tamaño. */
+async function recibirArchivo(
+  peticion: FastifyRequest,
+  respuesta: FastifyReply,
+): Promise<{ contenido: Buffer; tipo: string; nombre: string } | null> {
+  const archivo = await peticion.file({ limits: { fileSize: LIMITE_BYTES } });
+  if (!archivo) {
+    respuesta.code(400).send({ error: "Falta el archivo" });
+    return null;
+  }
+  if (!TIPOS_PERMITIDOS.includes(archivo.mimetype)) {
+    respuesta.code(400).send({ error: `Tipo no permitido: ${archivo.mimetype}`, detalle: TIPOS_PERMITIDOS });
+    return null;
+  }
+  const contenido = await archivo.toBuffer();
+  if (archivo.file.truncated) {
+    respuesta.code(400).send({ error: "El archivo pasa de 15 MB" });
+    return null;
+  }
+  return { contenido, tipo: archivo.mimetype, nombre: archivo.filename };
+}
+
 export async function rutasArchivos(instancia: FastifyInstance) {
   const app = instancia.withTypeProvider<ZodTypeProvider>();
   const datos = await fuente();
+
+  app.post(
+    "/archivos",
+    {
+      preHandler: exigir("cerrador"),
+      schema: {
+        tags: ["Archivos"],
+        summary: "Subir una evidencia o un documento",
+        description:
+          "multipart/form-data con el campo `archivo`. Devuelve la URL que se adjunta después a un cambio (`evidenciaUrl`) o a la documentación legal del desarrollo. Máximo 15 MB.",
+        querystring: z.object({ proposito: z.enum(["evidencia", "documento"]).default("evidencia") }),
+        response: {
+          201: z.object({ url: z.string(), nombre: z.string(), bytes: z.number(), tipo: z.string() }),
+          400: errorSchema,
+          503: errorSchema,
+        },
+      },
+    },
+    async (peticion, respuesta) => {
+      if (!almacenamientoConfigurado) return respuesta.code(503).send({ error: SIN_BUCKET });
+
+      const archivo = await recibirArchivo(peticion, respuesta);
+      if (!archivo) return respuesta;
+
+      const mes = new Date().toISOString().slice(0, 7);
+      const carpeta = `${peticion.query.proposito === "documento" ? "documentos" : "evidencias"}/${mes}`;
+      const url = await subirArchivo(
+        claveDeArchivo(carpeta, peticion.user.id, archivo.tipo),
+        archivo.contenido,
+        archivo.tipo,
+      );
+
+      return respuesta
+        .code(201)
+        .send({ url, nombre: archivo.nombre, bytes: archivo.contenido.length, tipo: archivo.tipo });
+    },
+  );
 
   app.post(
     "/desarrollos/:id/multimedia",
@@ -43,11 +107,11 @@ export async function rutasArchivos(instancia: FastifyInstance) {
         tags: ["Archivos"],
         summary: "Subir una imagen o documento del desarrollo",
         description:
-          "multipart/form-data con el campo `archivo`. El orden decide dónde aparece en la ficha y en el análisis: el primero es la fachada o el render principal. Máximo 15 MB.",
+          "multipart/form-data con el campo `archivo`. El orden decide dónde aparece en la ficha y en el análisis: la primera foto o render es la fachada. Sin `orden`, queda al final. Máximo 15 MB.",
         params: z.object({ id: z.string() }),
         querystring: z.object({
           tipo: tipoMultimedia.default("foto"),
-          orden: z.coerce.number().int().min(0).default(0),
+          orden: z.coerce.number().int().min(0).optional(),
         }),
         response: {
           201: z.object({ multimedia: z.array(multimediaSchema) }),
@@ -58,35 +122,21 @@ export async function rutasArchivos(instancia: FastifyInstance) {
       },
     },
     async (peticion, respuesta) => {
-      if (!almacenamientoConfigurado) {
-        return respuesta.code(503).send({
-          error:
-            "El bucket de archivos no está configurado. Falta S3_ENDPOINT, S3_BUCKET y las credenciales.",
-        });
-      }
+      if (!almacenamientoConfigurado) return respuesta.code(503).send({ error: SIN_BUCKET });
 
       const desarrollo = await datos.obtenerDesarrollo(peticion.params.id);
       if (!desarrollo) return respuesta.code(404).send({ error: "Desarrollo no encontrado" });
 
-      const archivo = await peticion.file({ limits: { fileSize: LIMITE_BYTES } });
-      if (!archivo) return respuesta.code(400).send({ error: "Falta el archivo" });
+      const archivo = await recibirArchivo(peticion, respuesta);
+      if (!archivo) return respuesta;
 
-      if (!TIPOS_PERMITIDOS.includes(archivo.mimetype)) {
-        return respuesta.code(400).send({
-          error: `Tipo no permitido: ${archivo.mimetype}`,
-          detalle: TIPOS_PERMITIDOS,
-        });
-      }
+      const clave = claveDeArchivo(`desarrollos/${desarrollo.id}`, peticion.query.tipo, archivo.tipo);
+      const url = await subirArchivo(clave, archivo.contenido, archivo.tipo);
 
-      const contenido = await archivo.toBuffer();
-      if (archivo.file.truncated) {
-        return respuesta.code(400).send({ error: "El archivo pasa de 15 MB" });
-      }
-
-      const clave = claveDeArchivo(desarrollo.id, peticion.query.tipo, archivo.mimetype);
-      const url = await subirArchivo(clave, contenido, archivo.mimetype);
-
-      const item: Multimedia = { tipo: peticion.query.tipo, url, orden: peticion.query.orden };
+      const actuales = desarrollo.multimedia ?? [];
+      const orden =
+        peticion.query.orden ?? (actuales.length ? Math.max(...actuales.map((m) => m.orden)) + 1 : 0);
+      const item: Multimedia = { tipo: peticion.query.tipo, url, orden };
       const multimedia = await datos.agregarMultimedia(desarrollo.id, item);
 
       app.log.info({ desarrollo: desarrollo.id, clave }, "Archivo subido");
@@ -122,4 +172,21 @@ export async function rutasArchivos(instancia: FastifyInstance) {
       return { multimedia };
     },
   );
+
+  // Sólo en desarrollo sin bucket: la API sirve lo que guardó en disco.
+  if (almacenamientoLocal) {
+    app.get(
+      "/archivos/*",
+      { schema: { hide: true } },
+      async (peticion, respuesta) => {
+        const clave = (peticion.params as { "*": string })["*"];
+        const archivo = await leerArchivoLocal(clave);
+        if (!archivo) return respuesta.code(404).send({ error: "Archivo no encontrado" });
+        return respuesta
+          .type(archivo.tipo)
+          .header("cache-control", "public, max-age=3600")
+          .send(archivo.contenido);
+      },
+    );
+  }
 }

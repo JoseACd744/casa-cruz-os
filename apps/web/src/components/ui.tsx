@@ -63,16 +63,28 @@ export function Falta({ children }: { children: ReactNode }) {
   return <span className="font-semibold text-alert">{children}</span>;
 }
 
-/** Marcador de imagen: el mockup no inventa fotos de desarrollos. */
+/**
+ * Imagen del desarrollo. Sin foto cargada se muestra el marcador gris con su
+ * etiqueta: el sistema no inventa fotos.
+ */
 export function Foto({
+  src,
   label,
   className = "",
   dark = false,
 }: {
+  src?: string | null;
   label?: string;
   className?: string;
   dark?: boolean;
 }) {
+  if (src) {
+    return (
+      // Las imágenes viven en el bucket, con el dominio que tenga: se muestran tal cual.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={src} alt={label ?? ""} className={`rounded-[3px] object-cover ${className}`} />
+    );
+  }
   return (
     <div
       className={`flex items-center justify-center rounded-[3px] ${dark ? "bg-ink" : "bg-placeholder"} ${className}`}

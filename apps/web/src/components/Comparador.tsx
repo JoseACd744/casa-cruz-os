@@ -9,6 +9,7 @@ import { money } from "@casacruz/core";
 export interface FilaComparable {
   id: string;
   nombre: string;
+  foto: string | null;
   ciudad: string;
   precioDesde: number | null;
   precioM2: number | null;
@@ -167,7 +168,7 @@ export function Comparador({ catalogo }: { catalogo: FilaComparable[] }) {
           </div>
           {cols.map((d) => (
             <div key={d.id} className="flex grow gap-3.5 border-l border-line p-4.5">
-              <Foto className="h-17 w-23 shrink-0" />
+              <Foto src={d.foto} className="h-17 w-23 shrink-0" />
               <div className="flex flex-col gap-1">
                 <Link href={`/propiedades/${d.id}`} className="text-[17px] font-bold hover:text-tan-deep">
                   {d.nombre}

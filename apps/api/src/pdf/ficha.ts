@@ -1,4 +1,4 @@
-import { money } from "@casacruz/core";
+import { galeria, money } from "@casacruz/core";
 import type { Desarrollo, Tipologia } from "@casacruz/core";
 import { DISCLAIMER, baseCss, escapar, iconos, imagen, marca, monograma } from "./estilo";
 
@@ -40,10 +40,10 @@ export function fichaHtml(desarrollo: Desarrollo, tipologia: Tipologia | undefin
   const enganchePct = desarrollo.condiciones.enganchePct;
   const enganche = desde !== null && enganchePct !== null ? (desde * enganchePct) / 100 : null;
 
-  const fotos = desarrollo.multimedia ?? [];
-  const fachada = fotos[0]?.url ?? null;
-  const amenidad = fotos[1]?.url ?? null;
-  const interiores = fotos[2]?.url ?? null;
+  const fotos = galeria(desarrollo);
+  const fachada = fotos.principal;
+  const amenidad = fotos.secundarias[0] ?? null;
+  const interiores = fotos.secundarias[1] ?? null;
 
   const destacables = desarrollo.amenidades.length
     ? desarrollo.amenidades

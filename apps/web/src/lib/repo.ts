@@ -1,3 +1,4 @@
+import { cache } from "react";
 import {
   confiabilidad,
   filtrarDesarrollos,
@@ -7,44 +8,24 @@ import {
   type Desarrollo,
   type EstatusListing,
   type FiltrosInventario,
+  type Plaza,
   type Propuesta,
+  type PropuestaPublica,
   type Usuario,
 } from "@casacruz/core";
-import { tokenDeSesion } from "@/lib/sesion";
+import { pedir, usandoApi } from "@/lib/api";
 
 /**
  * Acceso a datos de la web.
  *
- * Si existe `API_URL`, la web consume la API (apps/api, que puede vivir en otro
- * servidor). Si no, trabaja con los datos de demostración del núcleo, para que
- * el portal siga navegable sin backend levantado.
- *
+ * Con `API_URL` todo viene de la API (ver lib/api.ts); sin ella, de los datos de
+ * demostración del núcleo, para que el portal se pueda recorrer sin backend.
  * Las pantallas sólo llaman a estas funciones: cambiar de origen de datos no
  * toca ni una vista.
+ *
+ * `cache` evita pedir lo mismo dos veces en un mismo render (el layout y la
+ * página suelen necesitar al usuario y las plazas).
  */
-
-const API = process.env.API_URL?.replace(/\/$/, "");
-
-export const usandoApi = Boolean(API);
-
-async function pedir<T>(ruta: string): Promise<T | null> {
-  if (!API) return null;
-  try {
-    const token = await tokenDeSesion();
-    const respuesta = await fetch(`${API}${ruta}`, {
-      cache: "no-store",
-      headers: {
-        accept: "application/json",
-        ...(token ? { authorization: `Bearer ${token}` } : {}),
-      },
-    });
-    if (!respuesta.ok) return null;
-    return (await respuesta.json()) as T;
-  } catch {
-    // La API no responde: la web sigue funcionando con los datos locales.
-    return null;
-  }
-}
 
 // Cálculos compartidos: se re-exportan para que las pantallas sigan pidiéndolos aquí.
 export {
@@ -58,13 +39,32 @@ export {
   tipologiaMasBarata,
 } from "@casacruz/core";
 
-// ── Consultas ────────────────────────────────────────────────────────────
-
-export async function listarPlazas() {
-  return (await pedir<typeof mock.plazas>("/plazas")) ?? mock.plazas;
+export interface Integraciones {
+  archivos: "bucket" | "local" | "sin_configurar";
+  kommo: boolean;
+  mapas: "google" | "openstreetmap";
 }
 
+// ── Consultas ────────────────────────────────────────────────────────────
+
+export const obtenerIntegraciones = cache(async (): Promise<Integraciones> => {
+  if (!usandoApi) return { archivos: "sin_configurar", kommo: false, mapas: "openstreetmap" };
+  const salud = await pedir<{ integraciones: Integraciones }>("/salud");
+  return salud!.integraciones;
+});
+
+export const listarPlazas = cache(async (): Promise<Plaza[]> => {
+  if (!usandoApi) return mock.plazas;
+  return (await pedir<Plaza[]>("/plazas")) ?? [];
+});
+
+const desarrollosPorQuery = cache(async (query: string): Promise<Desarrollo[]> => {
+  return (await pedir<Desarrollo[]>(`/desarrollos${query ? `?${query}` : ""}`)) ?? [];
+});
+
 export async function listarDesarrollos(filtros: FiltrosInventario = {}): Promise<Desarrollo[]> {
+  if (!usandoApi) return filtrarDesarrollos(mock.desarrollos, filtros);
+
   const params = new URLSearchParams();
   if (filtros.q) params.set("q", filtros.q);
   if (filtros.ciudad) params.set("ciudad", filtros.ciudad);
@@ -72,74 +72,110 @@ export async function listarDesarrollos(filtros: FiltrosInventario = {}): Promis
   if (filtros.precioMin !== undefined) params.set("precioMin", String(filtros.precioMin));
   if (filtros.precioMax !== undefined) params.set("precioMax", String(filtros.precioMax));
   if (filtros.soloPublicados) params.set("soloPublicados", "1");
-  const query = params.toString();
-
-  const remoto = await pedir<Desarrollo[]>(`/desarrollos${query ? `?${query}` : ""}`);
-  return remoto ?? filtrarDesarrollos(mock.desarrollos, filtros);
+  return desarrollosPorQuery(params.toString());
 }
 
-export async function obtenerDesarrollo(id: string): Promise<Desarrollo | undefined> {
-  const remoto = await pedir<Desarrollo>(`/desarrollos/${id}`);
-  return remoto ?? mock.desarrollos.find((d) => d.id === id);
-}
+export const obtenerDesarrollo = cache(async (id: string): Promise<Desarrollo | undefined> => {
+  if (!usandoApi) return mock.desarrollos.find((d) => d.id === id);
+  return (await pedir<Desarrollo>(`/desarrollos/${encodeURIComponent(id)}`)) ?? undefined;
+});
 
 export async function obtenerDesarrollos(ids: string[]): Promise<Desarrollo[]> {
   const todos = await listarDesarrollos();
   return ids.map((id) => todos.find((d) => d.id === id)).filter((d): d is Desarrollo => Boolean(d));
 }
 
-export async function obtenerUsuarioActual(): Promise<Usuario> {
-  return (await pedir<Usuario>("/usuarios/actual")) ?? mock.usuarios[0];
-}
+/** Quien tiene la sesión. Sin API, el primer cerrador de la demostración. */
+export const obtenerUsuarioActual = cache(async (): Promise<Usuario> => {
+  if (!usandoApi) return mock.usuarios[0];
+  const usuario = await pedir<Usuario>("/usuarios/actual");
+  if (!usuario) throw new Error("La sesión no corresponde a ningún usuario");
+  return usuario;
+});
 
-export async function listarUsuarios(): Promise<Usuario[]> {
-  return (await pedir<Usuario[]>("/usuarios")) ?? mock.usuarios;
-}
+/** El equipo completo es de gerente para arriba: a un cerrador se le devuelve vacío. */
+export const listarUsuarios = cache(async (): Promise<Usuario[]> => {
+  if (!usandoApi) return mock.usuarios;
+  return (await pedir<Usuario[]>("/usuarios", { siProhibido: [] })) ?? [];
+});
 
-export async function obtenerCliente(id: string): Promise<Cliente | undefined> {
-  const remoto = await pedir<Cliente>(`/clientes/${id}`);
-  return remoto ?? mock.clientes.find((c) => c.id === id);
-}
+export const obtenerCliente = cache(async (id: string): Promise<Cliente | undefined> => {
+  if (!usandoApi) return mock.clientes.find((c) => c.id === id);
+  return (await pedir<Cliente>(`/clientes/${encodeURIComponent(id)}`)) ?? undefined;
+});
 
-export async function listarClientes(): Promise<Cliente[]> {
-  return (await pedir<Cliente[]>("/clientes")) ?? mock.clientes;
-}
+export const listarClientes = cache(async (): Promise<Cliente[]> => {
+  if (!usandoApi) return mock.clientes;
+  return (await pedir<Cliente[]>("/clientes")) ?? [];
+});
 
-export async function obtenerPropuesta(slug: string): Promise<Propuesta | undefined> {
-  const remoto = await pedir<Propuesta>(`/propuestas/${slug}`);
-  return remoto ?? mock.propuestas.find((p) => p.slug === slug);
-}
+export const obtenerPropuesta = cache(async (slug: string): Promise<Propuesta | undefined> => {
+  if (!usandoApi) return mock.propuestas.find((p) => p.slug === slug);
+  return (await pedir<Propuesta>(`/propuestas/${encodeURIComponent(slug)}`)) ?? undefined;
+});
 
-export async function listarPropuestas(): Promise<Propuesta[]> {
-  return (await pedir<Propuesta[]>("/propuestas")) ?? mock.propuestas;
-}
+/** Lo que ve el cliente en su enlace, en una sola llamada y sin nada interno. */
+export const obtenerPropuestaPublica = cache(
+  async (slug: string): Promise<PropuestaPublica | undefined> => {
+    if (usandoApi) {
+      return (
+        (await pedir<PropuestaPublica>(`/propuestas/${encodeURIComponent(slug)}/publica`)) ?? undefined
+      );
+    }
+
+    const propuesta = mock.propuestas.find((p) => p.slug === slug);
+    if (!propuesta) return undefined;
+    const cliente = mock.clientes.find((c) => c.id === propuesta.clienteId);
+    const asesor = mock.usuarios.find((u) => u.id === propuesta.usuarioId);
+    return {
+      propuesta,
+      cliente: cliente ? { nombre: cliente.nombre, recamaras: cliente.recamaras } : null,
+      asesor: asesor
+        ? {
+            nombre: asesor.nombre,
+            correo: asesor.correo,
+            telefono: asesor.telefono,
+            plazas: asesor.plazasCertificadas.map(
+              (id) => mock.plazas.find((p) => p.id === id)?.nombre ?? id,
+            ),
+          }
+        : null,
+      desarrollos: propuesta.items
+        .map((i) => mock.desarrollos.find((d) => d.id === i.desarrolloId))
+        .filter((d): d is Desarrollo => Boolean(d)),
+    };
+  },
+);
+
+export const listarPropuestas = cache(async (): Promise<Propuesta[]> => {
+  if (!usandoApi) return mock.propuestas;
+  return (await pedir<Propuesta[]>("/propuestas")) ?? [];
+});
 
 export async function listarCambios(estado?: Cambio["estado"]): Promise<Cambio[]> {
-  const remoto = await pedir<Cambio[]>(`/cambios${estado ? `?estado=${estado}` : ""}`);
-  if (remoto) return remoto;
-  return estado ? mock.cambios.filter((c) => c.estado === estado) : mock.cambios;
+  if (!usandoApi) return estado ? mock.cambios.filter((c) => c.estado === estado) : mock.cambios;
+  return (await pedir<Cambio[]>(`/cambios${estado ? `?estado=${estado}` : ""}`)) ?? [];
 }
 
 export async function cambiosDe(desarrolloId: string): Promise<Cambio[]> {
-  const remoto = await pedir<Cambio[]>(`/desarrollos/${desarrolloId}/cambios`);
-  return remoto ?? mock.cambios.filter((c) => c.desarrolloId === desarrolloId);
+  if (!usandoApi) return mock.cambios.filter((c) => c.desarrolloId === desarrolloId);
+  return (await pedir<Cambio[]>(`/desarrollos/${encodeURIComponent(desarrolloId)}/cambios`)) ?? [];
 }
 
-export async function listarNovedades() {
-  return (await pedir<typeof mock.novedades>("/novedades")) ?? mock.novedades;
+export async function listarNovedades(): Promise<{ fecha: string; titulo: string; detalle: string }[]> {
+  if (!usandoApi) return mock.novedades;
+  return (await pedir<{ fecha: string; titulo: string; detalle: string }[]>("/novedades")) ?? [];
 }
 
 export async function conteoPipeline(): Promise<Record<EstatusListing, number>> {
-  const remoto = await pedir<Record<EstatusListing, number>>("/pipeline");
-  if (remoto) return remoto;
-
   const base: Record<EstatusListing, number> = {
-    borrador: 4,
+    borrador: 0,
     revision: 0,
-    due_diligence: 1,
+    due_diligence: 0,
     aprobado: 0,
     publicado: 0,
   };
+  if (usandoApi) return (await pedir<Record<EstatusListing, number>>("/pipeline")) ?? base;
   for (const d of mock.desarrollos) base[d.estatus] += 1;
   return base;
 }

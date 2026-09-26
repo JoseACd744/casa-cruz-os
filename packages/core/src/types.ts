@@ -156,6 +156,8 @@ export interface Usuario {
   id: string;
   nombre: string;
   correo: string;
+  /** Para que el cliente escriba a su asesor desde la propuesta. */
+  telefono: string | null;
   rol: Rol;
   plazasCertificadas: string[];
   plazasEnProgreso: string[];
@@ -204,11 +206,25 @@ export interface Propuesta {
     mapa: boolean;
   };
   items: PropuestaItem[];
+  /** Fecha para leer ("18 septiembre 2026"). */
   creadaEl: string;
+  /** La misma fecha en ISO, para contar y ordenar. */
+  creadaIso: string;
   enviadaEl: string | null;
   estado: "borrador" | "enviada" | "vista" | "negociacion" | "sin_respuesta";
   vistas: number;
   kommoLeadId: string | null;
+}
+
+/**
+ * Lo que ve el cliente en su enlace: la propuesta, a quién va dirigida, quién
+ * la firma y los desarrollos sin nada interno.
+ */
+export interface PropuestaPublica {
+  propuesta: Propuesta;
+  cliente: { nombre: string; recamaras: string | null } | null;
+  asesor: { nombre: string; correo: string; telefono: string | null; plazas: string[] } | null;
+  desarrollos: Desarrollo[];
 }
 
 /** Filtros del portal interno. */

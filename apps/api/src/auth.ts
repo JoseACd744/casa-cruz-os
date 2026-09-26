@@ -2,7 +2,7 @@ import "@fastify/jwt";
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import type { Rol } from "@casacruz/core";
+import { alcanza, type Rol } from "@casacruz/core";
 
 /**
  * Sesión y permisos.
@@ -41,18 +41,6 @@ export async function verificarContrasena(contrasena: string, hash: string): Pro
   const derivada = (await scryptAsync(contrasena, Buffer.from(salHex, "hex"), 64)) as Buffer;
   const esperado = Buffer.from(esperadoHex, "hex");
   return derivada.length === esperado.length && timingSafeEqual(derivada, esperado);
-}
-
-/** Jerarquía: cada rol incluye lo que puede ver el anterior. */
-const nivel: Record<Rol, number> = {
-  cliente: 0,
-  cerrador: 1,
-  gerente: 2,
-  corporativo: 3,
-};
-
-export function alcanza(rol: Rol, minimo: Rol): boolean {
-  return nivel[rol] >= nivel[minimo];
 }
 
 /**

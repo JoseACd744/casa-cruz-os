@@ -106,6 +106,8 @@ model Usuario {
   id           String   @id @default(cuid())
   nombre       String
   correo       String   @unique
+  /// Para que el cliente escriba a su asesor desde la propuesta.
+  telefono     String?
   /// Hash scrypt. Nulo mientras el usuario no haya definido contraseña.
   contrasenaHash String?
   rol          Rol      @default(cerrador)

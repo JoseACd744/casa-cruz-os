@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { BarraDoc } from "@/components/BarraDoc";
 import { Falta, Foto } from "@/components/ui";
-import { estadoValidaciones } from "@casacruz/core";
+import { estadoValidaciones, galeria } from "@casacruz/core";
 import { hace, money } from "@casacruz/core";
+import { usandoApi } from "@/lib/api";
 import { obtenerDesarrollo } from "@/lib/repo";
 
 export default async function FichaPage({
@@ -28,6 +29,7 @@ export default async function FichaPage({
       : null;
 
   const precioValidado = estadoValidaciones(d).find((e) => e.campo === "precio");
+  const fotos = galeria(d);
 
   return (
     <>
@@ -36,8 +38,8 @@ export default async function FichaPage({
         volverHref={`/propiedades/${d.id}`}
         volverTexto={d.nombre}
         pdfUrl={
-          process.env.API_URL
-            ? `${process.env.API_URL}/pdf/ficha/${d.id}${tipologia ? `?tipologia=${tipologia.id}` : ""}`
+          usandoApi
+            ? `/descargas/ficha/${d.id}${tipologia ? `?tipologia=${tipologia.id}` : ""}`
             : null
         }
       />
@@ -45,10 +47,10 @@ export default async function FichaPage({
       <div className="flex grow items-start justify-center overflow-auto p-8 print:p-0">
         <div className="doc-fit flex h-180 w-320 shrink-0 gap-9 bg-[#F7F5F1] px-11 py-10 shadow-2xl print:shadow-none">
           <div className="flex w-130 shrink-0 flex-col gap-3">
-            <Foto label="Fachada" className="h-89 rounded-[2px]" />
-            <div className="flex grow gap-3">
-              <Foto label="Amenidad" className="grow rounded-[2px]" />
-              <Foto label="Interiores" className="grow rounded-[2px]" />
+            <Foto src={fotos.principal} label="Fachada" className="h-89 rounded-[2px]" />
+            <div className="flex min-h-0 grow gap-3">
+              <Foto src={fotos.secundarias[0]} label="Amenidad" className="w-0 grow rounded-[2px]" />
+              <Foto src={fotos.secundarias[1]} label="Interiores" className="w-0 grow rounded-[2px]" />
             </div>
           </div>
 

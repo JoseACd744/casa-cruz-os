@@ -1,5 +1,7 @@
 import {
   confiabilidad,
+  fechaDocumento,
+  fechaHora,
   filtrarDesarrollos,
   mock,
   requiereAprobacion,
@@ -131,7 +133,7 @@ export function fuenteMock(): FuenteDeDatos {
         valorAnterior: entrada.valorAnterior,
         valorNuevo: entrada.valorNuevo,
         usuario: usuario?.nombre ?? entrada.usuarioId,
-        fecha: new Date().toLocaleString("es-MX"),
+        fecha: fechaHora(new Date()),
         fuente: entrada.fuente,
         evidencia: entrada.evidenciaUrl ?? null,
         estado: pendiente ? "pendiente" : "publicado",
@@ -358,12 +360,9 @@ export function fuenteMock(): FuenteDeDatos {
             razon: item.razon ?? null,
           };
         }),
-        creadaEl: new Date().toLocaleDateString("es-MX", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-        }),
-        enviadaEl: entrada.enviar ? new Date().toLocaleString("es-MX") : null,
+        creadaEl: fechaDocumento(new Date()),
+        creadaIso: new Date().toISOString(),
+        enviadaEl: entrada.enviar ? fechaHora(new Date()) : null,
         estado: entrada.enviar ? "enviada" : "borrador",
         vistas: 0,
         kommoLeadId: cliente?.kommoLeadId ?? null,
@@ -376,7 +375,7 @@ export function fuenteMock(): FuenteDeDatos {
     async marcarPropuestaEnviada(slug) {
       const p = propuestas.find((x) => x.slug === slug);
       if (!p) return null;
-      p.enviadaEl = new Date().toLocaleString("es-MX");
+      p.enviadaEl = fechaHora(new Date());
       p.estado = "enviada";
       return p;
     },

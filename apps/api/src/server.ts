@@ -11,9 +11,10 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
+import type { Sesion } from "./auth";
 import { config, jwtInseguro, modoMock } from "./config";
 import { origenConfigurado } from "./datos";
-import { almacenamientoConfigurado } from "./almacenamiento";
+import { almacenamientoConfigurado, almacenamientoLocal, DIRECTORIO_LOCAL } from "./almacenamiento";
 import { kommoConfigurado } from "./kommo";
 import { rutas } from "./rutas";
 import { rutasArchivos } from "./rutas-archivos";
@@ -31,7 +32,8 @@ import { cerrarNavegador } from "./pdf/navegador";
  */
 
 export async function construirServidor() {
-  const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? "info" } });
+  // Detrás del proxy de Railway, la IP real del visitante viene en x-forwarded-for.
+  const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? "info" }, trustProxy: true });
 
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
@@ -42,6 +44,19 @@ export async function construirServidor() {
   await app.register(rateLimit, {
     max: Number(process.env.LIMITE_PETICIONES ?? 300),
     timeWindow: "1 minute",
+    // Toda la web llega desde el mismo servidor: contar por IP la ahogaría. Con
+    // sesión se cuenta por usuario; sin ella, por la IP del visitante.
+    keyGenerator: (peticion) => {
+      const encabezado = peticion.headers.authorization;
+      if (encabezado?.startsWith("Bearer ")) {
+        try {
+          return `u:${app.jwt.verify<Sesion>(encabezado.slice(7)).id}`;
+        } catch {
+          // Token inválido: cuenta como anónimo.
+        }
+      }
+      return peticion.ip;
+    },
   });
 
   await app.register(swagger, {
@@ -118,7 +133,9 @@ if (esEjecucionDirecta) {
     if (modoMock) {
       app.log.warn("Sin DATABASE_URL: datos de demostración, las escrituras se pierden al reiniciar.");
     }
-    if (!almacenamientoConfigurado) {
+    if (almacenamientoLocal) {
+      app.log.warn(`Sin bucket: los archivos se guardan en ${DIRECTORIO_LOCAL} (sólo desarrollo).`);
+    } else if (!almacenamientoConfigurado) {
       app.log.warn("Sin bucket configurado: la carga de imágenes responde 503.");
     }
     if (!kommoConfigurado) {

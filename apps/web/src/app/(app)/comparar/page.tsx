@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Comparador, type FilaComparable } from "@/components/Comparador";
-import { confiabilidad } from "@casacruz/core";
+import { confiabilidad, galeria } from "@casacruz/core";
 import { listarDesarrollos, precioDesde, precioPorM2, tipologiaMasBarata } from "@/lib/repo";
 
 export default async function CompararPage() {
@@ -11,6 +11,7 @@ export default async function CompararPage() {
     return {
       id: d.id,
       nombre: d.nombre,
+      foto: galeria(d).principal,
       ciudad: d.ciudad,
       precioDesde: precioDesde(d),
       precioM2: t ? precioPorM2(t) : null,

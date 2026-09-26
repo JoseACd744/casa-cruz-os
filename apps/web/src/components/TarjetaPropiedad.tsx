@@ -7,6 +7,7 @@ import { Badge, Dot, Foto } from "@/components/ui";
 export interface VistaPropiedad {
   id: string;
   nombre: string;
+  foto: string | null;
   zona: string;
   estatus: string;
   precio: string;
@@ -30,7 +31,7 @@ export function TarjetaPropiedad({ p }: { p: VistaPropiedad }) {
       }`}
     >
       <div className="relative">
-        <Foto className="h-37 rounded-none" />
+        <Foto src={p.foto} className="h-37 w-full rounded-none" />
         <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
           <Badge>{p.estatus}</Badge>
           <BotonSeleccion id={p.id} />

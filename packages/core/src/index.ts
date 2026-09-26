@@ -11,4 +11,7 @@ export * from "./format";
 export * from "./confiabilidad";
 export * from "./derivados";
 export * from "./reglas";
+export * from "./roles";
+export * from "./fechas";
+export * from "./galeria";
 export * as mock from "./mock";

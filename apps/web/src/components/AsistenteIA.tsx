@@ -137,13 +137,15 @@ export function AsistenteIA({ respuestas }: { respuestas: Respuesta[] }) {
           </label>
           <input
             id="pregunta"
-            placeholder="Pregunta sobre inventario, precios, argumentos o comparables…"
-            className="grow bg-transparent text-[13.5px] outline-none"
+            disabled
+            placeholder="La pregunta libre llega con la capa de IA. Por ahora, elige una de las de arriba."
+            className="grow bg-transparent text-[13.5px] outline-none disabled:cursor-not-allowed"
           />
           <button
             type="button"
+            disabled
             aria-label="Enviar pregunta"
-            className="flex size-10 items-center justify-center rounded-[3px] bg-ink"
+            className="flex size-10 items-center justify-center rounded-[3px] bg-ink disabled:cursor-not-allowed disabled:opacity-40"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
               <path d="M5 12h14M13 6l6 6-6 6" />

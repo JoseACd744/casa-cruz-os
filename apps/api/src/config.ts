@@ -1,7 +1,10 @@
 /** Configuración del servicio, leída del entorno. */
 
+const puerto = Number(process.env.PORT ?? 4000);
+
 export const config = {
-  puerto: Number(process.env.PORT ?? 4000),
+  puerto,
+  produccion: process.env.NODE_ENV === "production",
   host: process.env.HOST ?? "0.0.0.0",
   databaseUrl: process.env.DATABASE_URL?.trim() || null,
   corsOrigin: (process.env.CORS_ORIGIN ?? "http://localhost:3000")
@@ -12,6 +15,8 @@ export const config = {
   claveDemo: process.env.CLAVE_DEMO?.trim() || "casacruz",
   /** URL pública de la web, para los enlaces que se mandan al cliente. */
   urlPublica: (process.env.URL_PUBLICA ?? "https://propuestas.casacruz.mx").replace(/\/$/, ""),
+  /** URL pública de esta API: con ella se arman los enlaces a archivos locales. */
+  urlApi: (process.env.URL_API ?? `http://localhost:${puerto}`).replace(/\/$/, ""),
   s3: {
     endpoint: process.env.S3_ENDPOINT?.trim() || null,
     bucket: process.env.S3_BUCKET?.trim() || null,

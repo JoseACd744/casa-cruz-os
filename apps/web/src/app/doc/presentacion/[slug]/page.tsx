@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { BarraDoc } from "@/components/BarraDoc";
 import { Deck, type Slide } from "@/components/Deck";
-import { money } from "@casacruz/core";
-import { obtenerCliente, obtenerDesarrollo, obtenerPropuesta } from "@/lib/repo";
+import { galeria, money } from "@casacruz/core";
+import { obtenerPropuestaPublica } from "@/lib/repo";
 
 export default async function PresentacionPage({
   params,
@@ -10,13 +10,14 @@ export default async function PresentacionPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const propuesta = await obtenerPropuesta(slug);
-  if (!propuesta) notFound();
-  const cliente = await obtenerCliente(propuesta.clienteId);
+  const publica = await obtenerPropuestaPublica(slug);
+  if (!publica) notFound();
+  const { propuesta, cliente } = publica;
+  const asesor = publica.asesor?.nombre ?? "Casa Cruz";
 
   const resueltos = [];
   for (const item of propuesta.items) {
-    const d = await obtenerDesarrollo(item.desarrolloId);
+    const d = publica.desarrollos.find((x) => x.id === item.desarrolloId);
     if (!d) continue;
     const t = d.tipologias.find((x) => x.id === item.tipologiaId);
     resueltos.push({ item, d, t });
@@ -28,7 +29,7 @@ export default async function PresentacionPage({
       titulo: "Propuesta\nde propiedades",
       cliente: cliente?.nombre ?? "[CLIENTE]",
       fecha: propuesta.creadaEl.toUpperCase(),
-      asesor: "Jorge Díaz",
+      asesor,
     },
     {
       tipo: "quienes",
@@ -51,8 +52,10 @@ export default async function PresentacionPage({
     },
     ...resueltos.map((r, i): Slide => {
       const precio = r.item.precioCongelado;
+      const fotos = galeria(r.d);
       return {
         tipo: "propiedad",
+        fotos: { principal: fotos.principal, secundarias: fotos.secundarias.slice(0, 2) },
         orden: `OPCIÓN ${i + 1} DE ${resueltos.length}`,
         nombre: r.d.nombre,
         subtitulo: `${r.d.ciudad} · entrega ${r.d.entrega ?? "[por confirmar]"}`,
@@ -100,7 +103,7 @@ export default async function PresentacionPage({
         },
       ],
     },
-    { tipo: "cierre", asesor: "Jorge Díaz" },
+    { tipo: "cierre", asesor },
   ];
 
   return (

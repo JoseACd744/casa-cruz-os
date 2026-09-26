@@ -1,51 +1,23 @@
 import Link from "next/link";
 import { Badge, Card, Eyebrow } from "@/components/ui";
-import { listarClientes, listarPropuestas, obtenerDesarrollo } from "@/lib/repo";
-import type { Propuesta } from "@casacruz/core";
-
-const tonoEstado = {
-  borrador: "neutral",
-  enviada: "warn",
-  vista: "ok",
-  negociacion: "ok",
-  sin_respuesta: "alert",
-} as const;
-
-const etiquetaEstado = {
-  borrador: "borrador",
-  enviada: "enviada",
-  vista: "vista por el cliente",
-  negociacion: "en negociación",
-  sin_respuesta: "sin respuesta",
-} as const;
-
-const etiquetaFormato = {
-  ficha: "Ficha rápida",
-  presentacion: "Presentación",
-  web: "Propuesta web",
-  pdf: "PDF comparativo",
-} as const;
-
-async function nombresDe(p: Propuesta) {
-  const nombres: string[] = [];
-  for (const item of p.items) {
-    const d = await obtenerDesarrollo(item.desarrolloId);
-    if (d) nombres.push(d.nombre);
-  }
-  return nombres.join(" · ");
-}
+import { etiquetaEstadoPropuesta, etiquetaFormato, tonoEstadoPropuesta } from "@/lib/etiquetas";
+import { listarClientes, listarDesarrollos, listarPropuestas } from "@/lib/repo";
 
 export default async function PropuestasPage() {
-  const propuestas = await listarPropuestas();
-  const clientes = await listarClientes();
+  const [propuestas, clientes, desarrollos] = await Promise.all([
+    listarPropuestas(),
+    listarClientes(),
+    listarDesarrollos(),
+  ]);
 
-  const filas = await Promise.all(
-    propuestas.map(async (p) => ({
-      propuesta: p,
-      cliente: clientes.find((c) => c.id === p.clienteId),
-      propiedades: await nombresDe(p),
-    })),
-  );
+  const filas = propuestas.map((p) => ({
+    propuesta: p,
+    cliente: clientes.find((c) => c.id === p.clienteId),
+    propiedades: p.items
+      .map((i) => desarrollos.find((d) => d.id === i.desarrolloId)?.nombre)
+      .filter(Boolean)
+      .join(" · "),
+  }));
 
   const vistas = propuestas.filter((p) => p.vistas > 0).length;
 
@@ -107,7 +79,7 @@ export default async function PropuestasPage() {
             </span>
             <span className="w-22 px-4 py-3.5 text-[13px] font-bold">{p.vistas || "—"}</span>
             <span className="w-48 px-4 py-3.5">
-              <Badge tono={tonoEstado[p.estado]}>{etiquetaEstado[p.estado]}</Badge>
+              <Badge tono={tonoEstadoPropuesta[p.estado]}>{etiquetaEstadoPropuesta[p.estado]}</Badge>
             </span>
             <span className="flex w-60 gap-2 px-4 py-3.5">
               {[

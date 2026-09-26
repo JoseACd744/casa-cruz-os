@@ -5,6 +5,7 @@ import type {
   Desarrollo,
   Plaza,
   Propuesta,
+  PropuestaPublica,
   Usuario,
 } from "@casacruz/core";
 
@@ -160,6 +161,7 @@ export const usuarioSchema = z
     id: z.string(),
     nombre: z.string(),
     correo: z.string(),
+    telefono: z.string().nullable(),
     rol,
     plazasCertificadas: z.array(z.string()).meta({
       description: "Un cerrador sólo puede vender las plazas en las que está certificado.",
@@ -215,13 +217,34 @@ export const propuestaSchema = z
         razon: z.string().nullable(),
       }),
     ),
-    creadaEl: z.string(),
+    creadaEl: z.string().meta({ example: "18 septiembre 2026" }),
+    creadaIso: z.string().meta({ description: "La misma fecha en ISO 8601." }),
     enviadaEl: z.string().nullable(),
     estado: z.enum(["borrador", "enviada", "vista", "negociacion", "sin_respuesta"]),
     vistas: z.number(),
     kommoLeadId: z.string().nullable(),
   })
   .meta({ id: "Propuesta" }) satisfies z.ZodType<Propuesta>;
+
+export const propuestaPublicaSchema = z
+  .object({
+    propuesta: propuestaSchema,
+    cliente: z.object({ nombre: z.string(), recamaras: z.string().nullable() }).nullable(),
+    asesor: z
+      .object({
+        nombre: z.string(),
+        correo: z.string(),
+        telefono: z.string().nullable(),
+        plazas: z.array(z.string()).meta({ description: "Nombres de las plazas en las que está certificado." }),
+      })
+      .nullable(),
+    desarrollos: z.array(desarrolloSchema),
+  })
+  .meta({
+    id: "PropuestaPublica",
+    description:
+      "Lo que ve el cliente en su enlace. Los desarrollos llegan sin información interna ni argumentos comerciales.",
+  }) satisfies z.ZodType<PropuestaPublica>;
 
 export const cambioSchema = z
   .object({
@@ -331,4 +354,11 @@ export const saludSchema = z.object({
   origenDeDatos: z.enum(["postgres", "mock"]),
   configurado: z.string(),
   aviso: z.string().nullable(),
+  integraciones: z
+    .object({
+      archivos: z.enum(["bucket", "local", "sin_configurar"]),
+      kommo: z.boolean(),
+      mapas: z.enum(["google", "openstreetmap"]),
+    })
+    .meta({ description: "Qué está conectado, para que la interfaz no prometa lo que no hay." }),
 });

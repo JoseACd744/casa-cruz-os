@@ -1,8 +1,8 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { requisitosParaPublicar } from "@casacruz/core";
-import { alcanza, exigir } from "./auth";
+import { alcanza, requisitosParaPublicar } from "@casacruz/core";
+import { exigir } from "./auth";
 import { fuente } from "./datos";
 import { avisarPropuestaEnKommo } from "./kommo";
 import {

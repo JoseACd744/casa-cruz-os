@@ -1,13 +1,20 @@
 import Link from "next/link";
 import { Badge, Seccion } from "@/components/ui";
 import {
+  alcanza,
   CAMPOS,
   confiabilidad,
   estadoValidaciones,
   type EstadoValidacion,
 } from "@casacruz/core";
 import { etiquetaEstatus, etiquetaFuente } from "@casacruz/core";
-import { conteoPipeline, listarCambios, listarDesarrollos, listarUsuarios } from "@/lib/repo";
+import {
+  conteoPipeline,
+  listarCambios,
+  listarDesarrollos,
+  listarUsuarios,
+  obtenerUsuarioActual,
+} from "@/lib/repo";
 
 const PERMISOS: { campo: string; celdas: ("V" | "E" | "A" | "—")[] }[] = [
   { campo: "Precio y multimedia", celdas: ["V", "E", "E", "E"] },
@@ -41,12 +48,18 @@ const textoEstado: Record<EstadoValidacion, string> = {
 };
 
 export default async function ControlPage() {
-  const pipeline = await conteoPipeline();
-  const pendientes = await listarCambios("pendiente");
-  const desarrollos = await listarDesarrollos();
-  const usuarios = (await listarUsuarios()).filter((u) => u.rol === "cerrador");
+  const actual = await obtenerUsuarioActual();
+  const esGerente = alcanza(actual.rol, "gerente");
+  const [pipeline, pendientes, desarrollos, equipo] = await Promise.all([
+    conteoPipeline(),
+    listarCambios("pendiente"),
+    listarDesarrollos(),
+    esGerente ? listarUsuarios() : Promise.resolve([actual]),
+  ]);
+  // Un cerrador ve su propia fila; el gerente, a todo su equipo.
+  const usuarios = esGerente ? equipo.filter((u) => u.rol === "cerrador") : equipo;
 
-  const equipo = usuarios.map((u) => {
+  const responsables = usuarios.map((u) => {
     const mios = desarrollos.filter((d) => d.responsableId === u.id);
     const scores = mios.map(confiabilidad);
     const promedio = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
@@ -69,12 +82,14 @@ export default async function ControlPage() {
       <header className="flex h-15 shrink-0 items-center gap-3.5 border-b border-line bg-panel px-8">
         <span className="text-[11.5px] font-semibold tracking-[0.06em]">CONTROL DEL DATO</span>
         <div className="grow" />
-        <Link
-          href="/control/usuarios"
-          className="text-[11px] font-semibold tracking-[0.08em] text-tan-deep hover:text-ink"
-        >
-          USUARIOS Y PERMISOS
-        </Link>
+        {esGerente ? (
+          <Link
+            href="/control/usuarios"
+            className="text-[11px] font-semibold tracking-[0.08em] text-tan-deep hover:text-ink"
+          >
+            USUARIOS Y PERMISOS
+          </Link>
+        ) : null}
       </header>
 
       <div className="flex flex-col gap-5 overflow-auto p-7">
@@ -218,7 +233,7 @@ export default async function ControlPage() {
               CONFIABILIDAD
             </span>
           </div>
-          {equipo.map((e) => (
+          {responsables.map((e) => (
             <div key={e.usuario.id} className="flex items-center border-b border-line">
               <span className="w-50 px-3.5 py-3 text-[13px] font-semibold">{e.usuario.nombre}</span>
               <span className="w-33 px-3.5 py-3 text-[12px] text-ink-2">

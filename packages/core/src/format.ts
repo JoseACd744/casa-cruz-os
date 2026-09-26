@@ -31,6 +31,17 @@ export function hace(dias: number): string {
   return `hace ${dias} días`;
 }
 
+/** "Jorge Díaz" → "JD". Un marcador como "[NOMBRE]" no tiene iniciales. */
+export function iniciales(nombre: string): string {
+  if (nombre.startsWith("[")) return "··";
+  return nombre
+    .split(/\s+/)
+    .filter((p) => p.length > 2 || /^[A-ZÁÉÍÓÚÑ]/.test(p))
+    .slice(0, 2)
+    .map((p) => p[0].toUpperCase())
+    .join("");
+}
+
 /** true cuando el valor todavía no existe en la Base Maestra. */
 export function faltante(valor: unknown): boolean {
   return valor === null || valor === undefined || valor === "";

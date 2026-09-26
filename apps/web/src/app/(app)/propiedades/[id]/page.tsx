@@ -2,8 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Tabs } from "@/components/Tabs";
 import { Badge, Barra, Card, Dot, Eyebrow, Falta, Foto } from "@/components/ui";
-import { confiabilidad, estadoValidaciones, semaforo, advertencia } from "@casacruz/core";
+import {
+  advertencia,
+  confiabilidad,
+  estadoValidaciones,
+  galeria,
+  planoDe,
+  semaforo,
+} from "@casacruz/core";
 import { etiquetaEstatus, etiquetaFuente, hace, money, pct } from "@casacruz/core";
+import { usandoApi } from "@/lib/api";
 import { cambiosDe, obtenerDesarrollo, precioPorM2 } from "@/lib/repo";
 import type { Desarrollo } from "@casacruz/core";
 
@@ -20,7 +28,7 @@ function Tipologias({ d }: { d: Desarrollo }) {
     <div className="flex flex-col gap-4">
       {d.tipologias.map((t) => (
         <Card key={t.id} className="flex gap-5 p-4.5">
-          <Foto label="Plano" className="h-37 w-50 shrink-0" />
+          <Foto src={planoDe(d, t.id)} label="Plano" className="h-37 w-50 shrink-0 object-contain" />
           <div className="flex w-55 flex-col gap-2.5">
             <span className="text-[17px] leading-tight font-bold">{t.nombre}</span>
             <div className="flex gap-4 text-[12.5px] text-ink-2">
@@ -122,6 +130,7 @@ export default async function PropiedadPage({
   const estados = estadoValidaciones(d);
   const traza = await cambiosDe(d.id);
   const aviso = advertencia(d);
+  const fotos = galeria(d);
 
   return (
     <>
@@ -159,12 +168,23 @@ export default async function PropiedadPage({
           </div>
 
           <div className="flex flex-col gap-3">
-            <Foto label="Render principal" className="h-68" />
+            <Foto src={fotos.principal} label="Render principal" className="h-68 w-full" />
             <div className="grid grid-cols-4 gap-3">
-              <Foto label="Amenidades" className="h-23" />
-              <Foto label="Interiores" className="h-23" />
-              <Foto label="Planos" className="h-23" />
-              <Foto label="Video Casa Cruz" className="h-23" dark />
+              <Foto src={fotos.secundarias[0]} label="Amenidades" className="h-23 w-full" />
+              <Foto src={fotos.secundarias[1]} label="Interiores" className="h-23 w-full" />
+              <Foto src={fotos.planos[0]} label="Planos" className="h-23 w-full" />
+              {fotos.video ? (
+                <a
+                  href={fotos.video}
+                  target="_blank"
+                  rel="noopener"
+                  className="flex h-23 items-center justify-center rounded-[3px] bg-ink text-[9.5px] font-bold tracking-[0.22em] text-ground uppercase hover:brightness-125"
+                >
+                  Ver video Casa Cruz
+                </a>
+              ) : (
+                <Foto label="Video Casa Cruz" className="h-23" dark />
+              )}
             </div>
           </div>
 
@@ -313,14 +333,20 @@ export default async function PropiedadPage({
               >
                 SIMULADOR
               </Link>
-              <button className="h-10.5 grow rounded-[3px] border border-[#C9C1B6] text-[10.5px] font-bold tracking-[0.08em] hover:bg-surface">
+              <a
+                href={usandoApi ? `/descargas/ficha/${d.id}` : `/doc/ficha/${d.id}`}
+                target="_blank"
+                rel="noopener"
+                title="Descarga la ficha en PDF para enviarla por WhatsApp o correo"
+                className="flex h-10.5 grow items-center justify-center rounded-[3px] border border-[#C9C1B6] text-[10.5px] font-bold tracking-[0.08em] hover:bg-surface"
+              >
                 COMPARTIR
-              </button>
+              </a>
             </div>
           </Card>
 
-          <Card className="flex flex-col gap-3.5 p-4.5">
-            <div className="flex items-baseline">
+          <Card className="flex scroll-mt-6 flex-col gap-3.5 p-4.5">
+            <div id="confiabilidad" className="flex items-baseline">
               <Eyebrow>Confiabilidad</Eyebrow>
               <div className="grow" />
               <span

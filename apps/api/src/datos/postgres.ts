@@ -1,5 +1,5 @@
 import { PrismaClient, type Prisma } from "@prisma/client";
-import { requiereAprobacion, type Cambio, type Cliente, type Desarrollo, type EstatusListing, type Propuesta, type Usuario } from "@casacruz/core";
+import { fechaCorta, fechaDocumento, fechaHora, requiereAprobacion, type Cambio, type Cliente, type Desarrollo, type EstatusListing, type Propuesta, type Usuario } from "@casacruz/core";
 import type { FuenteDeDatos, NuevoCambio } from "./tipos";
 
 /** Fuente real: Postgres a través de Prisma. */
@@ -141,7 +141,7 @@ function aCambio(c: {
     valorAnterior: c.valorAnterior,
     valorNuevo: c.valorNuevo,
     usuario: c.autor.nombre,
-    fecha: c.fecha.toLocaleString("es-MX"),
+    fecha: fechaHora(c.fecha),
     fuente: c.fuente,
     evidencia: c.evidenciaUrl,
     estado: c.estado,
@@ -205,11 +205,12 @@ export function fuentePostgres(): FuenteDeDatos {
         id: u.id,
         nombre: u.nombre,
         correo: u.correo,
+        telefono: u.telefono,
         rol: u.rol,
         plazasCertificadas: u.plazas.filter((p) => p.certificado).map((p) => p.plazaId),
         plazasEnProgreso: u.plazas.filter((p) => !p.certificado && p.progreso > 0).map((p) => p.plazaId),
         activo: u.activo,
-        ultimoAcceso: u.ultimoAcceso ? u.ultimoAcceso.toLocaleString("es-MX") : "nunca",
+        ultimoAcceso: u.ultimoAcceso ? fechaHora(u.ultimoAcceso) : "nunca",
         desarrollosACargo: u.desarrollos.length,
       }));
     },
@@ -248,7 +249,7 @@ export function fuentePostgres(): FuenteDeDatos {
         kommoEtapa: c.kommoEtapa,
         notas: c.notas,
         actividad: c.actividad.map((a) => ({
-          fecha: a.fecha.toLocaleDateString("es-MX", { day: "2-digit", month: "short" }),
+          fecha: fechaCorta(a.fecha).slice(0, 6),
           texto: a.texto,
         })),
       }));
@@ -278,12 +279,9 @@ export function fuentePostgres(): FuenteDeDatos {
           precioCongelado: num(i.precioCongelado),
           razon: i.razon,
         })),
-        creadaEl: p.creadaEl.toLocaleDateString("es-MX", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-        }),
-        enviadaEl: p.enviadaEl ? p.enviadaEl.toLocaleString("es-MX") : null,
+        creadaEl: fechaDocumento(p.creadaEl),
+        creadaIso: p.creadaEl.toISOString(),
+        enviadaEl: p.enviadaEl ? fechaHora(p.enviadaEl) : null,
         estado: p.estado,
         vistas: p.vistas,
         kommoLeadId: p.kommoLeadId,
@@ -334,9 +332,7 @@ export function fuentePostgres(): FuenteDeDatos {
         take: 6,
       });
       return filas.map((c) => ({
-        fecha: c.fecha
-          .toLocaleDateString("es-MX", { day: "2-digit", month: "short" })
-          .toUpperCase(),
+        fecha: fechaCorta(c.fecha).slice(0, 6).toUpperCase(),
         titulo: `${c.desarrollo.nombre}: ${c.campo}`,
         detalle: `${c.valorAnterior} → ${c.valorNuevo}. Fuente: ${c.fuente}.`,
       }));

@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import { BarraDoc } from "@/components/BarraDoc";
 import { Foto } from "@/components/ui";
-import { money } from "@casacruz/core";
-import { obtenerCliente, obtenerDesarrollo, obtenerPropuesta } from "@/lib/repo";
+import { etiquetaRol, galeria, money } from "@casacruz/core";
+import { usandoApi } from "@/lib/api";
+import { obtenerPropuestaPublica } from "@/lib/repo";
 import type { Desarrollo, PropuestaItem } from "@casacruz/core";
 
 interface Resuelto {
@@ -19,13 +20,13 @@ export default async function PdfComparativoPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const propuesta = await obtenerPropuesta(slug);
-  if (!propuesta) notFound();
-  const cliente = await obtenerCliente(propuesta.clienteId);
+  const publica = await obtenerPropuestaPublica(slug);
+  if (!publica) notFound();
+  const { propuesta, cliente, asesor } = publica;
 
   const resueltos: Resuelto[] = [];
   for (const item of propuesta.items) {
-    const d = await obtenerDesarrollo(item.desarrolloId);
+    const d = publica.desarrollos.find((x) => x.id === item.desarrolloId);
     if (!d) continue;
     const t = d.tipologias.find((x) => x.id === item.tipologiaId);
     resueltos.push({
@@ -73,7 +74,7 @@ export default async function PdfComparativoPage({
         titulo="PDF comparativo"
         volverHref="/propuestas"
         volverTexto="Propuestas"
-        pdfUrl={process.env.API_URL ? `${process.env.API_URL}/pdf/analisis/${propuesta.slug}` : null}
+        pdfUrl={usandoApi ? `/descargas/analisis/${propuesta.slug}` : null}
       />
 
       <div className="flex grow items-start justify-center overflow-auto p-8 print:p-0">
@@ -95,7 +96,8 @@ export default async function PdfComparativoPage({
               </span>
               <span className="text-[13px] font-bold">{cliente?.nombre ?? "[CLIENTE]"}</span>
               <span className="text-[10.5px] text-muted">
-                {propuesta.creadaEl} · Jorge Díaz
+                {propuesta.creadaEl}
+                {asesor ? ` · ${asesor.nombre}` : ""}
               </span>
             </div>
           </div>
@@ -103,7 +105,7 @@ export default async function PdfComparativoPage({
           <div className="flex gap-3 pt-5.5">
             {resueltos.map((r, i) => (
               <div key={r.d.id} className="flex grow flex-col gap-2.5">
-                <Foto className="h-26 rounded-[2px]" />
+                <Foto src={galeria(r.d).principal} className="h-26 w-full rounded-[2px]" />
                 <span className="text-[9.5px] font-bold tracking-[0.14em] text-tan-deep">
                   OPCIÓN {i + 1}
                 </span>
@@ -202,7 +204,14 @@ export default async function PdfComparativoPage({
                 Agendemos una videollamada para revisar las opciones
               </span>
               <span className="text-[11px] text-[#B8B1A7]">
-                Jorge Díaz · Cerrador certificado Riviera Maya · [TELÉFONO] · [CORREO]
+                {asesor
+                  ? [
+                      asesor.nombre,
+                      `${etiquetaRol.cerrador}${asesor.plazas.length ? ` ${asesor.plazas.join(" · ")}` : ""}`,
+                      asesor.telefono ?? "[TELÉFONO]",
+                      asesor.correo,
+                    ].join(" · ")
+                  : "[ASESOR]"}
               </span>
             </div>
             <div className="grow" />

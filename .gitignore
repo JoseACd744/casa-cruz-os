@@ -37,3 +37,6 @@ next-env.d.ts
 
 # salidas de scripts de desarrollo
 apps/api/mapa-demo.*
+
+# archivos que la API guarda en local cuando no hay bucket
+apps/api/.archivos/

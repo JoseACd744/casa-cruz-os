@@ -1,5 +1,4 @@
-import type { Desarrollo, Rol } from "@casacruz/core";
-import { alcanza } from "./auth";
+import { alcanza, type Desarrollo, type Rol } from "@casacruz/core";
 
 /**
  * Qué puede ver cada quién.

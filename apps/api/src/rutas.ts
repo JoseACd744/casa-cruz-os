@@ -4,7 +4,9 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { confiabilidad, estadoValidaciones, requiereAprobacion } from "@casacruz/core";
 import { exigir, sesionOpcional } from "./auth";
 import { desarrolloSegunRol, desarrollosSegunRol } from "./visibilidad";
-import { modoMock } from "./config";
+import { almacenamientoConfigurado, almacenamientoLocal } from "./almacenamiento";
+import { config, modoMock } from "./config";
+import { kommoConfigurado } from "./kommo";
 import { fuente, origenConfigurado } from "./datos";
 import {
   cambioSchema,
@@ -19,6 +21,7 @@ import {
   nuevoCambioSchema,
   pipelineSchema,
   plazaSchema,
+  propuestaPublicaSchema,
   propuestaSchema,
   respuestaCambioSchema,
   saludSchema,
@@ -53,6 +56,15 @@ export async function rutas(instancia: FastifyInstance) {
       aviso: modoMock
         ? "Sin DATABASE_URL: los datos son de demostración y las escrituras no se guardan."
         : null,
+      integraciones: {
+        archivos: almacenamientoLocal
+          ? ("local" as const)
+          : almacenamientoConfigurado
+            ? ("bucket" as const)
+            : ("sin_configurar" as const),
+        kommo: kommoConfigurado,
+        mapas: config.googleMapsKey ? ("google" as const) : ("openstreetmap" as const),
+      },
     }),
   );
 
@@ -255,6 +267,54 @@ export async function rutas(instancia: FastifyInstance) {
       const propuesta = await datos.obtenerPropuesta(peticion.params.slug);
       if (!propuesta) return respuesta.code(404).send({ error: "Propuesta no encontrada" });
       return propuesta;
+    },
+  );
+
+  app.get(
+    "/propuestas/:slug/publica",
+    {
+      schema: {
+        tags: ["Propuestas"],
+        summary: "Todo lo que ve el cliente en su enlace",
+        description:
+          "Pública, sin sesión: la propuesta, el nombre del cliente, el asesor que la firma y los desarrollos en su versión para cliente. Una sola llamada para el micrositio.",
+        params: z.object({ slug: z.string().meta({ example: "berenice-fabian" }) }),
+        response: { 200: propuestaPublicaSchema, ...noEncontrado },
+      },
+    },
+    async (peticion, respuesta) => {
+      const propuesta = await datos.obtenerPropuesta(peticion.params.slug);
+      if (!propuesta) return respuesta.code(404).send({ error: "Propuesta no encontrada" });
+
+      const [cliente, usuarios, plazas] = await Promise.all([
+        datos.obtenerCliente(propuesta.clienteId),
+        datos.listarUsuarios(),
+        datos.listarPlazas(),
+      ]);
+      const asesor = usuarios.find((u) => u.id === propuesta.usuarioId);
+
+      const desarrollos = [];
+      for (const item of propuesta.items) {
+        const d = await datos.obtenerDesarrollo(item.desarrolloId);
+        if (d) desarrollos.push(desarrolloSegunRol(d, null));
+      }
+
+      return {
+        // El lead de Kommo es del equipo, no del cliente.
+        propuesta: { ...propuesta, kommoLeadId: null },
+        cliente: cliente ? { nombre: cliente.nombre, recamaras: cliente.recamaras } : null,
+        asesor: asesor
+          ? {
+              nombre: asesor.nombre,
+              correo: asesor.correo,
+              telefono: asesor.telefono,
+              plazas: asesor.plazasCertificadas.map(
+                (id) => plazas.find((p) => p.id === id)?.nombre ?? id,
+              ),
+            }
+          : null,
+        desarrollos,
+      };
     },
   );
 

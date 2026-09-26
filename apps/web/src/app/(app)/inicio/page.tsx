@@ -1,27 +1,58 @@
 import Link from "next/link";
 import { Badge, Card, Dot, Eyebrow, Seccion } from "@/components/ui";
-import { advertencia, semaforo } from "@casacruz/core";
 import {
+  advertencia,
+  claveMes,
+  fechaLarga,
+  primeroDelMesSiguiente,
+  saludo,
+  semaforo,
+} from "@casacruz/core";
+import { etiquetaEstadoPropuesta, tonoEstadoPropuesta } from "@/lib/etiquetas";
+import {
+  listarClientes,
+  listarDesarrollos,
   listarNovedades,
+  listarPlazas,
   listarPropuestas,
-  obtenerCliente,
   obtenerUsuarioActual,
   pendientesDeValidar,
 } from "@/lib/repo";
 
 export default async function InicioPage() {
   const usuario = await obtenerUsuarioActual();
-  const pendientes = await pendientesDeValidar(usuario.id);
-  const novedades = await listarNovedades();
-  const propuestas = await listarPropuestas();
+  const [pendientes, novedades, propuestas, clientes, desarrollos, plazas] = await Promise.all([
+    pendientesDeValidar(usuario.id),
+    listarNovedades(),
+    listarPropuestas(),
+    listarClientes(),
+    listarDesarrollos(),
+    listarPlazas(),
+  ]);
+
+  const hoy = new Date();
+  const mias = propuestas.filter((p) => p.usuarioId === usuario.id);
+  const delMes = mias.filter((p) => claveMes(new Date(p.creadaIso)) === claveMes(hoy));
+  const aCargo = desarrollos.filter((d) => d.responsableId === usuario.id);
+  const leads = clientes.filter((c) => c.kommoLeadId);
+  const sinPropuesta = leads.filter((c) => !propuestas.some((p) => p.clienteId === c.id));
+  const nombresPlazas = usuario.plazasCertificadas
+    .map((id) => plazas.find((p) => p.id === id)?.nombre ?? id)
+    .join(" · ");
 
   const kpis = [
-    { label: "PROPUESTAS ESTE MES", valor: "14", delta: "+5", nota: "Meta del mes: 20", tono: "ok" as const },
+    {
+      label: "PROPUESTAS ESTE MES",
+      valor: String(delMes.length),
+      delta: `${delMes.filter((p) => p.vistas > 0).length} abiertas`,
+      nota: `${mias.length} en total a tu nombre`,
+      tono: "ok" as const,
+    },
     {
       label: "DESARROLLOS A TU CARGO",
-      valor: String(usuario.desarrollosACargo),
-      delta: "Riviera Maya",
-      nota: "Rotación el 1 de octubre",
+      valor: String(aCargo.length),
+      delta: nombresPlazas || "sin plaza",
+      nota: `Rotación el ${primeroDelMesSiguiente(hoy)}`,
       tono: "neutral" as const,
     },
     {
@@ -31,25 +62,33 @@ export default async function InicioPage() {
       nota: "Precio, entrega y disponibilidad",
       tono: "alert" as const,
     },
-    { label: "LEADS ACTIVOS EN KOMMO", valor: "23", delta: "+3", nota: "8 esperan propuesta", tono: "ok" as const },
+    {
+      label: "LEADS DE KOMMO",
+      valor: String(leads.length),
+      delta: "",
+      nota: `${sinPropuesta.length} esperan propuesta`,
+      tono: "ok" as const,
+    },
   ];
 
-  const filas = await Promise.all(
-    propuestas.map(async (p) => {
-      const cliente = await obtenerCliente(p.clienteId);
-      return { propuesta: p, cliente };
-    }),
-  );
+  const filas = mias.slice(0, 5).map((p) => ({
+    propuesta: p,
+    cliente: clientes.find((c) => c.id === p.clienteId),
+  }));
+  const fecha = fechaLarga(hoy);
 
   return (
     <div className="flex h-full flex-col gap-5 overflow-auto p-8">
       <div className="flex items-end gap-4">
         <div className="flex flex-col gap-1.5">
           <h1 className="text-[30px] font-extrabold tracking-[-0.015em]">
-            Buen día, {usuario.nombre.split(" ")[0]}
+            {saludo(hoy)}, {usuario.nombre.split(" ")[0]}
           </h1>
           <p className="text-[13px] text-ink-2">
-            Viernes 18 de septiembre · {pendientes.length} desarrollos tuyos necesitan validación
+            {fecha.charAt(0).toUpperCase() + fecha.slice(1)} ·{" "}
+            {pendientes.length === 0
+              ? "tus desarrollos están al día"
+              : `${pendientes.length} ${pendientes.length === 1 ? "desarrollo tuyo necesita" : "desarrollos tuyos necesitan"} validación`}
           </p>
         </div>
         <div className="grow" />
@@ -112,7 +151,7 @@ export default async function InicioPage() {
                 </span>
                 <span className="text-[11.5px] font-semibold">{score}%</span>
                 <Link
-                  href={`/propiedades/${desarrollo.id}?tab=trazabilidad`}
+                  href={`/propiedades/${desarrollo.id}#confiabilidad`}
                   className="flex h-8 items-center rounded-[3px] border border-[#C9C1B6] px-3 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface"
                 >
                   VALIDAR
@@ -140,7 +179,7 @@ export default async function InicioPage() {
       <Seccion
         titulo="Tus propuestas recientes"
         accion={
-          <Link href="/clientes/c-berenice-fabian" className="text-[11px] font-semibold text-tan-deep hover:text-ink">
+          <Link href="/propuestas" className="text-[11px] font-semibold text-tan-deep hover:text-ink">
             Ver todas
           </Link>
         }
@@ -171,7 +210,9 @@ export default async function InicioPage() {
                 {propuesta.vistas || "—"}
               </span>
               <span className="w-45 px-3.5 py-3.5">
-                <Badge tono="warn">{propuesta.estado}</Badge>
+                <Badge tono={tonoEstadoPropuesta[propuesta.estado]}>
+                  {etiquetaEstadoPropuesta[propuesta.estado]}
+                </Badge>
               </span>
             </div>
           ))}

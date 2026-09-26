@@ -1,4 +1,4 @@
-import { money } from "@casacruz/core";
+import { galeria, money, planoDe } from "@casacruz/core";
 import type { Cliente, Desarrollo, Propuesta, Tipologia } from "@casacruz/core";
 import { DISCLAIMER, baseCss, escapar, iconos, imagen, marca, monograma } from "./estilo";
 import { mapaHtml } from "./mapa";
@@ -88,10 +88,10 @@ function bloqueTipologia(t: Tipologia, plano: string | null): string {
 }
 
 function bloqueDesarrollo(d: Desarrollo, ultimo: boolean): string {
-  const fotos = d.multimedia ?? [];
-  const hero = fotos[0]?.url ?? null;
-  const thumbs = [fotos[1]?.url ?? null, fotos[2]?.url ?? null, fotos[3]?.url ?? null];
-  const planos = d.tipologias.map((_, i) => fotos[4 + i]?.url ?? null);
+  const fotos = galeria(d);
+  const hero = fotos.principal;
+  const thumbs = [0, 1, 2].map((i) => fotos.secundarias[i] ?? null);
+  const planos = d.tipologias.map((t) => planoDe(d, t.id));
 
   return `
   <section style="padding:34px ${PADDING}px 40px;${ultimo ? "" : "break-after:page;"}">

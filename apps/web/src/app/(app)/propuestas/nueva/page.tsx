@@ -3,7 +3,7 @@ import {
   ConstructorPropuesta,
   type OpcionDesarrollo,
 } from "@/components/ConstructorPropuesta";
-import { advertencia, confiabilidad } from "@casacruz/core";
+import { advertencia, confiabilidad, galeria } from "@casacruz/core";
 import { moneyCorto } from "@casacruz/core";
 import { listarDesarrollos, obtenerCliente } from "@/lib/repo";
 
@@ -14,6 +14,7 @@ export default async function NuevaPropuestaPage() {
   const catalogo: OpcionDesarrollo[] = desarrollos.map((d) => ({
     id: d.id,
     nombre: d.nombre,
+    foto: galeria(d).principal,
     ciudad: d.ciudad,
     entrega: d.entrega,
     confiabilidad: confiabilidad(d),

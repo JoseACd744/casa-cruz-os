@@ -70,7 +70,14 @@ function Icono({ nombre, color }: { nombre: string; color: string }) {
   }
 }
 
-export function Sidebar() {
+export interface UsuarioMenu {
+  nombre: string;
+  iniciales: string;
+  rol: string;
+  plazas: { nombre: string; certificada: boolean }[];
+}
+
+export function Sidebar({ usuario }: { usuario: UsuarioMenu }) {
   const pathname = usePathname();
 
   return (
@@ -114,20 +121,29 @@ export function Sidebar() {
           MIS PLAZAS CERTIFICADAS
         </span>
         <div className="flex flex-wrap gap-1.5">
-          <span className="rounded-[2px] border border-[#4A463F] px-[7px] py-1 text-[10px] font-semibold tracking-[0.06em]">
-            RIVIERA MAYA
-          </span>
-          <span className="rounded-[2px] border border-[#4A463F] px-[7px] py-1 text-[10px] font-semibold tracking-[0.06em] text-[#A09991]">
-            PUEBLA · 60%
-          </span>
+          {usuario.plazas.length ? (
+            usuario.plazas.map((p) => (
+              <span
+                key={p.nombre}
+                className={`rounded-[2px] border border-[#4A463F] px-[7px] py-1 text-[10px] font-semibold tracking-[0.06em] uppercase ${
+                  p.certificada ? "" : "text-[#A09991]"
+                }`}
+              >
+                {p.nombre}
+                {p.certificada ? "" : " · en curso"}
+              </span>
+            ))
+          ) : (
+            <span className="text-[10.5px] text-[#A09991]">Ninguna todavía</span>
+          )}
         </div>
         <div className="flex items-center gap-2.5 pt-2">
-          <span className="flex size-8.5 items-center justify-center rounded-full bg-tan text-[11px] font-bold text-ink">
-            JD
+          <span className="flex size-8.5 shrink-0 items-center justify-center rounded-full bg-tan text-[11px] font-bold text-ink">
+            {usuario.iniciales}
           </span>
-          <span className="flex flex-col gap-0.5">
-            <span className="text-[12px] font-semibold text-white">Jorge Díaz</span>
-            <span className="text-[10px] text-[#A09991]">Cerrador certificado</span>
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="truncate text-[12px] font-semibold text-white">{usuario.nombre}</span>
+            <span className="text-[10px] text-[#A09991]">{usuario.rol}</span>
           </span>
           <div className="grow" />
           <a

@@ -1,7 +1,11 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { usandoApi } from "@/lib/api";
 import { COOKIE_SESION } from "@/lib/sesion";
+
+/** En local se precargan las credenciales de demostración; en producción, nunca. */
+const PRECARGA = process.env.NODE_ENV !== "production";
 
 /**
  * Acceso.
@@ -43,9 +47,9 @@ async function entrar(datos: FormData) {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; vencida?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, vencida } = await searchParams;
 
   return (
     <div className="flex min-h-screen bg-ground">
@@ -102,6 +106,10 @@ export default async function LoginPage({
             <div className="rounded-[3px] border border-alert/40 bg-alert-soft px-4 py-3 text-[12.5px] font-semibold text-alert-ink">
               Usuario o contraseña incorrectos.
             </div>
+          ) : vencida ? (
+            <div className="rounded-[3px] border border-warn/40 bg-warn-soft px-4 py-3 text-[12.5px] font-semibold text-warn-ink">
+              Tu sesión venció. Vuelve a entrar para continuar.
+            </div>
           ) : null}
 
           <div className="flex flex-col gap-2">
@@ -113,7 +121,7 @@ export default async function LoginPage({
               name="correo"
               type="email"
               required
-              defaultValue="jorge.diaz@casacruz.mx"
+              defaultValue={PRECARGA ? "jorge.diaz@casacruz.mx" : undefined}
               className="h-12.5 rounded-[3px] border border-[#C9C1B6] bg-panel px-4 text-[14px]"
             />
           </div>
@@ -127,7 +135,7 @@ export default async function LoginPage({
               name="contrasena"
               type="password"
               required
-              defaultValue="casacruz"
+              defaultValue={PRECARGA ? "casacruz" : undefined}
               className="h-12.5 rounded-[3px] border border-[#C9C1B6] bg-panel px-4 text-[14px]"
             />
           </div>
@@ -158,9 +166,11 @@ export default async function LoginPage({
             </span>
           </div>
 
-          <Link href="/inicio" className="text-center text-[12px]">
-            Entrar sin sesión (sólo demostración)
-          </Link>
+          {usandoApi ? null : (
+            <Link href="/inicio" className="text-center text-[12px]">
+              Entrar sin sesión (sólo demostración)
+            </Link>
+          )}
         </form>
       </div>
     </div>

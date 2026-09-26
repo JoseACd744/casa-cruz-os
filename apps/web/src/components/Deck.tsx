@@ -8,6 +8,7 @@ export type Slide =
   | { tipo: "quienes"; puntos: { titulo: string; texto: string }[] }
   | {
       tipo: "propiedad";
+      fotos: { principal: string | null; secundarias: string[] };
       orden: string;
       nombre: string;
       subtitulo: string;
@@ -91,11 +92,15 @@ function Lamina({ slide }: { slide: Slide }) {
 
         <div className="flex grow gap-8 pt-6.5">
           <div className="flex w-150 shrink-0 flex-col gap-3">
-            <Foto label="Render principal" className="grow rounded-[2px]" />
+            <Foto
+              src={slide.fotos.principal}
+              label="Render principal"
+              className="min-h-0 w-full grow rounded-[2px]"
+            />
             <div className="flex gap-3">
-              <Foto className="h-26 grow rounded-[2px]" />
-              <Foto className="h-26 grow rounded-[2px]" />
-              <Foto label="Video" className="h-26 grow rounded-[2px]" dark />
+              <Foto src={slide.fotos.secundarias[0]} className="h-26 w-0 grow rounded-[2px]" />
+              <Foto src={slide.fotos.secundarias[1]} className="h-26 w-0 grow rounded-[2px]" />
+              <Foto label="Video" className="h-26 w-0 grow rounded-[2px]" dark />
             </div>
           </div>
 
