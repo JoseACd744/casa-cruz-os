@@ -302,7 +302,12 @@ model Cambio {
   id            String       @id @default(cuid())
   desarrollo    Desarrollo   @relation(fields: [desarrolloId], references: [id], onDelete: Cascade)
   desarrolloId  String
+  /// Cómo se lee en el historial.
   campo         String
+  /// A dónde va el valor. Nulo en cambios históricos de texto libre.
+  campoClave    String?
+  tipologiaId   String?
+  nivel         String?
   valorAnterior String
   valorNuevo    String
   autor         Usuario      @relation("AutorDelCambio", fields: [usuarioId], references: [id])

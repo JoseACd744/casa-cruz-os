@@ -4,7 +4,7 @@ import {
   fechaHora,
   filtrarDesarrollos,
   mock,
-  requiereAprobacion,
+  novedadesDe,
   type Cambio,
   type Cliente,
   type Desarrollo,
@@ -112,48 +112,54 @@ export function fuenteMock(): FuenteDeDatos {
       return base;
     },
     async novedades() {
-      return mock.novedades;
+      return novedadesDe(cambios);
     },
 
     // ── Gobierno del dato ──────────────────────────────────────────────
-    async registrarCambio(entrada: NuevoCambio) {
+    async guardarCambio(entrada: NuevoCambio) {
       const desarrollo = buscar(entrada.desarrolloId);
       const usuario = mock.usuarios.find((u) => u.id === entrada.usuarioId);
-      const pendiente = requiereAprobacion(
-        entrada.campo,
-        entrada.fuente,
-        Boolean(entrada.evidenciaUrl),
-      );
+      const ahora = new Date();
 
       const cambio: Cambio = {
         id: `ch-${cambios.length + 1}`,
         desarrolloId: entrada.desarrolloId,
         desarrolloNombre: desarrollo?.nombre ?? entrada.desarrolloId,
+        destino: entrada.destino,
         campo: entrada.campo,
         valorAnterior: entrada.valorAnterior,
         valorNuevo: entrada.valorNuevo,
+        usuarioId: entrada.usuarioId,
         usuario: usuario?.nombre ?? entrada.usuarioId,
-        fecha: fechaHora(new Date()),
+        fecha: fechaHora(ahora),
+        fechaIso: ahora.toISOString(),
         fuente: entrada.fuente,
         evidencia: entrada.evidenciaUrl ?? null,
-        estado: pendiente ? "pendiente" : "publicado",
+        nota: entrada.nota ?? null,
+        estado: entrada.estado,
+        aprobadoPor: null,
+        resueltoIso: null,
       };
       cambios.unshift(cambio);
       return cambio;
     },
 
-    async aprobarCambio(id) {
+    async obtenerCambio(id) {
+      return cambios.find((c) => c.id === id) ?? null;
+    },
+
+    async resolverCambio(id, estado, aprobadorId) {
       const cambio = cambios.find((c) => c.id === id);
       if (!cambio) return null;
-      cambio.estado = "publicado";
+      cambio.estado = estado;
+      cambio.aprobadoPor = mock.usuarios.find((u) => u.id === aprobadorId)?.nombre ?? aprobadorId;
+      cambio.resueltoIso = new Date().toISOString();
       return cambio;
     },
 
-    async rechazarCambio(id) {
-      const cambio = cambios.find((c) => c.id === id);
-      if (!cambio) return null;
-      cambio.estado = "rechazado";
-      return cambio;
+    async enTransaccion(fn) {
+      // En memoria no hay a medias: cada escritura es inmediata.
+      return fn(this);
     },
 
     async registrarValidacion(desarrolloId, campo, usuarioId) {

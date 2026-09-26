@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BotonAccion } from "@/components/BotonAccion";
 import { Tabs } from "@/components/Tabs";
 import { Badge, Barra, Card, Dot, Eyebrow, Falta, Foto } from "@/components/ui";
 import {
@@ -11,6 +12,7 @@ import {
   semaforo,
 } from "@casacruz/core";
 import { etiquetaEstatus, etiquetaFuente, hace, money, pct } from "@casacruz/core";
+import { confirmarVigencia } from "@/lib/acciones/gobierno";
 import { usandoApi } from "@/lib/api";
 import { cambiosDe, obtenerDesarrollo, precioPorM2 } from "@/lib/repo";
 import type { Desarrollo } from "@casacruz/core";
@@ -119,10 +121,10 @@ export default async function PropiedadPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; cambio?: string }>;
 }) {
   const { id } = await params;
-  const { tab } = await searchParams;
+  const { tab, cambio } = await searchParams;
   const d = await obtenerDesarrollo(id);
   if (!d) notFound();
 
@@ -187,6 +189,25 @@ export default async function PropiedadPage({
               )}
             </div>
           </div>
+
+          {cambio === "publicado" || cambio === "pendiente" ? (
+            <div
+              role="status"
+              className={`flex items-center gap-3 rounded-[3px] border px-4 py-3 ${
+                cambio === "publicado" ? "border-ok/30 bg-ok-soft" : "border-warn/40 bg-warn-soft"
+              }`}
+            >
+              <span
+                className={`text-[12.5px] font-semibold ${
+                  cambio === "publicado" ? "text-ok-ink" : "text-warn-ink"
+                }`}
+              >
+                {cambio === "publicado"
+                  ? "Cambio publicado: el valor nuevo ya está en la Base Maestra y el campo cuenta como validado hoy."
+                  : "Cambio enviado a aprobación: el cliente sigue viendo el valor anterior hasta que un gerente lo valide."}
+              </span>
+            </div>
+          ) : null}
 
           {aviso ? (
             <div className="flex items-center gap-3 rounded-[3px] border border-warn/40 bg-warn-soft px-4 py-3">
@@ -288,14 +309,35 @@ export default async function PropiedadPage({
                             <span className="text-[12px] text-muted">
                               {c.valorAnterior} → <span className="font-bold text-ink">{c.valorNuevo}</span>
                             </span>
+                            {c.nota ? <span className="text-[11.5px] text-ink-2">“{c.nota}”</span> : null}
                           </div>
                           <div className="flex w-62 flex-col gap-1 self-center">
                             <span className="text-[11px] text-tan-deep">{etiquetaFuente[c.fuente]}</span>
-                            <span className="text-[10.5px] text-muted">
-                              {c.evidencia ?? "sin evidencia adjunta"}
-                            </span>
+                            {c.evidencia && /^https?:\/\//.test(c.evidencia) ? (
+                              <a
+                                href={c.evidencia}
+                                target="_blank"
+                                rel="noopener"
+                                className="text-[10.5px] font-semibold text-ink-2 underline hover:text-ink"
+                              >
+                                Ver evidencia
+                              </a>
+                            ) : (
+                              <span className="text-[10.5px] text-muted">
+                                {c.evidencia ?? "sin evidencia adjunta"}
+                              </span>
+                            )}
+                            {c.aprobadoPor ? (
+                              <span className="text-[10.5px] text-muted">
+                                {c.estado === "rechazado" ? "Rechazó" : "Aprobó"} {c.aprobadoPor}
+                              </span>
+                            ) : null}
                           </div>
-                          {c.estado === "pendiente" ? <Badge tono="warn">pendiente</Badge> : null}
+                          {c.estado === "pendiente" ? (
+                            <Badge tono="warn">pendiente</Badge>
+                          ) : c.estado === "rechazado" ? (
+                            <Badge tono="alert">rechazado</Badge>
+                          ) : null}
                         </div>
                       ))
                     ) : (
@@ -363,14 +405,30 @@ export default async function PropiedadPage({
             </div>
             <Barra valor={score} tono={semaforo(score)} />
             {estados.map((e) => (
-              <div key={e.campo} className="flex items-center gap-2.5">
+              <div key={e.campo} className="flex min-h-7 items-center gap-2.5">
                 <Dot tono={e.estado === "vigente" ? "ok" : e.estado === "por_vencer" ? "warn" : "alert"} />
                 <span className="grow text-[12px]">{e.etiqueta}</span>
                 <span className="text-[11.5px] text-muted">
                   {e.haceDias === null ? "sin validar" : hace(e.haceDias)}
                 </span>
+                {e.haceDias === 0 ? (
+                  <span className="w-19 text-right text-[10px] font-bold tracking-[0.08em] text-ok-ink">
+                    AL DÍA
+                  </span>
+                ) : (
+                  <BotonAccion
+                    accion={confirmarVigencia.bind(null, d.id, e.campo)}
+                    enCurso="…"
+                    className="h-7 w-19 rounded-[3px] border border-line bg-surface text-[9.5px] font-bold tracking-[0.08em] hover:border-[#C9C1B6]"
+                  >
+                    CONFIRMAR
+                  </BotonAccion>
+                )}
               </div>
             ))}
+            <span className="text-[10.5px] leading-relaxed text-muted">
+              Confirmar es decir “lo revisé hoy y sigue igual”. Si cambió, regístralo con su fuente.
+            </span>
             <Link
               href={`/propiedades/${d.id}/cambio`}
               className="flex h-10 items-center justify-center rounded-[3px] border border-line bg-surface text-[10.5px] font-bold tracking-[0.08em] hover:border-[#C9C1B6]"

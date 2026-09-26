@@ -46,6 +46,22 @@ export const fuenteTipo = z.enum([
   "otro",
 ]);
 export const estadoCambio = z.enum(["publicado", "pendiente", "rechazado"]);
+export const campoCambiable = z.enum([
+  "precio",
+  "disponibilidad",
+  "promocion",
+  "entrega",
+  "comision",
+  "enganche",
+]);
+
+export const destinoSchema = z
+  .object({
+    campo: campoCambiable,
+    tipologiaId: z.string().nullish().meta({ description: "Obligatorio para precio y disponibilidad." }),
+    nivel: z.string().nullish().meta({ example: "Planta baja" }),
+  })
+  .meta({ id: "DestinoCambio", description: "A dónde va el valor en la Base Maestra." });
 
 export const plazaSchema = z
   .object({
@@ -251,14 +267,22 @@ export const cambioSchema = z
     id: z.string(),
     desarrolloId: z.string(),
     desarrolloNombre: z.string(),
-    campo: z.string(),
+    campo: z.string().meta({ description: "Cómo se lee en el historial." }),
+    destino: destinoSchema.nullable().meta({
+      description: "Null en cambios históricos de texto libre: quedan en la bitácora pero no modifican datos.",
+    }),
     valorAnterior: z.string(),
     valorNuevo: z.string(),
+    usuarioId: z.string(),
     usuario: z.string(),
     fecha: z.string(),
+    fechaIso: z.string(),
     fuente: fuenteTipo,
     evidencia: z.string().nullable(),
+    nota: z.string().nullable(),
     estado: estadoCambio,
+    aprobadoPor: z.string().nullable(),
+    resueltoIso: z.string().nullable(),
   })
   .meta({
     id: "Cambio",
@@ -322,17 +346,22 @@ export const filtrosInventarioSchema = z.object({
 
 export const nuevoCambioSchema = z
   .object({
-    desarrolloId: z.string().min(1),
-    campo: z.string().min(1).meta({ example: "precio" }),
-    valorAnterior: z.string(),
-    valorNuevo: z.string().min(1),
+    desarrolloId: z.string().min(1).meta({ example: "playa-park" }),
+    destino: destinoSchema,
+    valorNuevo: z.string().min(1).max(200).meta({
+      example: "$3,550,000",
+      description: "Como lo escribiría el cerrador: el servidor lo interpreta y lo normaliza.",
+    }),
     fuente: fuenteTipo,
     evidenciaUrl: z.string().min(1).nullish().meta({
-      description: "Documento que respalda el cambio. Sin él, queda pendiente de aprobación.",
+      description: "URL de POST /archivos. Sin evidencia, el cambio queda pendiente de aprobación.",
     }),
-    nota: z.string().nullish(),
+    nota: z.string().max(500).nullish(),
   })
-  .meta({ id: "NuevoCambio" });
+  .meta({
+    id: "NuevoCambio",
+    description: "El valor anterior no se envía: lo calcula el servidor desde la Base Maestra.",
+  });
 
 export const nuevaValidacionSchema = z
   .object({

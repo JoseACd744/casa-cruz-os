@@ -1,12 +1,15 @@
 import Link from "next/link";
+import { BotonAccion } from "@/components/BotonAccion";
 import { Badge, Seccion } from "@/components/ui";
 import {
   alcanza,
   CAMPOS,
   confiabilidad,
   estadoValidaciones,
+  motivoParaNoAprobar,
   type EstadoValidacion,
 } from "@casacruz/core";
+import { resolverCambio } from "@/lib/acciones/gobierno";
 import { etiquetaEstatus, etiquetaFuente } from "@casacruz/core";
 import {
   conteoPipeline,
@@ -136,6 +139,9 @@ export default async function ControlPage() {
             accion={<Badge tono="warn">{pendientes.length}</Badge>}
           >
             <div className="flex flex-col gap-2.5">
+              {pendientes.length === 0 ? (
+                <p className="py-4 text-[12.5px] text-muted">No hay cambios esperando aprobación.</p>
+              ) : null}
               {pendientes.map((c) => (
                 <div
                   key={c.id}
@@ -162,15 +168,49 @@ export default async function ControlPage() {
                       className={`text-[11px] ${c.evidencia ? "text-tan-deep" : "text-alert"}`}
                     >
                       {etiquetaFuente[c.fuente]}
-                      {c.evidencia ? ` · ${c.evidencia}` : " · sin evidencia"}
+                      {c.evidencia && /^https?:\/\//.test(c.evidencia) ? (
+                        <>
+                          {" · "}
+                          <a href={c.evidencia} target="_blank" rel="noopener" className="underline hover:text-ink">
+                            ver evidencia
+                          </a>
+                        </>
+                      ) : c.evidencia ? (
+                        ` · ${c.evidencia}`
+                      ) : (
+                        " · sin evidencia"
+                      )}
                     </span>
                   </div>
-                  <button className="h-9 rounded-[3px] bg-ink px-3.5 text-[10.5px] font-bold tracking-[0.08em] text-white hover:brightness-125">
-                    APROBAR
-                  </button>
-                  <button className="h-9 rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.08em] text-alert-ink hover:bg-alert-soft">
-                    RECHAZAR
-                  </button>
+                  {(() => {
+                    const motivo = motivoParaNoAprobar(c, actual);
+                    if (motivo) {
+                      return (
+                        <span className="w-44 text-right text-[10.5px] leading-snug text-muted">
+                          {c.usuarioId === actual.id ? "Tu cambio: lo valida otro gerente" : motivo.mensaje}
+                        </span>
+                      );
+                    }
+                    return (
+                      <>
+                        <BotonAccion
+                          accion={resolverCambio.bind(null, c.id, "aprobar")}
+                          enCurso="APROBANDO…"
+                          className="h-9 rounded-[3px] bg-ink px-3.5 text-[10.5px] font-bold tracking-[0.08em] text-white hover:brightness-125"
+                        >
+                          APROBAR
+                        </BotonAccion>
+                        <BotonAccion
+                          accion={resolverCambio.bind(null, c.id, "rechazar")}
+                          enCurso="…"
+                          confirmar={`¿Rechazar el cambio de ${c.campo} en ${c.desarrolloNombre}? El valor actual se queda como está.`}
+                          className="h-9 rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.08em] text-alert-ink hover:bg-alert-soft"
+                        >
+                          RECHAZAR
+                        </BotonAccion>
+                      </>
+                    );
+                  })()}
                 </div>
               ))}
             </div>

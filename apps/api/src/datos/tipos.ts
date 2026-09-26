@@ -2,6 +2,7 @@ import type {
   Cambio,
   Cliente,
   Desarrollo,
+  DestinoCambio,
   EstatusListing,
   FiltrosInventario,
   FuenteTipo,
@@ -12,8 +13,13 @@ import type {
   Usuario,
 } from "@casacruz/core";
 
+/**
+ * Un cambio ya revisado por el servicio de gobierno (gobierno.ts): con su
+ * etiqueta, el valor anterior que calculó el servidor y el estado que le toca.
+ */
 export interface NuevoCambio {
   desarrolloId: string;
+  destino: DestinoCambio | null;
   campo: string;
   valorAnterior: string;
   valorNuevo: string;
@@ -21,6 +27,7 @@ export interface NuevoCambio {
   fuente: FuenteTipo;
   evidenciaUrl?: string | null;
   nota?: string | null;
+  estado: Cambio["estado"];
 }
 
 export interface NuevoDesarrollo {
@@ -115,10 +122,21 @@ export interface FuenteDeDatos {
   novedades(): Promise<{ fecha: string; titulo: string; detalle: string }[]>;
 
   // ── Gobierno del dato ────────────────────────────────────────────────
-  registrarCambio(entrada: NuevoCambio): Promise<Cambio>;
-  aprobarCambio(id: string, aprobadorId: string): Promise<Cambio | null>;
-  rechazarCambio(id: string, aprobadorId: string): Promise<Cambio | null>;
+  /** Guarda el cambio tal cual; las reglas ya se aplicaron en gobierno.ts. */
+  guardarCambio(entrada: NuevoCambio): Promise<Cambio>;
+  obtenerCambio(id: string): Promise<Cambio | null>;
+  resolverCambio(
+    id: string,
+    estado: "publicado" | "rechazado",
+    aprobadorId: string,
+  ): Promise<Cambio | null>;
   registrarValidacion(desarrolloId: string, campo: string, usuarioId: string): Promise<void>;
+
+  /**
+   * Ejecuta varias escrituras como una sola: en Postgres, todo o nada. El
+   * cambio, su efecto en el dato y la validación no pueden quedar a medias.
+   */
+  enTransaccion<T>(fn: (datos: FuenteDeDatos) => Promise<T>): Promise<T>;
 
   // ── Escritura de producto ────────────────────────────────────────────
   crearDesarrollo(entrada: NuevoDesarrollo): Promise<Desarrollo>;

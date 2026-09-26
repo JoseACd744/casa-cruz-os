@@ -162,9 +162,12 @@ export default async function UsuariosPage() {
             </div>
           ))}
           <div className="grow" />
-          <button className="h-11 rounded-[3px] border border-line bg-surface text-[10.5px] font-bold tracking-[0.08em]">
-            EXPORTAR BITÁCORA
-          </button>
+          <a
+            href="/descargas/bitacora.csv"
+            className="flex h-11 items-center justify-center rounded-[3px] border border-line bg-surface text-[10.5px] font-bold tracking-[0.08em] hover:border-[#C9C1B6]"
+          >
+            EXPORTAR BITÁCORA (CSV)
+          </a>
         </Card>
       </div>
     </>

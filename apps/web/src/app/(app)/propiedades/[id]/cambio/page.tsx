@@ -1,14 +1,23 @@
 import { notFound } from "next/navigation";
+import { fechaHora } from "@casacruz/core";
 import { FormCambio } from "@/components/FormCambio";
-import { obtenerDesarrollo, obtenerUsuarioActual } from "@/lib/repo";
+import { obtenerDesarrollo, obtenerIntegraciones, obtenerUsuarioActual } from "@/lib/repo";
 
 export default async function CambioPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const d = await obtenerDesarrollo(id);
+  const [d, usuario, integraciones] = await Promise.all([
+    obtenerDesarrollo(id),
+    obtenerUsuarioActual(),
+    obtenerIntegraciones(),
+  ]);
   if (!d) notFound();
-  const usuario = await obtenerUsuarioActual();
 
   return (
-    <FormCambio desarrolloId={d.id} desarrolloNombre={d.nombre} usuario={usuario.nombre} />
+    <FormCambio
+      desarrollo={d}
+      usuario={usuario.nombre}
+      ahora={fechaHora(new Date())}
+      puedeAdjuntar={integraciones.archivos !== "sin_configurar"}
+    />
   );
 }

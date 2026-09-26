@@ -1,10 +1,25 @@
 import { PrismaClient, type Prisma } from "@prisma/client";
-import { fechaCorta, fechaDocumento, fechaHora, requiereAprobacion, type Cambio, type Cliente, type Desarrollo, type EstatusListing, type Propuesta, type Usuario } from "@casacruz/core";
+import {
+  fechaCorta,
+  fechaDocumento,
+  fechaHora,
+  novedadesDe,
+  type Cambio,
+  type CampoCambiable,
+  type Cliente,
+  type Desarrollo,
+  type EstatusListing,
+  type Propuesta,
+  type Usuario,
+} from "@casacruz/core";
 import type { FuenteDeDatos, NuevoCambio } from "./tipos";
 
 /** Fuente real: Postgres a través de Prisma. */
 
 export const prisma = new PrismaClient();
+
+/** El cliente normal o el de una transacción en curso: el adaptador sirve con los dos. */
+type Cliente_ = PrismaClient | Prisma.TransactionClient;
 
 const num = (v: unknown): number | null => (v === null || v === undefined ? null : Number(v));
 
@@ -120,42 +135,44 @@ function aDesarrollo(d: FilaDesarrollo): Desarrollo {
   };
 }
 
-function aCambio(c: {
-  id: string;
-  desarrolloId: string;
-  campo: string;
-  valorAnterior: string;
-  valorNuevo: string;
-  fecha: Date;
-  fuente: Cambio["fuente"];
-  evidenciaUrl: string | null;
-  estado: Cambio["estado"];
-  autor: { nombre: string };
-  desarrollo: { nombre: string };
-}): Cambio {
+const incluirCambio = { autor: true, desarrollo: true, aprobadoPor: true } as const;
+
+type FilaCambio = Prisma.CambioGetPayload<{ include: typeof incluirCambio }>;
+
+function aCambio(c: FilaCambio): Cambio {
   return {
     id: c.id,
     desarrolloId: c.desarrolloId,
     desarrolloNombre: c.desarrollo.nombre,
     campo: c.campo,
+    destino: c.campoClave
+      ? { campo: c.campoClave as CampoCambiable, tipologiaId: c.tipologiaId, nivel: c.nivel }
+      : null,
     valorAnterior: c.valorAnterior,
     valorNuevo: c.valorNuevo,
+    usuarioId: c.usuarioId,
     usuario: c.autor.nombre,
     fecha: fechaHora(c.fecha),
+    fechaIso: c.fecha.toISOString(),
     fuente: c.fuente,
     evidencia: c.evidenciaUrl,
+    nota: c.nota,
     estado: c.estado,
+    aprobadoPor: c.aprobadoPor?.nombre ?? null,
+    resueltoIso: c.aprobadoEl?.toISOString() ?? null,
   };
 }
 
-export function fuentePostgres(): FuenteDeDatos {
-  const incluirCambio = { autor: true, desarrollo: true } as const;
+export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
+  // Dentro de una transacción no se abre otra: se usa la que ya está en curso.
+  const enLote = <T>(fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> =>
+    "$transaction" in db ? (db as PrismaClient).$transaction(fn) : fn(db);
 
   return {
     nombre: "postgres",
 
     async listarPlazas() {
-      const filas = await prisma.plaza.findMany({ orderBy: { nombre: "asc" } });
+      const filas = await db.plaza.findMany({ orderBy: { nombre: "asc" } });
       return filas.map((p) => ({
         id: p.id,
         nombre: p.nombre,
@@ -165,7 +182,7 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async listarDesarrollos(filtros) {
-      const filas = await prisma.desarrollo.findMany({
+      const filas = await db.desarrollo.findMany({
         where: {
           ...(filtros.ciudad ? { ciudad: filtros.ciudad } : {}),
           ...(filtros.soloPublicados ? { estatus: "publicado" as const } : {}),
@@ -192,12 +209,12 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async obtenerDesarrollo(id) {
-      const fila = await prisma.desarrollo.findUnique({ where: { id }, include: incluirDesarrollo });
+      const fila = await db.desarrollo.findUnique({ where: { id }, include: incluirDesarrollo });
       return fila ? aDesarrollo(fila) : null;
     },
 
     async listarUsuarios(): Promise<Usuario[]> {
-      const filas = await prisma.usuario.findMany({
+      const filas = await db.usuario.findMany({
         include: { plazas: true, desarrollos: { select: { id: true } } },
         orderBy: { nombre: "asc" },
       });
@@ -216,7 +233,7 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async hashDeContrasena(usuarioId: string) {
-      const fila = await prisma.usuario.findUnique({
+      const fila = await db.usuario.findUnique({
         where: { id: usuarioId },
         select: { contrasenaHash: true },
       });
@@ -230,7 +247,7 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async listarClientes(): Promise<Cliente[]> {
-      const filas = await prisma.cliente.findMany({
+      const filas = await db.cliente.findMany({
         include: { actividad: { orderBy: { fecha: "desc" } } },
         orderBy: { creadoEl: "desc" },
       });
@@ -261,7 +278,7 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async listarPropuestas(): Promise<Propuesta[]> {
-      const filas = await prisma.propuesta.findMany({
+      const filas = await db.propuesta.findMany({
         include: { items: { orderBy: { orden: "asc" } } },
         orderBy: { creadaEl: "desc" },
       });
@@ -294,7 +311,7 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async listarCambios(estado) {
-      const filas = await prisma.cambio.findMany({
+      const filas = await db.cambio.findMany({
         where: estado ? { estado } : {},
         include: incluirCambio,
         orderBy: { fecha: "desc" },
@@ -303,7 +320,7 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async cambiosDe(desarrolloId) {
-      const filas = await prisma.cambio.findMany({
+      const filas = await db.cambio.findMany({
         where: { desarrolloId },
         include: incluirCambio,
         orderBy: { fecha: "desc" },
@@ -312,7 +329,7 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async conteoPipeline() {
-      const filas = await prisma.desarrollo.groupBy({ by: ["estatus"], _count: true });
+      const filas = await db.desarrollo.groupBy({ by: ["estatus"], _count: true });
       const base: Record<EstatusListing, number> = {
         borrador: 0,
         revision: 0,
@@ -325,53 +342,51 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async novedades() {
-      const filas = await prisma.cambio.findMany({
+      const filas = await db.cambio.findMany({
         where: { estado: "publicado" },
         include: incluirCambio,
         orderBy: { fecha: "desc" },
         take: 6,
       });
-      return filas.map((c) => ({
-        fecha: fechaCorta(c.fecha).slice(0, 6).toUpperCase(),
-        titulo: `${c.desarrollo.nombre}: ${c.campo}`,
-        detalle: `${c.valorAnterior} → ${c.valorNuevo}. Fuente: ${c.fuente}.`,
-      }));
+      return novedadesDe(filas.map(aCambio));
     },
 
-    async registrarCambio(entrada: NuevoCambio) {
-      const pendiente = requiereAprobacion(
-        entrada.campo,
-        entrada.fuente,
-        Boolean(entrada.evidenciaUrl),
-      );
-      const creado = await prisma.cambio.create({
+    async guardarCambio(entrada: NuevoCambio) {
+      const creado = await db.cambio.create({
         data: {
           desarrolloId: entrada.desarrolloId,
           campo: entrada.campo,
+          campoClave: entrada.destino?.campo ?? null,
+          tipologiaId: entrada.destino?.tipologiaId ?? null,
+          nivel: entrada.destino?.nivel ?? null,
           valorAnterior: entrada.valorAnterior,
           valorNuevo: entrada.valorNuevo,
           usuarioId: entrada.usuarioId,
           fuente: entrada.fuente,
           evidenciaUrl: entrada.evidenciaUrl ?? null,
           nota: entrada.nota ?? null,
-          estado: pendiente ? "pendiente" : "publicado",
+          estado: entrada.estado,
         },
         include: incluirCambio,
       });
       return aCambio(creado);
     },
 
-    async aprobarCambio(id, aprobadorId) {
-      const actualizado = await prisma.cambio.update({
+    async obtenerCambio(id) {
+      const fila = await db.cambio.findUnique({ where: { id }, include: incluirCambio });
+      return fila ? aCambio(fila) : null;
+    },
+
+    async resolverCambio(id, estado, aprobadorId) {
+      const { count } = await db.cambio.updateMany({
         where: { id },
-        data: { estado: "publicado", aprobadoPorId: aprobadorId, aprobadoEl: new Date() },
-        include: incluirCambio,
+        data: { estado, aprobadoPorId: aprobadorId, aprobadoEl: new Date() },
       });
-      return aCambio(actualizado);
+      return count ? this.obtenerCambio(id) : null;
     },
 
     async registrarValidacion(desarrolloId, campo, usuarioId) {
-      await prisma.validacion.create({
+      await db.validacion.create({
         data: {
           desarrolloId,
           campo: campo as never,
@@ -380,18 +395,14 @@ export function fuentePostgres(): FuenteDeDatos {
       });
     },
 
-    async rechazarCambio(id, aprobadorId) {
-      const actualizado = await prisma.cambio.update({
-        where: { id },
-        data: { estado: "rechazado", aprobadoPorId: aprobadorId, aprobadoEl: new Date() },
-        include: incluirCambio,
-      });
-      return aCambio(actualizado);
+    async enTransaccion(fn) {
+      if (!("$transaction" in db)) return fn(this);
+      return (db as PrismaClient).$transaction((tx) => fn(fuentePostgres(tx)));
     },
 
     async crearDesarrollo(entrada) {
       const id = idDesde(entrada.nombre);
-      const creado = await prisma.desarrollo.create({
+      const creado = await db.desarrollo.create({
         data: {
           id,
           nombre: entrada.nombre,
@@ -413,7 +424,7 @@ export function fuentePostgres(): FuenteDeDatos {
 
     async actualizarDesarrollo(id, parche) {
       const { condiciones, comercial, interna, ...resto } = parche;
-      await prisma.desarrollo.update({
+      await db.desarrollo.update({
         where: { id },
         data: {
           ...resto,
@@ -428,7 +439,7 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async cambiarEstatus(id, estatus) {
-      await prisma.desarrollo.update({ where: { id }, data: { estatus } });
+      await db.desarrollo.update({ where: { id }, data: { estatus } });
       return this.obtenerDesarrollo(id);
     },
 
@@ -444,7 +455,7 @@ export function fuentePostgres(): FuenteDeDatos {
         planoUrl: entrada.planoUrl ?? null,
       };
 
-      await prisma.$transaction(async (tx) => {
+      await enLote(async (tx) => {
         await tx.tipologia.upsert({
           where: { id },
           create: { id, desarrolloId, ...datosTipologia },
@@ -469,14 +480,14 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async eliminarTipologia(desarrolloId, tipologiaId) {
-      const { count } = await prisma.tipologia.deleteMany({
+      const { count } = await db.tipologia.deleteMany({
         where: { id: tipologiaId, desarrolloId },
       });
       return count > 0;
     },
 
     async agregarMultimedia(desarrolloId, item) {
-      await prisma.multimedia.create({
+      await db.multimedia.create({
         data: { desarrolloId, tipo: item.tipo, url: item.url, orden: item.orden },
       });
       const desarrollo = await this.obtenerDesarrollo(desarrolloId);
@@ -484,13 +495,13 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async eliminarMultimedia(desarrolloId, url) {
-      await prisma.multimedia.deleteMany({ where: { desarrolloId, url } });
+      await db.multimedia.deleteMany({ where: { desarrolloId, url } });
       const desarrollo = await this.obtenerDesarrollo(desarrolloId);
       return desarrollo?.multimedia ?? null;
     },
 
     async crearCliente(entrada) {
-      const creado = await prisma.cliente.create({
+      const creado = await db.cliente.create({
         data: {
           nombre: entrada.nombre,
           correo: entrada.correo ?? null,
@@ -511,7 +522,7 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async actualizarCliente(id, parche) {
-      await prisma.cliente.update({ where: { id }, data: parche });
+      await db.cliente.update({ where: { id }, data: parche });
       return this.obtenerCliente(id);
     },
 
@@ -537,7 +548,7 @@ export function fuentePostgres(): FuenteDeDatos {
         });
       }
 
-      const creada = await prisma.propuesta.create({
+      const creada = await db.propuesta.create({
         data: {
           slug: idDesde(`${cliente?.nombre ?? "propuesta"}-${Date.now().toString(36)}`),
           clienteId: entrada.clienteId,
@@ -563,7 +574,7 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async marcarPropuestaEnviada(slug) {
-      await prisma.propuesta.update({
+      await db.propuesta.update({
         where: { slug },
         data: { estado: "enviada", enviadaEl: new Date() },
       });
@@ -571,7 +582,7 @@ export function fuentePostgres(): FuenteDeDatos {
     },
 
     async sumarVistaPropuesta(slug) {
-      const actualizada = await prisma.propuesta.update({
+      const actualizada = await db.propuesta.update({
         where: { slug },
         data: { vistas: { increment: 1 }, estado: "vista" },
       });

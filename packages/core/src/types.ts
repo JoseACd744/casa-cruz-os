@@ -1,3 +1,5 @@
+import type { DestinoCambio } from "./cambios";
+
 /**
  * Modelo de datos de la Base Maestra de Casa Cruz OS.
  *
@@ -142,14 +144,28 @@ export interface Cambio {
   id: string;
   desarrolloId: string;
   desarrolloNombre: string;
+  /** Cómo se lee en el historial ("Precio de venta · 3 hab · Planta baja"). */
   campo: string;
+  /**
+   * A dónde va el valor en la Base Maestra. Null en cambios históricos de texto
+   * libre, que quedan en la bitácora pero no modifican nada al aprobarse.
+   */
+  destino: DestinoCambio | null;
   valorAnterior: string;
   valorNuevo: string;
+  usuarioId: string;
   usuario: string;
+  /** Fecha para leer ("18 sep 2026 · 12:43"). */
   fecha: string;
+  fechaIso: string;
   fuente: FuenteTipo;
   evidencia: string | null;
+  nota: string | null;
   estado: "publicado" | "pendiente" | "rechazado";
+  /** Quién aprobó o rechazó, si ya se resolvió. */
+  aprobadoPor: string | null;
+  /** Cuándo se aprobó o rechazó. Null si se publicó directo o sigue pendiente. */
+  resueltoIso: string | null;
 }
 
 export interface Usuario {

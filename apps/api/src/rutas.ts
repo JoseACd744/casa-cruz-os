@@ -1,11 +1,12 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { confiabilidad, estadoValidaciones, requiereAprobacion } from "@casacruz/core";
+import { confiabilidad, estadoValidaciones } from "@casacruz/core";
 import { exigir, sesionOpcional } from "./auth";
 import { desarrolloSegunRol, desarrollosSegunRol } from "./visibilidad";
 import { almacenamientoConfigurado, almacenamientoLocal } from "./almacenamiento";
 import { config, modoMock } from "./config";
+import { bitacoraCsv, registrarCambio, resolverCambio } from "./gobierno";
 import { kommoConfigurado } from "./kommo";
 import { fuente, origenConfigurado } from "./datos";
 import {
@@ -368,6 +369,26 @@ export async function rutas(instancia: FastifyInstance) {
     async (peticion) => datos.cambiosDe(peticion.params.id),
   );
 
+  app.get(
+    "/cambios/exportar",
+    {
+      preHandler: exigir("gerente"),
+      schema: {
+        tags: ["Gobierno del dato"],
+        summary: "Bitácora completa en CSV",
+        description: "Para auditoría: quién cambió qué, cuándo, con qué fuente y quién lo aprobó. Se abre en Excel.",
+        produces: ["text/csv"],
+      },
+    },
+    async (_peticion, respuesta) => {
+      const hoy = new Date().toISOString().slice(0, 10);
+      return respuesta
+        .type("text/csv; charset=utf-8")
+        .header("content-disposition", `attachment; filename="bitacora-casa-cruz-${hoy}.csv"`)
+        .send(bitacoraCsv(await datos.listarCambios()));
+    },
+  );
+
   app.post(
     "/cambios",
     {
@@ -375,62 +396,53 @@ export async function rutas(instancia: FastifyInstance) {
       schema: {
         tags: ["Gobierno del dato"],
         summary: "Registrar un cambio",
-        description:
-          "La regla se aplica aquí, no en la interfaz: si el campo es sensible (comisión, entrega, esquema, rendimiento) o la fuente no admite evidencia documental, el cambio queda pendiente de aprobación aunque el cliente de la API pida publicarlo.",
+        description: [
+          "La regla se aplica aquí, no en la interfaz. El servidor calcula el valor anterior, interpreta el nuevo y decide:",
+          "",
+          "- **Se publica** si el campo no es sensible y trae una fuente documental con evidencia: el valor pasa a la Base Maestra y el campo cuenta como validado.",
+          "- **Queda pendiente** si el campo es sensible (comisión, entrega, esquema de pago) o la fuente no admite evidencia (llamada, otro). Mientras tanto el cliente sigue viendo el valor anterior.",
+        ].join("\n"),
         body: nuevoCambioSchema,
-        response: { 201: respuestaCambioSchema, 400: errorSchema },
+        response: {
+          201: respuestaCambioSchema,
+          400: errorSchema,
+          403: errorSchema,
+          404: errorSchema,
+          409: errorSchema,
+        },
       },
     },
     async (peticion, respuesta) => {
       // El autor sale del token: nadie firma un cambio a nombre de otro.
-      const cambio = await datos.registrarCambio({ ...peticion.body, usuarioId: peticion.user.id });
-      return respuesta.code(201).send({
-        cambio,
-        requiereAprobacion: requiereAprobacion(
-          peticion.body.campo,
-          peticion.body.fuente,
-          Boolean(peticion.body.evidenciaUrl),
-        ),
-      });
+      const r = await registrarCambio(datos, peticion.body, peticion.user);
+      if (!r.ok) return respuesta.code(r.codigo).send({ error: r.error });
+      return respuesta.code(201).send(r.valor);
     },
   );
 
-  app.post(
-    "/cambios/:id/aprobar",
-    {
-      preHandler: exigir("gerente"),
-      schema: {
-        tags: ["Gobierno del dato"],
-        summary: "Aprobar un cambio pendiente",
-        params: z.object({ id: z.string() }),
-        response: { 200: cambioSchema, ...noEncontrado },
+  for (const decision of ["aprobar", "rechazar"] as const) {
+    app.post(
+      `/cambios/:id/${decision}`,
+      {
+        preHandler: exigir("gerente"),
+        schema: {
+          tags: ["Gobierno del dato"],
+          summary: decision === "aprobar" ? "Aprobar un cambio pendiente" : "Rechazar un cambio pendiente",
+          description:
+            decision === "aprobar"
+              ? "Aplica el valor en la Base Maestra. Nadie aprueba su propio cambio, y si el dato se movió mientras esperaba, responde 409 en lugar de pisarlo."
+              : "El valor anterior se queda como está y el rechazo queda en la bitácora.",
+          params: z.object({ id: z.string() }),
+          response: { 200: cambioSchema, 403: errorSchema, 409: errorSchema, ...noEncontrado },
+        },
       },
-    },
-    async (peticion, respuesta) => {
-      const cambio = await datos.aprobarCambio(peticion.params.id, peticion.user.id);
-      if (!cambio) return respuesta.code(404).send({ error: "Cambio no encontrado" });
-      return cambio;
-    },
-  );
-
-  app.post(
-    "/cambios/:id/rechazar",
-    {
-      preHandler: exigir("gerente"),
-      schema: {
-        tags: ["Gobierno del dato"],
-        summary: "Rechazar un cambio pendiente",
-        description: "El valor anterior se queda como está, y el rechazo queda en el historial.",
-        params: z.object({ id: z.string() }),
-        response: { 200: cambioSchema, ...noEncontrado },
+      async (peticion, respuesta) => {
+        const r = await resolverCambio(datos, peticion.params.id, decision, peticion.user);
+        if (!r.ok) return respuesta.code(r.codigo).send({ error: r.error });
+        return r.valor;
       },
-    },
-    async (peticion, respuesta) => {
-      const cambio = await datos.rechazarCambio(peticion.params.id, peticion.user.id);
-      if (!cambio) return respuesta.code(404).send({ error: "Cambio no encontrado" });
-      return cambio;
-    },
-  );
+    );
+  }
 
   app.post(
     "/desarrollos/:id/validaciones",

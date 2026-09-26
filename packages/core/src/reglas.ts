@@ -6,8 +6,11 @@ import { fuenteAdmiteEvidencia } from "./format";
  * exactamente el mismo criterio: la interfaz avisa, la API decide.
  */
 
-/** Campos que nunca se publican sin que un gerente o corporativo los valide. */
-export const CAMPOS_SENSIBLES = ["comision", "entrega", "esquema", "rendimiento"] as const;
+/**
+ * Campos que nunca se publican sin que un gerente o corporativo los valide. El
+ * enganche es parte del esquema de pago.
+ */
+export const CAMPOS_SENSIBLES = ["comision", "entrega", "esquema", "enganche", "rendimiento"] as const;
 
 export function esCampoSensible(campo: string): boolean {
   // Sin acentos: el campo puede llegar como "comision" o como "Comisión autorizada".

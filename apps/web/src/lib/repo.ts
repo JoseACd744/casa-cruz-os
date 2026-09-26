@@ -3,6 +3,7 @@ import {
   confiabilidad,
   filtrarDesarrollos,
   mock,
+  novedadesDe,
   type Cambio,
   type Cliente,
   type Desarrollo,
@@ -163,7 +164,7 @@ export async function cambiosDe(desarrolloId: string): Promise<Cambio[]> {
 }
 
 export async function listarNovedades(): Promise<{ fecha: string; titulo: string; detalle: string }[]> {
-  if (!usandoApi) return mock.novedades;
+  if (!usandoApi) return novedadesDe(mock.cambios);
   return (await pedir<{ fecha: string; titulo: string; detalle: string }[]>("/novedades")) ?? [];
 }
 
