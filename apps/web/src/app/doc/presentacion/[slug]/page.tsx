@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { BarraDoc } from "@/components/BarraDoc";
 import { Deck, type Slide } from "@/components/Deck";
-import { galeria, money } from "@casacruz/core";
+import { galeria, money, nombreVisible } from "@casacruz/core";
 import { obtenerPropuestaPublica } from "@/lib/repo";
 
 export default async function PresentacionPage({
@@ -27,7 +27,7 @@ export default async function PresentacionPage({
     {
       tipo: "portada",
       titulo: "Propuesta\nde propiedades",
-      cliente: cliente?.nombre ?? "[CLIENTE]",
+      cliente: nombreVisible(cliente?.nombre) ?? "ustedes",
       fecha: propuesta.creadaEl.toUpperCase(),
       asesor,
     },

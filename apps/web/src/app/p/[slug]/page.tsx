@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BotonInteres, RegistroVista } from "@/components/Micrositio";
 import { Foto } from "@/components/ui";
-import { galeria, iniciales, mesAnio, money } from "@casacruz/core";
+import { galeria, iniciales, mesAnio, money, nombreVisible } from "@casacruz/core";
 import { obtenerPropuestaPublica } from "@/lib/repo";
 import { tokenDeSesion } from "@/lib/sesion";
 import type { Desarrollo, PropuestaItem } from "@casacruz/core";
@@ -14,13 +14,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const publica = await obtenerPropuestaPublica(slug);
-  const nombre = publica?.cliente?.nombre.split(" y ")[0] ?? "ti";
+  const nombre = nombreVisible(publica?.cliente?.nombre)?.split(" y ")[0];
+  const titulo = nombre ? `Propuesta Casa Cruz para ${nombre}` : "Tu propuesta Casa Cruz";
   return {
-    title: `Propuesta Casa Cruz para ${nombre}`,
+    title: titulo,
     description:
       "Seleccionamos estas propiedades con base en lo que nos compartiste. Precios, esquema de pago y comparativo en un solo lugar.",
     openGraph: {
-      title: `Propuesta Casa Cruz para ${nombre}`,
+      title: titulo,
       description: "Las opciones que seleccionamos para ustedes, con precios y esquema de pago.",
       type: "website",
     },
@@ -170,7 +171,7 @@ export default async function PropuestaPublicaPage({
     });
   }
 
-  const nombreCorto = (cliente?.nombre ?? "").replace(" y ", " y\n");
+  const nombre = nombreVisible(cliente?.nombre);
   const ciudades = enumerar([...new Set(resueltos.map((r) => r.desarrollo.ciudad))]);
 
   const filas: { campo: string; valores: string[] }[] = [
@@ -215,8 +216,8 @@ export default async function PropuestaPublicaPage({
           PROPUESTA PERSONALIZADA · {mesAnio(new Date(propuesta.creadaIso)).toUpperCase()}
         </span>
         <h1 className="pt-3.5 text-[34px] leading-none font-extrabold tracking-[-0.02em] whitespace-pre-line md:text-[52px]">
-          Hola {nombreCorto.split(" ").slice(0, 1)[0]}
-          {cliente?.nombre.includes(" y ") ? `\ny ${cliente.nombre.split(" y ")[1].split(" ")[0]}` : ""}
+          {nombre ? `Hola ${nombre.split(" ")[0]}` : "Hola"}
+          {nombre?.includes(" y ") ? `\ny ${nombre.split(" y ")[1].split(" ")[0]}` : ""}
         </h1>
         <p className="max-w-155 pt-4.5 text-[16px] leading-relaxed text-[#D4CEC6]">
           Con base en lo que nos compartieron

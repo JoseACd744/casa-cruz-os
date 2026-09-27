@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { BarraDoc } from "@/components/BarraDoc";
 import { Foto } from "@/components/ui";
-import { etiquetaRol, galeria, money } from "@casacruz/core";
+import { etiquetaRol, galeria, money, nombreVisible } from "@casacruz/core";
 import { usandoApi } from "@/lib/api";
 import { obtenerPropuestaPublica } from "@/lib/repo";
 import type { Desarrollo, PropuestaItem } from "@casacruz/core";
@@ -94,7 +94,7 @@ export default async function PdfComparativoPage({
               <span className="text-[10px] font-bold tracking-[0.14em] text-muted">
                 PREPARADA PARA
               </span>
-              <span className="text-[13px] font-bold">{cliente?.nombre ?? "[CLIENTE]"}</span>
+              <span className="text-[13px] font-bold">{nombreVisible(cliente?.nombre) ?? "Tu familia"}</span>
               <span className="text-[10.5px] text-muted">
                 {propuesta.creadaEl}
                 {asesor ? ` · ${asesor.nombre}` : ""}

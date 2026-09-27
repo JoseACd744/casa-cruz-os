@@ -13,9 +13,11 @@
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
     "push": "prisma db push",
-    "seed": "tsx prisma/seed.ts",
+    "seed": "tsx --env-file-if-exists=.env prisma/seed.ts",
     "studio": "prisma studio",
-    "test": "tsx --test src/*.test.ts"
+    "test": "tsx --test src/*.test.ts",
+    "acceso": "tsx --env-file-if-exists=.env prisma/acceso.ts",
+    "test:postgres": "tsx --env-file-if-exists=.env --test --test-concurrency=1 src/*.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1137.0",
@@ -38,5 +40,8 @@
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

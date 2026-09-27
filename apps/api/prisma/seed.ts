@@ -7,42 +7,48 @@ import { mock } from "@casacruz/core";
  *   pnpm --filter @casacruz/api seed
  *
  * Es el mismo contenido que ve la web en modo mock, así que al conectar la base
- * real la aplicación no cambia de comportamiento.
+ * real la aplicación no cambia de comportamiento. Borra todo lo que haya: es
+ * para arrancar o para las pruebas, nunca para una base con datos reales.
  */
-
-const prisma = new PrismaClient();
 
 const hace = (dias: number) => new Date(Date.now() - dias * 86_400_000);
 
-async function main() {
-  console.log("Limpiando tablas…");
-  await prisma.propuestaItem.deleteMany();
-  await prisma.propuesta.deleteMany();
-  await prisma.actividad.deleteMany();
-  await prisma.cliente.deleteMany();
-  await prisma.cambio.deleteMany();
-  await prisma.validacion.deleteMany();
-  await prisma.documento.deleteMany();
-  await prisma.infoInterna.deleteMany();
-  await prisma.infoComercial.deleteMany();
-  await prisma.condicionComercial.deleteMany();
-  await prisma.nivelPrecio.deleteMany();
-  await prisma.tipologia.deleteMany();
-  await prisma.multimedia.deleteMany();
-  await prisma.desarrollo.deleteMany();
-  await prisma.usuarioPlaza.deleteMany();
-  await prisma.plaza.deleteMany();
-  await prisma.usuario.deleteMany();
+/** El id de alguien del equipo a partir de su nombre, como lo guarda el historial. */
+function idPorNombre(nombre: string | null): string | null {
+  if (!nombre) return null;
+  return mock.usuarios.find((u) => u.nombre === nombre)?.id ?? null;
+}
 
-  console.log("Usuarios y plazas…");
+/** Vacía todas las tablas de la aplicación (no toca el registro de migraciones). */
+export async function vaciar(prisma: PrismaClient): Promise<void> {
+  const tablas = await prisma.$queryRaw<{ tablename: string }[]>`
+    SELECT tablename FROM pg_tables
+    WHERE schemaname = current_schema() AND tablename <> '_prisma_migrations'`;
+  if (!tablas.length) return;
+  await prisma.$executeRawUnsafe(
+    `TRUNCATE ${tablas.map((t) => `"${t.tablename}"`).join(", ")} RESTART IDENTITY CASCADE`,
+  );
+}
+
+export async function sembrar(prisma: PrismaClient, { silencioso = false } = {}): Promise<void> {
+  const log = (texto: string) => {
+    if (!silencioso) console.log(texto);
+  };
+
+  log("Limpiando tablas…");
+  await vaciar(prisma);
+
+  log("Equipo y plazas…");
   for (const u of mock.usuarios) {
     await prisma.usuario.create({
       data: {
         id: u.id,
         nombre: u.nombre,
-        correo: u.correo === "[CORREO]" ? `${u.id}@casacruz.mx` : u.correo,
+        correo: u.correo,
+        telefono: u.telefono,
         rol: u.rol,
         activo: u.activo,
+        debeCambiarContrasena: u.debeCambiarContrasena,
         ultimoAcceso: hace(1),
       },
     });
@@ -60,21 +66,21 @@ async function main() {
   }
 
   for (const u of mock.usuarios) {
+    const avance = mock.avanceCapacitacion[u.id];
     for (const plazaId of u.plazasCertificadas) {
-      if (!mock.plazas.some((p) => p.id === plazaId)) continue;
+      const vence = avance?.certificaciones.find((c) => c.plazaId === plazaId)?.venceIso ?? null;
       await prisma.usuarioPlaza.create({
-        data: { usuarioId: u.id, plazaId, certificado: true, progreso: 100 },
+        data: { usuarioId: u.id, plazaId, certificado: true, progreso: 100, venceEl: vence ? new Date(vence) : null },
       });
     }
     for (const plazaId of u.plazasEnProgreso) {
-      if (!mock.plazas.some((p) => p.id === plazaId)) continue;
       await prisma.usuarioPlaza.create({
-        data: { usuarioId: u.id, plazaId, certificado: false, progreso: 60 },
+        data: { usuarioId: u.id, plazaId, certificado: false, progreso: 1 },
       });
     }
   }
 
-  console.log("Desarrollos…");
+  log("Desarrollos…");
   for (const d of mock.desarrollos) {
     await prisma.desarrollo.create({
       data: {
@@ -85,6 +91,8 @@ async function main() {
         zona: d.zona,
         direccion: d.direccion,
         mapaUrl: d.mapaUrl,
+        lat: d.lat,
+        lng: d.lng,
         tipo: d.tipo,
         desarrollador: d.desarrollador,
         estatus: d.estatus,
@@ -93,29 +101,8 @@ async function main() {
         amenidades: d.amenidades,
         aConsiderar: d.aConsiderar,
         responsableId: d.responsableId,
-        condiciones: {
-          create: {
-            enganchePct: d.condiciones.enganchePct,
-            engancheNota: d.condiciones.engancheNota,
-            restoPct: d.condiciones.restoPct,
-            restoNota: d.condiciones.restoNota,
-            mensualidades: d.condiciones.mensualidades,
-            formasPago: d.condiciones.formasPago,
-            promocionVigente: d.condiciones.promocionVigente,
-            descuentoContado: d.condiciones.descuentoContado,
-          },
-        },
-        comercial: {
-          create: {
-            buyerPersona: d.comercial.buyerPersona,
-            clienteIdeal: d.comercial.clienteIdeal,
-            argumentos: d.comercial.argumentos,
-            diferenciadores: d.comercial.diferenciadores,
-            objeciones: d.comercial.objeciones,
-            comparables: d.comercial.comparables,
-            noDeberiaComprarlo: d.comercial.noDeberiaComprarlo,
-          },
-        },
+        condiciones: { create: { ...d.condiciones } },
+        comercial: { create: { ...d.comercial } },
         interna: {
           create: {
             comisionPct: d.interna.comisionPct,
@@ -127,11 +114,13 @@ async function main() {
               create: d.interna.documentos.map((doc) => ({
                 nombre: doc.nombre,
                 tipo: doc.tipo,
+                url: doc.url,
                 cargadoEl: hace(doc.cargadoHaceDias),
               })),
             },
           },
         },
+        multimedia: { create: (d.multimedia ?? []).map((m) => ({ tipo: m.tipo, url: m.url, orden: m.orden })) },
         tipologias: {
           create: d.tipologias.map((t, i) => ({
             id: t.id,
@@ -157,8 +146,7 @@ async function main() {
         validaciones: {
           create: d.validaciones.map((v) => ({
             campo: v.campo,
-            usuarioId:
-              mock.usuarios.find((u) => u.nombre === v.validadoPor)?.id ?? d.responsableId,
+            usuarioId: idPorNombre(v.validadoPor) ?? d.responsableId,
             validadoEl: hace(v.haceDias),
           })),
         },
@@ -166,7 +154,7 @@ async function main() {
     });
   }
 
-  console.log("Clientes…");
+  log("Clientes…");
   for (const c of mock.clientes) {
     await prisma.cliente.create({
       data: {
@@ -182,6 +170,7 @@ async function main() {
         plazasInteres: c.plazasInteres,
         kommoLeadId: c.kommoLeadId,
         kommoEtapa: c.kommoEtapa,
+        responsableId: c.responsableId,
         notas: c.notas,
         actividad: {
           create: c.actividad.map((a, i) => ({ texto: a.texto, fecha: hace(i * 2) })),
@@ -190,7 +179,7 @@ async function main() {
     });
   }
 
-  console.log("Propuestas…");
+  log("Propuestas…");
   for (const p of mock.propuestas) {
     await prisma.propuesta.create({
       data: {
@@ -203,7 +192,8 @@ async function main() {
         estado: p.estado,
         vistas: p.vistas,
         kommoLeadId: p.kommoLeadId,
-        enviadaEl: p.enviadaEl ? hace(1) : null,
+        creadaEl: new Date(p.creadaIso),
+        enviadaEl: p.enviadaEl ? new Date(p.creadaIso) : null,
         items: {
           create: p.items.map((i, orden) => ({
             desarrolloId: i.desarrolloId,
@@ -218,32 +208,59 @@ async function main() {
     });
   }
 
-  console.log("Historial de cambios…");
+  log("Historial de cambios…");
   for (const c of mock.cambios) {
     await prisma.cambio.create({
       data: {
+        id: c.id,
         desarrolloId: c.desarrolloId,
         campo: c.campo,
+        campoClave: c.destino?.campo ?? null,
+        tipologiaId: c.destino?.tipologiaId ?? null,
+        nivel: c.destino?.nivel ?? null,
         valorAnterior: c.valorAnterior,
         valorNuevo: c.valorNuevo,
-        usuarioId:
-          mock.usuarios.find((u) => u.nombre === c.usuario)?.id ?? mock.usuarios[0].id,
+        usuarioId: c.usuarioId,
         fuente: c.fuente,
         evidenciaUrl: c.evidencia,
+        nota: c.nota,
         estado: c.estado,
-        fecha: hace(3),
+        fecha: new Date(c.fechaIso),
+        aprobadoPorId: idPorNombre(c.aprobadoPor),
+        aprobadoEl: c.resueltoIso ? new Date(c.resueltoIso) : null,
       },
     });
   }
 
-  console.log("Listo.");
+  log("Capacitación…");
+  for (const m of mock.modulosCapacitacion) await prisma.moduloCapacitacion.create({ data: m });
+  for (const p of mock.preguntasEvaluacion) await prisma.preguntaEvaluacion.create({ data: p });
+  for (const [usuarioId, avance] of Object.entries(mock.avanceCapacitacion)) {
+    for (const c of avance.completados) {
+      await prisma.progresoModulo.create({
+        data: { usuarioId, moduloId: c.moduloId, completadoEl: new Date(c.fechaIso) },
+      });
+    }
+    for (const i of avance.intentos) {
+      await prisma.intentoEvaluacion.create({
+        data: { usuarioId, plazaId: i.plazaId, aciertos: i.aciertos, total: i.total, aprobado: i.aprobado, fecha: new Date(i.fechaIso) },
+      });
+    }
+    for (const p of avance.preparacion) {
+      await prisma.preparacionDesarrollo.create({ data: { usuarioId, desarrolloId: p.desarrolloId, items: p.items } });
+    }
+  }
+
+  log("Listo.");
 }
 
-main()
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// Ejecutado como script (pnpm seed), no importado por las pruebas.
+if (process.argv[1]?.replace(/\\/g, "/").endsWith("prisma/seed.ts")) {
+  const prisma = new PrismaClient();
+  sembrar(prisma)
+    .catch((error) => {
+      console.error(error);
+      process.exitCode = 1;
+    })
+    .finally(() => prisma.$disconnect());
+}

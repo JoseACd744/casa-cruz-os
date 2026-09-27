@@ -25,7 +25,8 @@ export async function rutasSesion(instancia: FastifyInstance) {
   /** La clave vigente: su hash, o la de demostración si aún no tiene. */
   async function claveValida(usuarioId: string, clave: string): Promise<boolean> {
     const hash = await datos.hashDeContrasena(usuarioId);
-    return hash ? verificarContrasena(clave, hash) : clave === config.claveDemo;
+    if (hash) return verificarContrasena(clave, hash);
+    return config.claveDemo !== null && clave === config.claveDemo;
   }
 
   app.post(
@@ -36,7 +37,7 @@ export async function rutasSesion(instancia: FastifyInstance) {
         summary: "Iniciar sesión",
         description: modoMock
           ? "Sin base de datos, los usuarios de demostración entran con CLAVE_DEMO (por omisión `casacruz`) hasta que se les asigna una. Con Postgres se valida el hash real."
-          : "Valida correo y contraseña contra la base.",
+          : "Valida correo y contraseña contra la base. Quien no tiene clave propia no entra: corporativo le genera una temporal.",
         body: z.object({
           correo: z.string().min(3).meta({ example: "jorge.diaz@casacruz.mx" }),
           contrasena: z.string().min(1),

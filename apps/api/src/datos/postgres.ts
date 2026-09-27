@@ -3,6 +3,7 @@ import {
   fechaCorta,
   fechaDocumento,
   fechaHora,
+  nombreVisible,
   novedadesDe,
   type Cambio,
   type CampoCambiable,
@@ -223,6 +224,7 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
                 OR: [
                   { nombre: { contains: filtros.q, mode: "insensitive" as const } },
                   { ciudad: { contains: filtros.q, mode: "insensitive" as const } },
+                  { zona: { contains: filtros.q, mode: "insensitive" as const } },
                 ],
               }
             : {}),
@@ -425,7 +427,11 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
     },
 
     async crearDesarrollo(entrada) {
-      const id = idDesde(entrada.nombre);
+      // Dos desarrollos pueden llamarse igual: el id se numera.
+      let id = idDesde(entrada.nombre);
+      for (let n = 2; await db.desarrollo.findUnique({ where: { id }, select: { id: true } }); n += 1) {
+        id = `${idDesde(entrada.nombre)}-${n}`;
+      }
       const creado = await db.desarrollo.create({
         data: {
           id,
@@ -764,7 +770,7 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
 
       const creada = await db.propuesta.create({
         data: {
-          slug: idDesde(`${cliente?.nombre ?? "propuesta"}-${Date.now().toString(36)}`),
+          slug: idDesde(`${nombreVisible(cliente?.nombre) ?? "propuesta"}-${Date.now().toString(36)}`),
           clienteId: entrada.clienteId,
           usuarioId: entrada.usuarioId,
           formato: entrada.formato,
@@ -788,19 +794,20 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
     },
 
     async marcarPropuestaEnviada(slug) {
-      await db.propuesta.update({
+      const { count } = await db.propuesta.updateMany({
         where: { slug },
         data: { estado: "enviada", enviadaEl: new Date() },
       });
-      return this.obtenerPropuesta(slug);
+      return count ? this.obtenerPropuesta(slug) : null;
     },
 
     async sumarVistaPropuesta(slug) {
-      const actualizada = await db.propuesta.update({
-        where: { slug },
-        data: { vistas: { increment: 1 }, estado: "vista" },
-      });
-      return actualizada.vistas;
+      const { count } = await db.propuesta.updateMany({ where: { slug }, data: { vistas: { increment: 1 } } });
+      if (!count) return 0;
+      // Sólo una propuesta recién enviada pasa a "vista"; si ya se negocia, se queda así.
+      await db.propuesta.updateMany({ where: { slug, estado: "enviada" }, data: { estado: "vista" } });
+      const fila = await db.propuesta.findUnique({ where: { slug }, select: { vistas: true } });
+      return fila?.vistas ?? 0;
     },
   };
 }

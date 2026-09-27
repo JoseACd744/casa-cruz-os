@@ -5,6 +5,7 @@ import {
   fechaHora,
   filtrarDesarrollos,
   mock,
+  nombreVisible,
   novedadesDe,
   type Cambio,
   type Cliente,
@@ -509,7 +510,7 @@ export function fuenteMock(): FuenteDeDatos {
 
       const propuesta: Propuesta = {
         id: `p-${propuestas.length + 1}`.padStart(5, "0"),
-        slug: idUnico(cliente?.nombre ?? "propuesta", propuestas.map((p) => p.slug)),
+        slug: idUnico(nombreVisible(cliente?.nombre) ?? "propuesta", propuestas.map((p) => p.slug)),
         clienteId: entrada.clienteId,
         usuarioId: entrada.usuarioId,
         formato: entrada.formato,

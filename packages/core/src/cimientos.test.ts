@@ -72,3 +72,11 @@ test("la clave definitiva no puede ser corta, obvia ni personal", async () => {
   assert.match(motivoClaveDebil("casacruz2026", jorge)!, /empresa/);
   assert.equal(motivoClaveDebil("tulum-selva-4821", jorge), null);
 });
+
+test("al cliente nunca se le muestra un marcador como nombre", async () => {
+  const { nombreVisible } = await import("./format.ts");
+  assert.equal(nombreVisible("Berenice Gutiérrez y Fabián Dávila"), "Berenice Gutiérrez y Fabián Dávila");
+  assert.equal(nombreVisible("[NOMBRE EN KOMMO] · lead 4903"), null);
+  assert.equal(nombreVisible("   "), null);
+  assert.equal(nombreVisible(null), null);
+});

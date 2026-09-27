@@ -42,6 +42,16 @@ export function iniciales(nombre: string): string {
     .join("");
 }
 
+/**
+ * El nombre con el que se le habla al cliente, o null si todavía no se captura
+ * (un lead recién llegado de Kommo trae "[NOMBRE EN KOMMO] · lead 4903"). Lo
+ * que ve el cliente nunca lleva un marcador.
+ */
+export function nombreVisible(nombre: string | null | undefined): string | null {
+  const limpio = nombre?.trim();
+  return limpio && !limpio.startsWith("[") ? limpio : null;
+}
+
 /** true cuando el valor todavía no existe en la Base Maestra. */
 export function faltante(valor: unknown): boolean {
   return valor === null || valor === undefined || valor === "";

@@ -13,6 +13,13 @@ let servidor: FastifyInstance | null = null;
 
 export async function servidorDePrueba(): Promise<FastifyInstance> {
   if (!servidor) {
+    // Contra Postgres, cada archivo de pruebas parte de la base recién sembrada,
+    // igual que el mock parte de sus datos en memoria.
+    if (process.env.DATABASE_URL) {
+      const { prisma } = await import("./datos/postgres");
+      const { sembrar } = await import("../prisma/seed");
+      await sembrar(prisma, { silencioso: true });
+    }
     servidor = await construirServidor();
     await servidor.ready();
   }

@@ -1,4 +1,4 @@
-import { galeria, money, planoDe } from "@casacruz/core";
+import { galeria, money, nombreVisible, planoDe } from "@casacruz/core";
 import type { Cliente, Desarrollo, Propuesta, Tipologia } from "@casacruz/core";
 import { DISCLAIMER, baseCss, escapar, iconos, imagen, marca, monograma } from "./estilo";
 import { mapaHtml } from "./mapa";
@@ -185,7 +185,7 @@ section { background: ${marca.fondoAnalisis}; }
     <div style="font-size:19px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;">Análisis de</div>
     <div style="font-size:34px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;">Propiedades</div>
     <div style="font-size:15px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;margin-top:10px;">
-      Para: ${escapar(cliente?.nombre ?? "[CLIENTE]")}
+      ${nombreVisible(cliente?.nombre) ? `Para: ${escapar(nombreVisible(cliente?.nombre)!)}` : "Preparado para ti"}
     </div>
     <div style="font-size:13px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;margin-top:4px;color:#D4CEC6;">
       Elaborado por: ${escapar(asesor)}
