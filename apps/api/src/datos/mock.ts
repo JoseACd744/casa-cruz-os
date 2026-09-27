@@ -20,6 +20,7 @@ import type {
   EntradaCliente,
   EntradaPropuesta,
   EntradaTipologia,
+  EventoKommo,
   FuenteDeDatos,
   NuevoCambio,
   NuevoDesarrollo,
@@ -51,6 +52,7 @@ export function fuenteMock(): FuenteDeDatos {
   const cambios: Cambio[] = structuredClone(mock.cambios);
   const usuarios: Usuario[] = structuredClone(mock.usuarios);
   const hashes = new Map<string, string>();
+  const eventosKommo: EventoKommo[] = [];
   const avances: Record<string, AvanceCapacitacion> = structuredClone(mock.avanceCapacitacion);
 
   const avanceDe = (usuarioId: string): AvanceCapacitacion =>
@@ -480,6 +482,19 @@ export function fuenteMock(): FuenteDeDatos {
     async registrarActividad(clienteId, texto) {
       const cliente = clientes.find((c) => c.id === clienteId);
       cliente?.actividad.unshift({ fecha: fechaCorta(new Date()).slice(0, 6), texto });
+    },
+
+    async obtenerClientePorLead(kommoLeadId) {
+      return clientes.find((c) => c.kommoLeadId === kommoLeadId) ?? null;
+    },
+
+    async registrarEventoKommo(evento) {
+      eventosKommo.unshift(evento);
+      eventosKommo.splice(500); // En memoria basta con los últimos.
+    },
+
+    async eventosKommo(limite) {
+      return eventosKommo.slice(0, limite);
     },
 
     async actualizarCliente(id, parche) {

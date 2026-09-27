@@ -95,6 +95,14 @@ export interface ParcheUsuario {
   plazasEnProgreso?: string[];
 }
 
+/** Una línea de la bitácora de la integración con Kommo. */
+export interface EventoKommo {
+  recibidoIso: string;
+  tipo: string;
+  leadId: string;
+  resultado: string;
+}
+
 export interface EntradaCliente {
   nombre: string;
   correo?: string | null;
@@ -202,6 +210,12 @@ export interface FuenteDeDatos {
   actualizarCliente(id: string, parche: Partial<EntradaCliente>): Promise<Cliente | null>;
   /** Una línea en la actividad del cliente (lo que hizo él o su asesor). */
   registrarActividad(clienteId: string, texto: string): Promise<void>;
+  obtenerClientePorLead(kommoLeadId: string): Promise<Cliente | null>;
+
+  // ── Integración con Kommo ────────────────────────────────────────────
+  registrarEventoKommo(evento: EventoKommo): Promise<void>;
+  /** Los más recientes primero. */
+  eventosKommo(limite: number): Promise<EventoKommo[]>;
   crearPropuesta(entrada: EntradaPropuesta): Promise<Propuesta>;
   marcarPropuestaEnviada(slug: string): Promise<Propuesta | null>;
   sumarVistaPropuesta(slug: string): Promise<number>;

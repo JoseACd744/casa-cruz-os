@@ -1,13 +1,20 @@
 import Link from "next/link";
 import { Badge, Card } from "@/components/ui";
-import { moneyCorto } from "@casacruz/core";
+import { fechaHora, moneyCorto } from "@casacruz/core";
 import {
   listarClientes,
   listarPropuestas,
   listarUsuarios,
-  obtenerIntegraciones,
+  obtenerIntegracionKommo,
   obtenerUsuarioActual,
 } from "@/lib/repo";
+
+const EVENTO: Record<string, string> = {
+  add: "Lead nuevo",
+  status: "Cambio de etapa",
+  update: "Lead editado",
+  delete: "Lead eliminado",
+};
 
 const tonoEtapa: Record<string, "ok" | "warn" | "alert" | "neutral"> = {
   "Propuesta enviada": "warn",
@@ -16,13 +23,14 @@ const tonoEtapa: Record<string, "ok" | "warn" | "alert" | "neutral"> = {
 };
 
 export default async function ClientesPage() {
-  const [clientes, propuestas, integraciones, actual, equipo] = await Promise.all([
+  const [clientes, propuestas, kommo, actual, equipo] = await Promise.all([
     listarClientes(),
     listarPropuestas(),
-    obtenerIntegraciones(),
+    obtenerIntegracionKommo(),
     obtenerUsuarioActual(),
     listarUsuarios(),
   ]);
+  const conectado = kommo.notas || kommo.webhook;
   const responsable = (id: string | null) =>
     id === actual.id ? "Tú" : (equipo.find((u) => u.id === id)?.nombre ?? null);
 
@@ -38,8 +46,14 @@ export default async function ClientesPage() {
         </div>
         <div className="grow" />
         <span className="flex items-center gap-2 rounded-[3px] border border-line bg-panel px-3.5 py-2.5 text-[11px] font-semibold text-ink-2">
-          <span className={`size-1.75 rounded-full ${integraciones.kommo ? "bg-ok" : "bg-faint"}`} />
-          {integraciones.kommo ? "Conectado con Kommo" : "Kommo sin conectar: los clientes se capturan aquí"}
+          <span className={`size-1.75 rounded-full ${conectado ? "bg-ok" : "bg-faint"}`} />
+          {!conectado
+            ? "Kommo sin conectar: los clientes se capturan aquí"
+            : kommo.ultimoEvento
+              ? `Kommo · último aviso ${fechaHora(new Date(kommo.ultimoEvento))}`
+              : kommo.webhook
+                ? "Kommo conectado · sin avisos todavía"
+                : "Kommo conectado · sólo notas en los leads"}
         </span>
         <Link
           href="/clientes/nuevo"
@@ -51,6 +65,24 @@ export default async function ClientesPage() {
           NUEVO CLIENTE
         </Link>
       </div>
+
+      {kommo.eventos.length ? (
+        <details className="rounded-card border border-line bg-panel">
+          <summary className="cursor-pointer list-none px-5 py-3.5 text-[10.5px] font-bold tracking-[0.12em] text-ink-2 hover:text-ink">
+            AVISOS RECIENTES DE KOMMO ({kommo.eventos.length})
+          </summary>
+          <div className="flex flex-col border-t border-line px-5 py-2">
+            {kommo.eventos.map((e, i) => (
+              <div key={`${e.recibidoIso}-${i}`} className="flex gap-4 border-b border-line py-2 text-[12px] last:border-0">
+                <span className="w-36 font-mono text-[11px] text-muted">{fechaHora(new Date(e.recibidoIso))}</span>
+                <span className="w-32 font-semibold">{EVENTO[e.tipo] ?? e.tipo}</span>
+                <span className="w-24 text-ink-2">lead {e.leadId}</span>
+                <span className={e.resultado === "error" ? "text-alert-ink" : "text-ink-2"}>{e.resultado}</span>
+              </div>
+            ))}
+          </div>
+        </details>
+      ) : null}
 
       {clientes.length === 0 ? (
         <p className="text-[13px] text-muted">Todavía no hay clientes. Da de alta el primero.</p>

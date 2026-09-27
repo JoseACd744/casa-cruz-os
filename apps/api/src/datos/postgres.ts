@@ -714,6 +714,32 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
       await db.actividad.create({ data: { clienteId, texto } });
     },
 
+    async obtenerClientePorLead(kommoLeadId) {
+      const fila = await db.cliente.findUnique({ where: { kommoLeadId }, select: { id: true } });
+      return fila ? this.obtenerCliente(fila.id) : null;
+    },
+
+    async registrarEventoKommo(evento) {
+      await db.eventoKommo.create({
+        data: {
+          recibidoEl: new Date(evento.recibidoIso),
+          tipo: evento.tipo,
+          leadId: evento.leadId,
+          resultado: evento.resultado,
+        },
+      });
+    },
+
+    async eventosKommo(limite) {
+      const filas = await db.eventoKommo.findMany({ orderBy: { recibidoEl: "desc" }, take: limite });
+      return filas.map((e) => ({
+        recibidoIso: e.recibidoEl.toISOString(),
+        tipo: e.tipo,
+        leadId: e.leadId,
+        resultado: e.resultado,
+      }));
+    },
+
     async crearPropuesta(entrada) {
       const cliente = await this.obtenerCliente(entrada.clienteId);
 

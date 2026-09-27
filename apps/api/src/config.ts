@@ -30,6 +30,8 @@ export const config = {
   kommo: {
     subdominio: process.env.KOMMO_SUBDOMINIO?.trim() || null,
     token: process.env.KOMMO_TOKEN?.trim() || null,
+    /** Va en la URL del webhook que se configura en Kommo: ?clave=… */
+    webhookSecreto: process.env.KOMMO_WEBHOOK_SECRETO?.trim() || null,
   },
 };
 

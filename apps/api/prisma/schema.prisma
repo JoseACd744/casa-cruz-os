@@ -481,3 +481,17 @@ model PreparacionDesarrollo {
   @@id([usuarioId, desarrolloId])
   @@map("preparacion_desarrollos")
 }
+
+// ── Integraciones ────────────────────────────────────────────────────────
+
+/// Cada aviso de Kommo, se haya podido procesar o no: sirve para depurar.
+model EventoKommo {
+  id         String   @id @default(cuid())
+  recibidoEl DateTime @default(now())
+  tipo       String
+  leadId     String
+  resultado  String
+
+  @@index([recibidoEl])
+  @@map("eventos_kommo")
+}

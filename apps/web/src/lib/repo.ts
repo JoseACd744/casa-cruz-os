@@ -235,3 +235,19 @@ export async function obtenerEvaluacion(
     throw error;
   }
 }
+
+// ── Kommo ────────────────────────────────────────────────────────────────
+
+export interface IntegracionKommo {
+  /** Casa Cruz OS escribe notas en los leads. */
+  notas: boolean;
+  /** Kommo le avisa a Casa Cruz OS. */
+  webhook: boolean;
+  ultimoEvento: string | null;
+  eventos: { recibidoIso: string; tipo: string; leadId: string; resultado: string }[];
+}
+
+export async function obtenerIntegracionKommo(): Promise<IntegracionKommo> {
+  if (!usandoApi) return { notas: false, webhook: false, ultimoEvento: null, eventos: [] };
+  return (await pedir<IntegracionKommo>("/integraciones/kommo"))!;
+}
