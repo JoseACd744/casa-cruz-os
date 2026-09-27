@@ -144,6 +144,9 @@ export function Sidebar({ usuario }: { usuario: UsuarioMenu }) {
           <span className="flex min-w-0 flex-col gap-0.5">
             <span className="truncate text-[12px] font-semibold text-white">{usuario.nombre}</span>
             <span className="text-[10px] text-[#A09991]">{usuario.rol}</span>
+            <Link href="/cuenta/contrasena" className="text-[10px] text-[#A09991] underline hover:text-white">
+              Cambiar clave
+            </Link>
           </span>
           <div className="grow" />
           <a

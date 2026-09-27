@@ -203,17 +203,19 @@ export async function rutas(instancia: FastifyInstance) {
   app.get(
     "/usuarios/actual",
     {
-      preHandler: exigir("cerrador"),
+      // Con clave temporal también responde: la web la usa para pedir el cambio.
+      preHandler: exigir("cerrador", { claveTemporal: true }),
       schema: {
         tags: ["Personas"],
         summary: "Usuario de la sesión",
-        description: "Provisional: todavía no hay autenticación, devuelve el primer cerrador activo.",
-        response: { 200: usuarioSchema },
+        description: "El usuario del token, con sus datos de hoy.",
+        response: { 200: usuarioSchema, ...noEncontrado },
       },
     },
-    async (peticion) => {
-      const usuarios = await datos.listarUsuarios();
-      return usuarios.find((u) => u.id === peticion.user.id) ?? datos.obtenerUsuarioActual();
+    async (peticion, respuesta) => {
+      const usuario = await datos.obtenerUsuario(peticion.user.id);
+      if (!usuario) return respuesta.code(404).send({ error: "Usuario no encontrado" });
+      return usuario;
     },
   );
 

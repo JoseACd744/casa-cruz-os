@@ -21,6 +21,7 @@ import { rutasArchivos } from "./rutas-archivos";
 import { rutasEscritura } from "./rutas-escritura";
 import { rutasPdf } from "./rutas-pdf";
 import { rutasSesion } from "./rutas-sesion";
+import { rutasUsuarios } from "./rutas-usuarios";
 import { cerrarNavegador } from "./pdf/navegador";
 
 /**
@@ -110,6 +111,7 @@ export async function construirServidor() {
   });
 
   await app.register(rutasSesion);
+  await app.register(rutasUsuarios);
   await app.register(rutas);
   await app.register(rutasEscritura);
   await app.register(rutasArchivos);

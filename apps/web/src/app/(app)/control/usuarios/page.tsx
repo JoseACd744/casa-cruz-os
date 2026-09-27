@@ -1,32 +1,30 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { alcanza } from "@casacruz/core";
+import { alcanza, iniciales, type Rol } from "@casacruz/core";
+import { EditarUsuario, InvitarUsuario } from "@/components/Equipo";
 import { Badge, Card, Eyebrow, Seccion } from "@/components/ui";
 import { listarCambios, listarPlazas, listarUsuarios, obtenerUsuarioActual } from "@/lib/repo";
 
-const ROLES = [
+const ROLES: { rol: Rol; nombre: string; puede: string }[] = [
   {
+    rol: "cliente",
     nombre: "Cliente",
-    puede:
-      "Ve precio, fotos, video, ubicación, amenidades y formas de pago desde la propuesta web.",
-    cuantos: "Sin cuenta",
+    puede: "Ve precio, fotos, video, ubicación, amenidades y formas de pago desde la propuesta web.",
   },
   {
+    rol: "cerrador",
     nombre: "Cerrador",
-    puede:
-      "Todo lo anterior más comisiones autorizadas, contactos, argumentos, objeciones y capacitación.",
-    cuantos: "3 usuarios",
+    puede: "Todo lo anterior más comisiones autorizadas, contactos, argumentos, objeciones y capacitación.",
   },
   {
+    rol: "gerente",
     nombre: "Gerente",
-    puede:
-      "Aprueba cambios sensibles, ve desempeño del producto, incidencias y control de actualización.",
-    cuantos: "1 usuario",
+    puede: "Aprueba cambios sensibles, ve desempeño del producto, incidencias y control de actualización.",
   },
   {
+    rol: "corporativo",
     nombre: "Corporativo",
-    puede: "Contratos, márgenes, riesgos jurídicos, históricos, auditoría y administración.",
-    cuantos: "1 usuario",
+    puede: "Contratos, márgenes, riesgos jurídicos, históricos, auditoría y administración del equipo.",
   },
 ];
 
@@ -41,6 +39,13 @@ export default async function UsuariosPage() {
   ]);
 
   const nombrePlaza = (id: string) => plazas.find((p) => p.id === id)?.nombre ?? id;
+  // El equipo lo administra corporativo; el gerente lo consulta.
+  const administra = alcanza(actual.rol, "corporativo");
+  const cuantos = (rol: Rol) => {
+    if (rol === "cliente") return "Sin cuenta";
+    const n = usuarios.filter((u) => u.rol === rol && u.activo).length;
+    return `${n} ${n === 1 ? "activo" : "activos"}`;
+  };
 
   return (
     <>
@@ -72,10 +77,9 @@ export default async function UsuariosPage() {
               </span>
             </div>
             <div className="grow" />
-            <button className="h-11 rounded-[3px] bg-ink px-4.5 text-[11px] font-bold tracking-[0.1em] text-white hover:brightness-125">
-              INVITAR USUARIO
-            </button>
           </div>
+
+          {administra ? <InvitarUsuario plazas={plazas} /> : null}
 
           <Card className="overflow-hidden">
             <div className="flex bg-surface">
@@ -95,36 +99,38 @@ export default async function UsuariosPage() {
               ))}
             </div>
             {usuarios.map((u) => (
-              <div key={u.id} className="flex items-center border-t border-line">
-                <div className="flex w-57 items-center gap-3 px-4 py-3">
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-tan-soft text-[10.5px] font-bold text-tan-deep">
-                    {u.nombre.startsWith("[")
-                      ? "··"
-                      : u.nombre
-                          .split(" ")
-                          .map((p) => p[0])
-                          .join("")}
+              <div key={u.id} className="flex flex-col border-t border-line">
+                <div className="flex items-center">
+                  <div className="flex w-57 items-center gap-3 px-4 py-3">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-tan-soft text-[10.5px] font-bold text-tan-deep">
+                      {iniciales(u.nombre)}
+                    </span>
+                    <span className="flex flex-col gap-0.5">
+                      <span className="text-[13px] font-bold">{u.nombre}</span>
+                      <span className="text-[10.5px] text-muted">{u.correo}</span>
+                    </span>
+                  </div>
+                  <span className="w-37 px-4 py-3">
+                    <Badge tono={u.rol === "corporativo" ? "dark" : u.rol === "gerente" ? "tan" : "ok"}>
+                      {u.rol}
+                    </Badge>
                   </span>
-                  <span className="flex flex-col gap-0.5">
-                    <span className="text-[13px] font-bold">{u.nombre}</span>
-                    <span className="text-[10.5px] text-muted">{u.correo}</span>
+                  <span className="grow px-4 py-3 text-[12px] text-ink-2">
+                    {u.plazasCertificadas.map(nombrePlaza).join(" · ")}
+                    {u.plazasEnProgreso.length
+                      ? ` · ${u.plazasEnProgreso.map(nombrePlaza).join(" · ")} (en progreso)`
+                      : ""}
+                  </span>
+                  <span className="w-33 px-4 py-3 text-[11.5px] text-muted">{u.ultimoAcceso}</span>
+                  <span className="w-27 px-4 py-3">
+                    <Badge tono={u.activo ? "ok" : "alert"}>
+                      {!u.activo ? "inactivo" : u.debeCambiarContrasena ? "invitado" : "activo"}
+                    </Badge>
                   </span>
                 </div>
-                <span className="w-37 px-4 py-3">
-                  <Badge tono={u.rol === "corporativo" ? "dark" : u.rol === "gerente" ? "tan" : "ok"}>
-                    {u.rol}
-                  </Badge>
-                </span>
-                <span className="grow px-4 py-3 text-[12px] text-ink-2">
-                  {u.plazasCertificadas.map(nombrePlaza).join(" · ")}
-                  {u.plazasEnProgreso.length
-                    ? ` · ${u.plazasEnProgreso.map(nombrePlaza).join(" · ")} (en progreso)`
-                    : ""}
-                </span>
-                <span className="w-33 px-4 py-3 text-[11.5px] text-muted">{u.ultimoAcceso}</span>
-                <span className="w-27 px-4 py-3">
-                  <Badge tono={u.activo ? "ok" : "alert"}>{u.activo ? "activo" : "inactivo"}</Badge>
-                </span>
+                {administra ? (
+                  <EditarUsuario usuario={u} plazas={plazas} esYo={u.id === actual.id} />
+                ) : null}
               </div>
             ))}
           </Card>
@@ -135,7 +141,7 @@ export default async function UsuariosPage() {
                 <div key={r.nombre} className="flex flex-col gap-2 rounded-[3px] border border-line p-3.5">
                   <span className="text-[13px] font-bold">{r.nombre}</span>
                   <span className="text-[11.5px] leading-relaxed text-ink-2">{r.puede}</span>
-                  <span className="text-[11px] font-semibold text-tan-deep">{r.cuantos}</span>
+                  <span className="text-[11px] font-semibold text-tan-deep">{cuantos(r.rol)}</span>
                 </div>
               ))}
             </div>

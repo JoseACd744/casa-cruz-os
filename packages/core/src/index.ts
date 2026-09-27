@@ -15,6 +15,7 @@ export * from "./cambios";
 export * from "./alta";
 export * from "./comercial";
 export * from "./roles";
+export * from "./cuentas";
 export * from "./fechas";
 export * from "./galeria";
 export * as mock from "./mock";

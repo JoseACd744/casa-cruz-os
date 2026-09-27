@@ -178,6 +178,8 @@ export interface Usuario {
   plazasCertificadas: string[];
   plazasEnProgreso: string[];
   activo: boolean;
+  /** Entró con una clave temporal: antes de trabajar tiene que elegir la suya. */
+  debeCambiarContrasena: boolean;
   ultimoAcceso: string;
   desarrollosACargo: number;
 }

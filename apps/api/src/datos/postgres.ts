@@ -138,6 +138,34 @@ function aDesarrollo(d: FilaDesarrollo): Desarrollo {
 
 const incluirCambio = { autor: true, desarrollo: true, aprobadoPor: true } as const;
 
+const incluirUsuario = { plazas: true, desarrollos: { select: { id: true } } } as const;
+
+function aUsuario(u: Prisma.UsuarioGetPayload<{ include: typeof incluirUsuario }>): Usuario {
+  return {
+    id: u.id,
+    nombre: u.nombre,
+    correo: u.correo,
+    telefono: u.telefono,
+    rol: u.rol,
+    plazasCertificadas: u.plazas.filter((p) => p.certificado).map((p) => p.plazaId),
+    plazasEnProgreso: u.plazas.filter((p) => !p.certificado && p.progreso > 0).map((p) => p.plazaId),
+    activo: u.activo,
+    debeCambiarContrasena: u.debeCambiarContrasena,
+    ultimoAcceso: u.ultimoAcceso ? fechaHora(u.ultimoAcceso) : "nunca",
+    desarrollosACargo: u.desarrollos.length,
+  };
+}
+
+/** Las plazas del usuario: certificadas al 100, en progreso con su avance. */
+function filasDePlazas(certificadas: string[], enProgreso: string[]) {
+  return [
+    ...certificadas.map((plazaId) => ({ plazaId, certificado: true, progreso: 100 })),
+    ...enProgreso
+      .filter((p) => !certificadas.includes(p))
+      .map((plazaId) => ({ plazaId, certificado: false, progreso: 1 })),
+  ];
+}
+
 type FilaCambio = Prisma.CambioGetPayload<{ include: typeof incluirCambio }>;
 
 function aCambio(c: FilaCambio): Cambio {
@@ -215,22 +243,13 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
     },
 
     async listarUsuarios(): Promise<Usuario[]> {
-      const filas = await db.usuario.findMany({
-        include: { plazas: true, desarrollos: { select: { id: true } } },
-        orderBy: { nombre: "asc" },
-      });
-      return filas.map((u) => ({
-        id: u.id,
-        nombre: u.nombre,
-        correo: u.correo,
-        telefono: u.telefono,
-        rol: u.rol,
-        plazasCertificadas: u.plazas.filter((p) => p.certificado).map((p) => p.plazaId),
-        plazasEnProgreso: u.plazas.filter((p) => !p.certificado && p.progreso > 0).map((p) => p.plazaId),
-        activo: u.activo,
-        ultimoAcceso: u.ultimoAcceso ? fechaHora(u.ultimoAcceso) : "nunca",
-        desarrollosACargo: u.desarrollos.length,
-      }));
+      const filas = await db.usuario.findMany({ include: incluirUsuario, orderBy: { nombre: "asc" } });
+      return filas.map(aUsuario);
+    },
+
+    async obtenerUsuario(id) {
+      const fila = await db.usuario.findUnique({ where: { id }, include: incluirUsuario });
+      return fila ? aUsuario(fila) : null;
     },
 
     async hashDeContrasena(usuarioId: string) {
@@ -532,6 +551,54 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
       await db.documento.create({ data: { desarrolloId, ...documento } });
       const desarrollo = await this.obtenerDesarrollo(desarrolloId);
       return desarrollo?.interna.documentos ?? null;
+    },
+
+    async crearUsuario(entrada, hashTemporal) {
+      const creado = await db.usuario.create({
+        data: {
+          nombre: entrada.nombre,
+          correo: entrada.correo.toLowerCase(),
+          telefono: entrada.telefono ?? null,
+          rol: entrada.rol,
+          contrasenaHash: hashTemporal,
+          debeCambiarContrasena: true,
+          plazas: {
+            create: filasDePlazas(entrada.plazasCertificadas ?? [], entrada.plazasEnProgreso ?? []),
+          },
+        },
+        include: incluirUsuario,
+      });
+      return aUsuario(creado);
+    },
+
+    async actualizarUsuario(id, parche) {
+      const actual = await this.obtenerUsuario(id);
+      if (!actual) return null;
+      const { plazasCertificadas, plazasEnProgreso, ...resto } = parche;
+      await enLote(async (tx) => {
+        await tx.usuario.update({ where: { id }, data: resto });
+        if (plazasCertificadas || plazasEnProgreso) {
+          await tx.usuarioPlaza.deleteMany({ where: { usuarioId: id } });
+          await tx.usuarioPlaza.createMany({
+            data: filasDePlazas(
+              plazasCertificadas ?? actual.plazasCertificadas,
+              plazasEnProgreso ?? actual.plazasEnProgreso,
+            ).map((f) => ({ ...f, usuarioId: id })),
+          });
+        }
+      });
+      return this.obtenerUsuario(id);
+    },
+
+    async guardarContrasena(id, hash, debeCambiar) {
+      await db.usuario.updateMany({
+        where: { id },
+        data: { contrasenaHash: hash, debeCambiarContrasena: debeCambiar },
+      });
+    },
+
+    async registrarAcceso(id) {
+      await db.usuario.updateMany({ where: { id }, data: { ultimoAcceso: new Date() } });
     },
 
     async crearCliente(entrada) {

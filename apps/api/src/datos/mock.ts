@@ -13,6 +13,7 @@ import {
   type Multimedia,
   type Propuesta,
   type Tipologia,
+  type Usuario,
 } from "@casacruz/core";
 import type {
   EntradaCliente,
@@ -47,6 +48,14 @@ export function fuenteMock(): FuenteDeDatos {
   const clientes: Cliente[] = structuredClone(mock.clientes);
   const propuestas: Propuesta[] = structuredClone(mock.propuestas);
   const cambios: Cambio[] = structuredClone(mock.cambios);
+  const usuarios: Usuario[] = structuredClone(mock.usuarios);
+  const hashes = new Map<string, string>();
+
+  /** A cargo se cuenta, no se captura. */
+  const conCarga = (u: Usuario): Usuario => ({
+    ...u,
+    desarrollosACargo: desarrollos.filter((d) => d.responsableId === u.id).length,
+  });
 
   const buscar = (id: string) => desarrollos.find((d) => d.id === id) ?? null;
 
@@ -74,14 +83,19 @@ export function fuenteMock(): FuenteDeDatos {
       return buscar(id);
     },
     async listarUsuarios() {
-      return mock.usuarios;
+      return usuarios.map(conCarga);
     },
-    async hashDeContrasena() {
-      // Los datos de demostración no traen contraseñas: se usa CLAVE_DEMO.
-      return null;
+    async obtenerUsuario(id) {
+      const u = usuarios.find((x) => x.id === id);
+      return u ? conCarga(u) : null;
+    },
+    async hashDeContrasena(usuarioId) {
+      // Los usuarios de demostración no traen contraseña: entran con CLAVE_DEMO
+      // hasta que alguien les asigna una.
+      return hashes.get(usuarioId) ?? null;
     },
     async obtenerUsuarioActual() {
-      return mock.usuarios[0];
+      return conCarga(usuarios[0]);
     },
     async listarClientes() {
       return clientes;
@@ -119,7 +133,7 @@ export function fuenteMock(): FuenteDeDatos {
     // ── Gobierno del dato ──────────────────────────────────────────────
     async guardarCambio(entrada: NuevoCambio) {
       const desarrollo = buscar(entrada.desarrolloId);
-      const usuario = mock.usuarios.find((u) => u.id === entrada.usuarioId);
+      const usuario = usuarios.find((u) => u.id === entrada.usuarioId);
       const ahora = new Date();
 
       const cambio: Cambio = {
@@ -153,7 +167,7 @@ export function fuenteMock(): FuenteDeDatos {
       const cambio = cambios.find((c) => c.id === id);
       if (!cambio) return null;
       cambio.estado = estado;
-      cambio.aprobadoPor = mock.usuarios.find((u) => u.id === aprobadorId)?.nombre ?? aprobadorId;
+      cambio.aprobadoPor = usuarios.find((u) => u.id === aprobadorId)?.nombre ?? aprobadorId;
       cambio.resueltoIso = new Date().toISOString();
       return cambio;
     },
@@ -166,7 +180,7 @@ export function fuenteMock(): FuenteDeDatos {
     async registrarValidacion(desarrolloId, campo, usuarioId) {
       const desarrollo = buscar(desarrolloId);
       if (!desarrollo) return;
-      const usuario = mock.usuarios.find((u) => u.id === usuarioId);
+      const usuario = usuarios.find((u) => u.id === usuarioId);
       const existente = desarrollo.validaciones.find((v) => v.campo === campo);
       if (existente) {
         existente.haceDias = 0;
@@ -325,6 +339,47 @@ export function fuenteMock(): FuenteDeDatos {
       if (!d) return null;
       d.interna.documentos = [{ ...documento, cargadoHaceDias: 0 }, ...d.interna.documentos];
       return d.interna.documentos;
+    },
+
+    // ── Equipo ─────────────────────────────────────────────────────────
+    async crearUsuario(entrada, hashTemporal) {
+      const usuario: Usuario = {
+        id: idUnico(`u-${entrada.nombre}`, usuarios.map((u) => u.id)),
+        nombre: entrada.nombre,
+        correo: entrada.correo.toLowerCase(),
+        telefono: entrada.telefono ?? null,
+        rol: entrada.rol,
+        plazasCertificadas: entrada.plazasCertificadas ?? [],
+        plazasEnProgreso: entrada.plazasEnProgreso ?? [],
+        activo: true,
+        debeCambiarContrasena: true,
+        ultimoAcceso: "nunca",
+        desarrollosACargo: 0,
+      };
+      usuarios.push(usuario);
+      hashes.set(usuario.id, hashTemporal);
+      return usuario;
+    },
+
+    async actualizarUsuario(id, parche) {
+      const u = usuarios.find((x) => x.id === id);
+      if (!u) return null;
+      Object.assign(u, parche);
+      // Una plaza certificada ya no está "en progreso".
+      u.plazasEnProgreso = u.plazasEnProgreso.filter((p) => !u.plazasCertificadas.includes(p));
+      return conCarga(u);
+    },
+
+    async guardarContrasena(id, hash, debeCambiar) {
+      const u = usuarios.find((x) => x.id === id);
+      if (!u) return;
+      hashes.set(id, hash);
+      u.debeCambiarContrasena = debeCambiar;
+    },
+
+    async registrarAcceso(id) {
+      const u = usuarios.find((x) => x.id === id);
+      if (u) u.ultimoAcceso = fechaHora(new Date());
     },
 
     // ── Comercial ──────────────────────────────────────────────────────

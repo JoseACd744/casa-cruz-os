@@ -185,6 +185,7 @@ export const usuarioSchema = z
     }),
     plazasEnProgreso: z.array(z.string()),
     activo: z.boolean(),
+    debeCambiarContrasena: z.boolean().meta({ description: "Entró con clave temporal y aún no elige la suya." }),
     ultimoAcceso: z.string(),
     desarrollosACargo: z.number(),
   })

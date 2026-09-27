@@ -8,7 +8,9 @@ import { haySesion } from "@/lib/sesion";
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   if (!(await haySesion())) redirect("/login");
 
-  const [usuario, plazas] = await Promise.all([obtenerUsuarioActual(), listarPlazas()]);
+  const usuario = await obtenerUsuarioActual();
+  if (usuario.debeCambiarContrasena) redirect("/cuenta/contrasena");
+  const plazas = await listarPlazas();
   const nombrePlaza = (id: string) => plazas.find((p) => p.id === id)?.nombre ?? id;
 
   return (

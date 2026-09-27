@@ -61,3 +61,14 @@ test("iniciales y jerarquía de roles", () => {
   assert.ok(alcanza("corporativo", "gerente"));
   assert.ok(!alcanza("cerrador", "gerente"));
 });
+
+test("la clave definitiva no puede ser corta, obvia ni personal", async () => {
+  const { motivoClaveDebil } = await import("./cuentas.ts");
+  const jorge = { correo: "jorge.diaz@casacruz.mx", nombre: "Jorge Díaz" };
+  assert.match(motivoClaveDebil("corta1", jorge)!, /10 caracteres/);
+  assert.match(motivoClaveDebil("sololetrasaqui", jorge)!, /letras y números/);
+  assert.match(motivoClaveDebil("jorge.diaz2026", jorge)!, /correo/);
+  assert.match(motivoClaveDebil("Jorge12345678", jorge)!, /nombre/);
+  assert.match(motivoClaveDebil("casacruz2026", jorge)!, /empresa/);
+  assert.equal(motivoClaveDebil("tulum-selva-4821", jorge), null);
+});

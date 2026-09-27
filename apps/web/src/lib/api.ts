@@ -81,9 +81,11 @@ export async function pedir<T>(ruta: string, opciones: { siProhibido?: T } = {})
 
   if (respuesta.status === 404) return null;
   if (respuesta.status === 401) await alAcceso();
-  if (respuesta.status === 403 && "siProhibido" in opciones) return opciones.siProhibido as T;
   if (!respuesta.ok) {
     const { error, detalle } = await errorDe(respuesta);
+    // Entró con clave temporal: antes de cualquier cosa, tiene que elegir la suya.
+    if (respuesta.status === 403 && /clave temporal/i.test(error)) redirect("/cuenta/contrasena");
+    if (respuesta.status === 403 && "siProhibido" in opciones) return opciones.siProhibido as T;
     throw new ErrorDeApi(respuesta.status, error, detalle);
   }
   return (await respuesta.json()) as T;
@@ -118,7 +120,11 @@ export async function enviar<T>(
   }
 
   if (respuesta.status === 401) await alAcceso();
-  if (!respuesta.ok) return { ok: false, estado: respuesta.status, ...(await errorDe(respuesta)) };
+  if (!respuesta.ok) {
+    const error = await errorDe(respuesta);
+    if (respuesta.status === 403 && /clave temporal/i.test(error.error)) redirect("/cuenta/contrasena");
+    return { ok: false, estado: respuesta.status, ...error };
+  }
 
   const texto = await respuesta.text();
   return { ok: true, datos: (texto ? JSON.parse(texto) : null) as T };

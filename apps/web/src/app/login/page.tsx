@@ -31,7 +31,10 @@ async function entrar(datos: FormData) {
 
   if (!respuesta?.ok) redirect("/login?error=1");
 
-  const { token } = (await respuesta.json()) as { token: string };
+  const { token, sesion } = (await respuesta.json()) as {
+    token: string;
+    sesion: { debeCambiarContrasena: boolean };
+  };
   const almacen = await cookies();
   almacen.set(COOKIE_SESION, token, {
     httpOnly: true,
@@ -41,7 +44,7 @@ async function entrar(datos: FormData) {
     secure: process.env.NODE_ENV === "production",
   });
 
-  redirect("/inicio");
+  redirect(sesion.debeCambiarContrasena ? "/cuenta/contrasena" : "/inicio");
 }
 
 export default async function LoginPage({
@@ -165,6 +168,10 @@ export default async function LoginPage({
               y el valor anterior.
             </span>
           </div>
+
+          <span className="text-center text-[11.5px] text-muted">
+            ¿Olvidaste tu clave? Pide a corporativo que la restablezca.
+          </span>
 
           {usandoApi ? null : (
             <Link href="/inicio" className="text-center text-[12px]">

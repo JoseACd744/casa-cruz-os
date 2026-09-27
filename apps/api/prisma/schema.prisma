@@ -112,6 +112,8 @@ model Usuario {
   contrasenaHash String?
   rol          Rol      @default(cerrador)
   activo       Boolean  @default(true)
+  /// Entró con clave temporal: antes de trabajar tiene que elegir la suya.
+  debeCambiarContrasena Boolean @default(false)
   ultimoAcceso DateTime?
   creadoEl     DateTime @default(now())
 

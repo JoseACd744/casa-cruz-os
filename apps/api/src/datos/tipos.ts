@@ -9,6 +9,7 @@ import type {
   Multimedia,
   Plaza,
   Propuesta,
+  Rol,
   Tipologia,
   Usuario,
 } from "@casacruz/core";
@@ -72,6 +73,24 @@ export interface EntradaTipologia {
   niveles: { nombre: string; precioVenta: number | null; precioLista?: number | null; disponibles?: number | null }[];
 }
 
+export interface EntradaUsuario {
+  nombre: string;
+  correo: string;
+  rol: Rol;
+  telefono?: string | null;
+  plazasCertificadas?: string[];
+  plazasEnProgreso?: string[];
+}
+
+export interface ParcheUsuario {
+  nombre?: string;
+  rol?: Rol;
+  activo?: boolean;
+  telefono?: string | null;
+  plazasCertificadas?: string[];
+  plazasEnProgreso?: string[];
+}
+
 export interface EntradaCliente {
   nombre: string;
   correo?: string | null;
@@ -111,6 +130,7 @@ export interface FuenteDeDatos {
   listarDesarrollos(filtros: FiltrosInventario): Promise<Desarrollo[]>;
   obtenerDesarrollo(id: string): Promise<Desarrollo | null>;
   listarUsuarios(): Promise<Usuario[]>;
+  obtenerUsuario(id: string): Promise<Usuario | null>;
   /** Hash guardado del usuario, o null si todavía no tiene (modo demostración). */
   hashDeContrasena(usuarioId: string): Promise<string | null>;
   obtenerUsuarioActual(): Promise<Usuario>;
@@ -154,6 +174,13 @@ export interface FuenteDeDatos {
     desarrolloId: string,
     documento: { nombre: string; tipo: FuenteTipo; url: string },
   ): Promise<Desarrollo["interna"]["documentos"] | null>;
+
+  // ── Equipo ───────────────────────────────────────────────────────────
+  /** Nace con la clave temporal ya cifrada y la obligación de cambiarla. */
+  crearUsuario(entrada: EntradaUsuario, hashTemporal: string): Promise<Usuario>;
+  actualizarUsuario(id: string, parche: ParcheUsuario): Promise<Usuario | null>;
+  guardarContrasena(id: string, hash: string, debeCambiar: boolean): Promise<void>;
+  registrarAcceso(id: string): Promise<void>;
 
   // ── Comercial ────────────────────────────────────────────────────────
   crearCliente(entrada: EntradaCliente): Promise<Cliente>;
