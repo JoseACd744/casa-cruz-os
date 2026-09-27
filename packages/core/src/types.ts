@@ -195,6 +195,10 @@ export interface Cliente {
   plazasInteres: string[];
   kommoLeadId: string | null;
   kommoEtapa: string | null;
+  /** Enlace al lead, cuando la API conoce la cuenta de Kommo. No se guarda: se arma. */
+  kommoUrl?: string | null;
+  /** El cerrador que lleva al cliente. */
+  responsableId: string | null;
   notas: string | null;
   actividad: { fecha: string; texto: string }[];
 }

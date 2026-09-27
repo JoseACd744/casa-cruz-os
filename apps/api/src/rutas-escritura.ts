@@ -8,6 +8,7 @@ import {
   camposProtegidos,
   entregaDe,
   motivoParaNoMover,
+  motivoParaNoProponer,
   requisitosParaPublicar,
 } from "@casacruz/core";
 import { exigir } from "./auth";
@@ -334,7 +335,8 @@ export async function rutasEscritura(instancia: FastifyInstance) {
         response: { 201: clienteSchema },
       },
     },
-    async (peticion, respuesta) => respuesta.code(201).send(await datos.crearCliente(peticion.body)),
+    async (peticion, respuesta) =>
+      respuesta.code(201).send(await datos.crearCliente({ ...peticion.body, responsableId: peticion.user.id })),
   );
 
   app.patch(
@@ -390,12 +392,34 @@ export async function rutasEscritura(instancia: FastifyInstance) {
             )
             .min(1),
         }),
-        response: { 201: propuestaSchema, 404: errorSchema },
+        response: { 201: propuestaSchema, 400: errorSchema, 403: errorSchema, 404: errorSchema, 409: errorSchema },
       },
     },
     async (peticion, respuesta) => {
       const cliente = await datos.obtenerCliente(peticion.body.clienteId);
       if (!cliente) return respuesta.code(404).send({ error: "Cliente no encontrado" });
+
+      // Las plazas se leen del usuario, no del token: una certificación nueva cuenta de inmediato.
+      const usuario = (await datos.listarUsuarios()).find((u) => u.id === peticion.user.id);
+      if (!usuario) return respuesta.code(403).send({ error: "Usuario no encontrado" });
+
+      const noSePueden: string[] = [];
+      for (const item of peticion.body.items) {
+        const d = await datos.obtenerDesarrollo(item.desarrolloId);
+        if (!d) return respuesta.code(404).send({ error: `No existe el desarrollo ${item.desarrolloId}` });
+        if (item.tipologiaId && !d.tipologias.some((t) => t.id === item.tipologiaId)) {
+          return respuesta.code(400).send({ error: `${d.nombre} no tiene esa tipología` });
+        }
+        const motivo = motivoParaNoProponer(usuario, d);
+        if (motivo) noSePueden.push(motivo);
+      }
+      if (noSePueden.length) {
+        const porPlaza = noSePueden.some((m) => m.includes("certificado"));
+        return respuesta.code(porPlaza ? 403 : 409).send({
+          error: "Hay propiedades que no se pueden incluir",
+          detalle: noSePueden,
+        });
+      }
 
       const propuesta = await datos.crearPropuesta({
         ...peticion.body,

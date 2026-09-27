@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BotonAccion } from "@/components/BotonAccion";
+import { BotonAgregarPropuesta } from "@/components/BotonAgregarPropuesta";
 import { Tabs } from "@/components/Tabs";
 import { Badge, Barra, Card, Dot, Eyebrow, Falta, Foto } from "@/components/ui";
 import {
@@ -368,12 +369,7 @@ export default async function PropiedadPage({
               </svg>
               GENERAR FICHA
             </Link>
-            <Link
-              href="/propuestas/nueva"
-              className="flex h-11.5 items-center justify-center gap-2.5 rounded-[3px] bg-tan text-[11.5px] font-bold tracking-[0.1em] text-ink hover:brightness-105"
-            >
-              AGREGAR A PROPUESTA
-            </Link>
+            <BotonAgregarPropuesta id={d.id} />
             <div className="flex gap-2.5">
               <Link
                 href={`/propiedades/${d.id}/simulador`}

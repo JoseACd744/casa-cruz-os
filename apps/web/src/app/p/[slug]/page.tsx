@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { BotonInteres, RegistroVista } from "@/components/Micrositio";
 import { Foto } from "@/components/ui";
 import { galeria, iniciales, mesAnio, money } from "@casacruz/core";
 import { obtenerPropuestaPublica } from "@/lib/repo";
+import { tokenDeSesion } from "@/lib/sesion";
 import type { Desarrollo, PropuestaItem } from "@casacruz/core";
 
 export async function generateMetadata({
@@ -40,7 +42,17 @@ interface ItemResuelto {
   m2: number | null;
 }
 
-function Bloque({ resuelto, orden }: { resuelto: ItemResuelto; orden: number }) {
+function Bloque({
+  resuelto,
+  orden,
+  slug,
+  esEquipo,
+}: {
+  resuelto: ItemResuelto;
+  orden: number;
+  slug: string;
+  esEquipo: boolean;
+}) {
   const { desarrollo: d, item } = resuelto;
   const fotos = galeria(d);
   return (
@@ -116,12 +128,15 @@ function Bloque({ resuelto, orden }: { resuelto: ItemResuelto; orden: number }) 
             {item.razon ?? "Tu asesor te comparte el detalle de esta opción en la llamada."}
           </p>
           <div className="grow" />
-          <a
-            href="#comparativo"
-            className="flex h-11.5 items-center justify-center rounded-[3px] bg-ink text-[11.5px] font-bold tracking-[0.1em] text-white"
+          <BotonInteres
+            slug={slug}
+            accion="conocer"
+            desarrolloId={d.id}
+            esEquipo={esEquipo}
+            className="flex h-11.5 w-full items-center justify-center rounded-[3px] bg-ink text-[11.5px] font-bold tracking-[0.1em] text-white"
           >
             QUIERO CONOCER ESTA PROPIEDAD
-          </a>
+          </BotonInteres>
         </div>
       </div>
     </section>
@@ -137,6 +152,8 @@ export default async function PropuestaPublicaPage({
   const publica = await obtenerPropuestaPublica(slug);
   if (!publica) notFound();
   const { propuesta, cliente, asesor } = publica;
+  // Si quien mira tiene sesión del equipo, no se cuenta como vista del cliente.
+  const esEquipo = Boolean(await tokenDeSesion());
 
   const resueltos: ItemResuelto[] = [];
   for (const item of propuesta.items) {
@@ -186,6 +203,7 @@ export default async function PropuestaPublicaPage({
 
   return (
     <main className="mx-auto w-full max-w-250 bg-ground">
+      <RegistroVista slug={propuesta.slug} esEquipo={esEquipo} />
       <header className="flex flex-col bg-ink px-6 py-10 text-white md:px-16 md:py-13">
         <div className="flex items-center gap-3">
           <span className="flex size-9.5 items-center justify-center border-[1.5px] border-ground text-[12px] font-bold">
@@ -249,7 +267,7 @@ export default async function PropuestaPublicaPage({
       </section>
 
       {resueltos.map((r, i) => (
-        <Bloque key={r.desarrollo.id} resuelto={r} orden={i + 1} />
+        <Bloque key={r.desarrollo.id} resuelto={r} orden={i + 1} slug={propuesta.slug} esEquipo={esEquipo} />
       ))}
 
       <section
@@ -299,19 +317,23 @@ export default async function PropuestaPublicaPage({
             Podemos agendar una videollamada para revisar juntos las opciones, o coordinar una
             visita cuando vengan a México.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <a
-              href="#comparativo"
+          <div className="flex flex-wrap items-start gap-3">
+            <BotonInteres
+              slug={propuesta.slug}
+              accion="videollamada"
+              esEquipo={esEquipo}
               className="flex h-12.5 items-center rounded-[3px] bg-ink px-6.5 text-[11.5px] font-bold tracking-[0.1em] text-white"
             >
               AGENDAR VIDEOLLAMADA
-            </a>
-            <a
-              href="#comparativo"
+            </BotonInteres>
+            <BotonInteres
+              slug={propuesta.slug}
+              accion="asesor"
+              esEquipo={esEquipo}
               className="flex h-12.5 items-center rounded-[3px] border border-ink px-6.5 text-[11.5px] font-bold tracking-[0.1em]"
             >
               HABLAR CON MI ASESOR
-            </a>
+            </BotonInteres>
           </div>
         </div>
       </section>

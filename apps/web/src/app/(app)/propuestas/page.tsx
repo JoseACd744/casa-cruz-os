@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { BotonAccion } from "@/components/BotonAccion";
 import { Badge, Card, Eyebrow } from "@/components/ui";
+import { marcarEnviada } from "@/lib/acciones/comercial";
 import { etiquetaEstadoPropuesta, etiquetaFormato, tonoEstadoPropuesta } from "@/lib/etiquetas";
 import { listarClientes, listarDesarrollos, listarPropuestas } from "@/lib/repo";
 
@@ -75,7 +77,14 @@ export default async function PropuestasPage() {
               {etiquetaFormato[p.formato]}
             </span>
             <span className="w-40 px-4 py-3.5 text-[12px] text-ink-2">
-              {p.enviadaEl ?? "sin enviar"}
+              {p.enviadaEl ?? (
+                <BotonAccion
+                  accion={marcarEnviada.bind(null, p.slug)}
+                  className="flex h-8 items-center rounded-[3px] border border-[#C9C1B6] px-2.5 text-[9.5px] font-bold tracking-[0.06em] hover:bg-surface"
+                >
+                  MARCAR ENVIADA
+                </BotonAccion>
+              )}
             </span>
             <span className="w-22 px-4 py-3.5 text-[13px] font-bold">{p.vistas || "—"}</span>
             <span className="w-48 px-4 py-3.5">

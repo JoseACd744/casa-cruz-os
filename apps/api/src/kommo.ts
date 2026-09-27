@@ -24,23 +24,22 @@ function textoDeNota(propuesta: Propuesta, cliente: Cliente, asesor: string): st
 }
 
 /**
- * Escribe la nota en el lead. Si Kommo no está configurado, lo deja en el log y
- * sigue: que falte el CRM no debe tumbar la generación de una propuesta.
+ * Escribe una nota en el lead. Si Kommo no está configurado, lo deja en el log y
+ * sigue: que falte el CRM no debe tumbar lo que el equipo o el cliente estaban
+ * haciendo.
  */
-export async function avisarPropuestaEnKommo(
-  propuesta: Propuesta,
-  cliente: Cliente,
-  asesor: string,
+export async function escribirNotaEnKommo(
+  leadId: string | null,
+  texto: string,
   log: FastifyBaseLogger,
+  contexto: Record<string, unknown> = {},
 ): Promise<boolean> {
-  const leadId = propuesta.kommoLeadId ?? cliente.kommoLeadId;
-
   if (!kommoConfigurado) {
-    log.info({ propuesta: propuesta.slug }, "Kommo sin configurar: no se escribió la nota");
+    log.info(contexto, "Kommo sin configurar: no se escribió la nota");
     return false;
   }
   if (!leadId) {
-    log.warn({ propuesta: propuesta.slug }, "El cliente no tiene lead de Kommo");
+    log.warn(contexto, "El cliente no tiene lead de Kommo");
     return false;
   }
 
@@ -53,26 +52,33 @@ export async function avisarPropuestaEnKommo(
         authorization: `Bearer ${config.kommo.token}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify([
-        {
-          note_type: "common",
-          params: { text: textoDeNota(propuesta, cliente, asesor) },
-        },
-      ]),
+      body: JSON.stringify([{ note_type: "common", params: { text: texto } }]),
     });
 
     if (!respuesta.ok) {
-      log.error(
-        { estado: respuesta.status, propuesta: propuesta.slug },
-        "Kommo rechazó la nota de la propuesta",
-      );
+      log.error({ ...contexto, estado: respuesta.status }, "Kommo rechazó la nota");
       return false;
     }
 
-    log.info({ lead: leadId, propuesta: propuesta.slug }, "Nota escrita en el lead de Kommo");
+    log.info({ ...contexto, lead: leadId }, "Nota escrita en el lead de Kommo");
     return true;
   } catch (error) {
-    log.error({ error, propuesta: propuesta.slug }, "No se pudo avisar a Kommo");
+    log.error({ ...contexto, error }, "No se pudo avisar a Kommo");
     return false;
   }
+}
+
+/** La nota que deja una propuesta enviada: qué se presentó, cuándo y con qué enlace. */
+export async function avisarPropuestaEnKommo(
+  propuesta: Propuesta,
+  cliente: Cliente,
+  asesor: string,
+  log: FastifyBaseLogger,
+): Promise<boolean> {
+  return escribirNotaEnKommo(
+    propuesta.kommoLeadId ?? cliente.kommoLeadId,
+    textoDeNota(propuesta, cliente, asesor),
+    log,
+    { propuesta: propuesta.slug },
+  );
 }

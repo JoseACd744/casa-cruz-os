@@ -1,13 +1,20 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { confiabilidad, estadoValidaciones } from "@casacruz/core";
+import {
+  confiabilidad,
+  enlaceKommo,
+  enlaceWhatsApp,
+  estadoValidaciones,
+  textoDeInteres,
+  type Cliente,
+} from "@casacruz/core";
 import { exigir, sesionOpcional } from "./auth";
 import { desarrolloSegunRol, desarrollosSegunRol } from "./visibilidad";
 import { almacenamientoConfigurado, almacenamientoLocal } from "./almacenamiento";
 import { config, modoMock } from "./config";
 import { bitacoraCsv, registrarCambio, resolverCambio } from "./gobierno";
-import { kommoConfigurado } from "./kommo";
+import { escribirNotaEnKommo, kommoConfigurado } from "./kommo";
 import { fuente, origenConfigurado } from "./datos";
 import {
   cambioSchema,
@@ -35,6 +42,8 @@ export async function rutas(instancia: FastifyInstance) {
   const datos = await fuente();
 
   const idDesarrollo = z.object({ id: z.string().meta({ example: "playa-park" }) });
+  /** El enlace al lead se arma aquí: depende de la cuenta de Kommo, no del cliente. */
+  const conKommo = (c: Cliente): Cliente => ({ ...c, kommoUrl: enlaceKommo(config.kommo.subdominio, c.kommoLeadId) });
   const noEncontrado = { 404: errorSchema };
 
   // ── Servicio ───────────────────────────────────────────────────────────
@@ -218,7 +227,7 @@ export async function rutas(instancia: FastifyInstance) {
         response: { 200: z.array(clienteSchema) },
       },
     },
-    async () => datos.listarClientes(),
+    async () => (await datos.listarClientes()).map(conKommo),
   );
 
   app.get(
@@ -235,7 +244,7 @@ export async function rutas(instancia: FastifyInstance) {
     async (peticion, respuesta) => {
       const cliente = await datos.obtenerCliente(peticion.params.id);
       if (!cliente) return respuesta.code(404).send({ error: "Cliente no encontrado" });
-      return cliente;
+      return conKommo(cliente);
     },
   );
 
@@ -336,7 +345,75 @@ export async function rutas(instancia: FastifyInstance) {
       const propuesta = await datos.obtenerPropuesta(peticion.params.slug);
       if (!propuesta) return respuesta.code(404).send({ error: "Propuesta no encontrada" });
       const vistas = await datos.sumarVistaPropuesta(peticion.params.slug);
+
+      // La primera apertura es la señal para dar seguimiento: queda en la actividad y en Kommo.
+      if (vistas === 1) {
+        const texto = "Abrió su propuesta por primera vez.";
+        await datos.registrarActividad(propuesta.clienteId, texto);
+        void escribirNotaEnKommo(propuesta.kommoLeadId, `Casa Cruz OS: el cliente ${texto.toLowerCase()}`, app.log, {
+          propuesta: propuesta.slug,
+        });
+      }
       return { slug: peticion.params.slug, vistas };
+    },
+  );
+
+  app.post(
+    "/propuestas/:slug/interes",
+    {
+      schema: {
+        tags: ["Propuestas"],
+        summary: "El cliente pide conocer una propiedad o hablar con su asesor",
+        description:
+          "Pública, desde el micrositio. Queda en la actividad del cliente y como nota en su lead de Kommo, y devuelve el enlace de WhatsApp con el asesor si tiene teléfono.",
+        params: z.object({ slug: z.string() }),
+        body: z.object({
+          accion: z.enum(["conocer", "videollamada", "asesor"]),
+          desarrolloId: z.string().nullish(),
+        }),
+        response: {
+          200: z.object({ mensaje: z.string(), whatsapp: z.string().nullable() }),
+          400: errorSchema,
+          ...noEncontrado,
+        },
+      },
+    },
+    async (peticion, respuesta) => {
+      const propuesta = await datos.obtenerPropuesta(peticion.params.slug);
+      if (!propuesta) return respuesta.code(404).send({ error: "Propuesta no encontrada" });
+
+      const { accion, desarrolloId } = peticion.body;
+      if (desarrolloId && !propuesta.items.some((i) => i.desarrolloId === desarrolloId)) {
+        return respuesta.code(400).send({ error: "Esa propiedad no está en la propuesta" });
+      }
+
+      const [desarrollo, cliente, usuarios] = await Promise.all([
+        desarrolloId ? datos.obtenerDesarrollo(desarrolloId) : Promise.resolve(null),
+        datos.obtenerCliente(propuesta.clienteId),
+        datos.listarUsuarios(),
+      ]);
+      const asesor = usuarios.find((u) => u.id === propuesta.usuarioId);
+      const texto = textoDeInteres(accion, desarrollo?.nombre);
+
+      await datos.registrarActividad(propuesta.clienteId, texto);
+      void escribirNotaEnKommo(propuesta.kommoLeadId, `Casa Cruz OS: ${texto}`, app.log, {
+        propuesta: propuesta.slug,
+      });
+
+      const saludo = [
+        `Hola${asesor ? ` ${asesor.nombre.split(" ")[0]}` : ""}`,
+        cliente && !cliente.nombre.startsWith("[") ? `, soy ${cliente.nombre.split(" y ")[0]}` : "",
+        ". Vi la propuesta de Casa Cruz",
+        desarrollo ? ` y me interesa ${desarrollo.nombre}` : "",
+        ".",
+      ].join("");
+
+      return {
+        mensaje: asesor
+          ? `Listo: ${asesor.nombre} ya sabe que te interesa y te contactará.`
+          : "Listo: tu asesor ya sabe que te interesa y te contactará.",
+        whatsapp: enlaceWhatsApp(asesor?.telefono ?? null, saludo),
+      };
     },
   );
 

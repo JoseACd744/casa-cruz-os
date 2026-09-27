@@ -11,7 +11,7 @@ import {
 } from "react";
 
 const CLAVE = "cc-os:seleccion";
-const SEMILLA = ["playa-park", "real-aurora", "cascatta"];
+const SEMILLA = ["playa-park", "real-aurora"];
 const VACIO: string[] = [];
 
 /**

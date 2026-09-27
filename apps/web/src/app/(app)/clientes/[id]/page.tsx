@@ -1,14 +1,40 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BotonAccion } from "@/components/BotonAccion";
+import { FormCliente } from "@/components/FormCliente";
 import { Badge, Card, Campo, Eyebrow, Seccion } from "@/components/ui";
 import { moneyCorto } from "@casacruz/core";
-import { listarPropuestas, obtenerCliente } from "@/lib/repo";
+import { marcarEnviada } from "@/lib/acciones/comercial";
+import { usandoApi } from "@/lib/api";
+import { etiquetaEstadoPropuesta, etiquetaFormato, tonoEstadoPropuesta } from "@/lib/etiquetas";
+import {
+  listarPlazas,
+  listarPropuestas,
+  listarUsuarios,
+  obtenerCliente,
+  obtenerIntegraciones,
+  obtenerUsuarioActual,
+} from "@/lib/repo";
+
+const OBJETIVO: Record<string, string> = { vivienda: "Para vivir", inversion: "Inversión", retiro: "Retiro" };
 
 export default async function ClientePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const cliente = await obtenerCliente(id);
+  const [cliente, todas, plazas, integraciones, actual, equipo] = await Promise.all([
+    obtenerCliente(id),
+    listarPropuestas(),
+    listarPlazas(),
+    obtenerIntegraciones(),
+    obtenerUsuarioActual(),
+    listarUsuarios(),
+  ]);
   if (!cliente) notFound();
-  const propuestas = (await listarPropuestas()).filter((p) => p.clienteId === cliente.id);
+  const propuestas = todas.filter((p) => p.clienteId === cliente.id);
+  const plazasInteres = cliente.plazasInteres.map((p) => plazas.find((x) => x.id === p)?.nombre ?? p);
+  const responsable =
+    cliente.responsableId === actual.id
+      ? actual.nombre
+      : (equipo.find((u) => u.id === cliente.responsableId)?.nombre ?? "[SIN ASIGNAR]");
 
   return (
     <div className="flex flex-col gap-5 overflow-auto p-7">
@@ -25,7 +51,7 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
         </div>
         <div className="grow" />
         <Link
-          href="/propuestas/nueva"
+          href={`/propuestas/nueva?cliente=${encodeURIComponent(cliente.id)}`}
           className="flex h-11.5 items-center gap-2.5 rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
@@ -43,8 +69,8 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
                 {moneyCorto(cliente.presupuestoMin)} – {moneyCorto(cliente.presupuestoMax)}
               </Campo>
               <Campo label="Recámaras">{cliente.recamaras ?? "[ ]"}</Campo>
-              <Campo label="Objetivo">{cliente.objetivo ?? "[ ]"}</Campo>
-              <Campo label="Plaza">Playa del Carmen</Campo>
+              <Campo label="Objetivo">{cliente.objetivo ? OBJETIVO[cliente.objetivo] : "[ ]"}</Campo>
+              <Campo label="Plazas">{plazasInteres.join(" · ") || "[ ]"}</Campo>
             </div>
             <div className="h-px bg-line" />
             <div className="flex flex-col gap-1.5">
@@ -53,6 +79,16 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
                 {cliente.notas ?? "[SIN NOTAS]"}
               </p>
             </div>
+            {usandoApi ? (
+              <details className="group rounded-[3px] border border-line">
+                <summary className="cursor-pointer list-none px-4 py-3 text-[10.5px] font-bold tracking-[0.1em] text-ink-2 hover:text-ink">
+                  EDITAR LO QUE BUSCA EL CLIENTE
+                </summary>
+                <div className="border-t border-line p-4">
+                  <FormCliente cliente={cliente} plazas={plazas} />
+                </div>
+              </details>
+            ) : null}
           </Seccion>
 
           <Seccion
@@ -64,21 +100,33 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
             }
           >
             <div className="flex flex-col gap-3.5">
+              {propuestas.length === 0 ? (
+                <p className="text-[12.5px] text-muted">Todavía no se le ha enviado ninguna.</p>
+              ) : null}
               {propuestas.map((p) => (
                 <div key={p.id} className="flex flex-col gap-3.5 rounded-[3px] border border-line p-4">
                   <div className="flex items-center gap-3">
                     <span className="text-[14px] font-bold">
                       Propuesta · {p.items.length} propiedades
                     </span>
-                    <Badge tono="warn">{p.estado}</Badge>
+                    <Badge tono={tonoEstadoPropuesta[p.estado]}>{etiquetaEstadoPropuesta[p.estado]}</Badge>
                     <div className="grow" />
                     <span className="font-mono text-[11px] text-muted">/{p.slug}</span>
                   </div>
                   <div className="flex items-center gap-7">
                     <Campo label="Enviada">{p.enviadaEl ?? "sin enviar"}</Campo>
                     <Campo label="Vistas">{p.vistas || "—"}</Campo>
-                    <Campo label="Formato">{p.formato}</Campo>
+                    <Campo label="Formato">{etiquetaFormato[p.formato]}</Campo>
                     <div className="grow" />
+                    {p.estado === "borrador" ? (
+                      <BotonAccion
+                        accion={marcarEnviada.bind(null, p.slug)}
+                        enCurso="…"
+                        className="flex h-9 items-center rounded-[3px] bg-ink px-3.5 text-[10.5px] font-bold tracking-[0.06em] text-white"
+                      >
+                        MARCAR ENVIADA
+                      </BotonAccion>
+                    ) : null}
                     {[
                       ["MICROSITIO", `/p/${p.slug}`],
                       ["PDF", `/doc/pdf/${p.slug}`],
@@ -103,14 +151,14 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
         <div className="flex grow flex-col gap-5">
           <Card className="flex flex-col gap-3.5 p-5.5">
             <div className="flex items-center gap-2.5">
-              <span className="size-2 rounded-full bg-ok" />
-              <Eyebrow>Sincronizado con Kommo</Eyebrow>
+              <span className={`size-2 rounded-full ${integraciones.kommo && cliente.kommoLeadId ? "bg-ok" : "bg-faint"}`} />
+              <Eyebrow>{integraciones.kommo ? "Kommo" : "Kommo sin conectar"}</Eyebrow>
             </div>
             {[
-              ["Lead", `#${cliente.kommoLeadId ?? "—"}`],
+              ["Lead", cliente.kommoLeadId ? `#${cliente.kommoLeadId}` : "sin lead"],
               ["Etapa del pipeline", cliente.kommoEtapa ?? "—"],
-              ["Responsable", "Jorge Díaz"],
-              ["Último contacto", "Hoy 11:20"],
+              ["Responsable", responsable],
+              ["Último movimiento", cliente.actividad[0]?.fecha ?? "—"],
             ].map(([k, v]) => (
               <div key={k} className="flex justify-between text-[12.5px]">
                 <span className="text-ink-2">{k}</span>
@@ -122,13 +170,27 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
               Al generar una propuesta se escriben en el lead: la fecha, las propiedades
               presentadas, el enlace y la siguiente acción.
             </span>
-            <button className="h-11 rounded-[3px] border border-line bg-surface text-[10.5px] font-bold tracking-[0.08em]">
-              ABRIR EN KOMMO
-            </button>
+            {cliente.kommoUrl ? (
+              <a
+                href={cliente.kommoUrl}
+                target="_blank"
+                rel="noopener"
+                className="flex h-11 items-center justify-center rounded-[3px] border border-line bg-surface text-[10.5px] font-bold tracking-[0.08em] hover:border-[#C9C1B6]"
+              >
+                ABRIR EN KOMMO
+              </a>
+            ) : (
+              <span className="text-[11px] text-muted">
+                {cliente.kommoLeadId
+                  ? "Cuando se conecte la cuenta de Kommo, aquí se abre el lead."
+                  : "Escribe su número de lead para ligarlo con Kommo."}
+              </span>
+            )}
           </Card>
 
           <Card className="flex flex-col gap-3.5 p-5.5">
             <Eyebrow>Actividad</Eyebrow>
+            {cliente.actividad.length === 0 ? <span className="text-[12px] text-muted">Sin movimientos.</span> : null}
             {cliente.actividad.map((a) => (
               <div key={a.fecha + a.texto} className="flex gap-3">
                 <span className="w-16 shrink-0 font-mono text-[10.5px] text-muted uppercase">

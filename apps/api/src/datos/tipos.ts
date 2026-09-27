@@ -85,6 +85,7 @@ export interface EntradaCliente {
   kommoLeadId?: string | null;
   kommoEtapa?: string | null;
   notas?: string | null;
+  responsableId?: string | null;
 }
 
 export interface EntradaPropuesta {
@@ -157,6 +158,8 @@ export interface FuenteDeDatos {
   // ── Comercial ────────────────────────────────────────────────────────
   crearCliente(entrada: EntradaCliente): Promise<Cliente>;
   actualizarCliente(id: string, parche: Partial<EntradaCliente>): Promise<Cliente | null>;
+  /** Una línea en la actividad del cliente (lo que hizo él o su asesor). */
+  registrarActividad(clienteId: string, texto: string): Promise<void>;
   crearPropuesta(entrada: EntradaPropuesta): Promise<Propuesta>;
   marcarPropuestaEnviada(slug: string): Promise<Propuesta | null>;
   sumarVistaPropuesta(slug: string): Promise<number>;

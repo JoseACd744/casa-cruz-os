@@ -137,7 +137,10 @@ export function CampoOpciones({
   );
 }
 
-/** Casillas con el mismo nombre: el server action las lee con getAll. */
+/**
+ * Casillas con el mismo nombre: el server action las lee con getAll. Una opción
+ * puede ser texto (valor y etiqueta iguales) o { valor, texto }.
+ */
 export function CampoCasillas({
   nombre,
   etiqueta,
@@ -146,21 +149,29 @@ export function CampoCasillas({
 }: {
   nombre: string;
   etiqueta: string;
-  opciones: string[];
+  opciones: (string | { valor: string; texto: string })[];
   elegidas: string[];
 }) {
-  const todas = [...new Set([...opciones, ...elegidas])];
+  const lista = opciones.map((o) => (typeof o === "string" ? { valor: o, texto: o } : o));
+  // Lo elegido que ya no está entre las opciones también se muestra, para no perderlo.
+  for (const e of elegidas) if (!lista.some((o) => o.valor === e)) lista.push({ valor: e, texto: e });
   return (
     <fieldset className="flex flex-col gap-2.5">
       <legend className="eyebrow pb-2.5">{etiqueta}</legend>
       <div className="flex flex-wrap gap-2.5">
-        {todas.map((o) => (
+        {lista.map((o) => (
           <label
-            key={o}
+            key={o.valor}
             className="flex cursor-pointer items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-2 text-[12px] font-semibold text-ink-2 has-checked:border-tan has-checked:bg-tan-soft has-checked:text-tan-deep"
           >
-            <input type="checkbox" name={nombre} value={o} defaultChecked={elegidas.includes(o)} className="sr-only" />
-            {o}
+            <input
+              type="checkbox"
+              name={nombre}
+              value={o.valor}
+              defaultChecked={elegidas.includes(o.valor)}
+              className="sr-only"
+            />
+            {o.texto}
           </label>
         ))}
       </div>

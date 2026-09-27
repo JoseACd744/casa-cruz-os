@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { Badge, Card } from "@/components/ui";
 import { moneyCorto } from "@casacruz/core";
-import { listarClientes, listarPropuestas } from "@/lib/repo";
+import {
+  listarClientes,
+  listarPropuestas,
+  listarUsuarios,
+  obtenerIntegraciones,
+  obtenerUsuarioActual,
+} from "@/lib/repo";
 
 const tonoEtapa: Record<string, "ok" | "warn" | "alert" | "neutral"> = {
   "Propuesta enviada": "warn",
@@ -10,8 +16,15 @@ const tonoEtapa: Record<string, "ok" | "warn" | "alert" | "neutral"> = {
 };
 
 export default async function ClientesPage() {
-  const clientes = await listarClientes();
-  const propuestas = await listarPropuestas();
+  const [clientes, propuestas, integraciones, actual, equipo] = await Promise.all([
+    listarClientes(),
+    listarPropuestas(),
+    obtenerIntegraciones(),
+    obtenerUsuarioActual(),
+    listarUsuarios(),
+  ]);
+  const responsable = (id: string | null) =>
+    id === actual.id ? "Tú" : (equipo.find((u) => u.id === id)?.nombre ?? null);
 
   return (
     <div className="flex flex-col gap-5 overflow-auto p-8">
@@ -25,11 +38,23 @@ export default async function ClientesPage() {
         </div>
         <div className="grow" />
         <span className="flex items-center gap-2 rounded-[3px] border border-line bg-panel px-3.5 py-2.5 text-[11px] font-semibold text-ink-2">
-          <span className="size-1.75 rounded-full bg-ok" />
-          Sincronizado con Kommo hace 4 minutos
+          <span className={`size-1.75 rounded-full ${integraciones.kommo ? "bg-ok" : "bg-faint"}`} />
+          {integraciones.kommo ? "Conectado con Kommo" : "Kommo sin conectar: los clientes se capturan aquí"}
         </span>
+        <Link
+          href="/clientes/nuevo"
+          className="flex h-11.5 items-center gap-2.5 rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          NUEVO CLIENTE
+        </Link>
       </div>
 
+      {clientes.length === 0 ? (
+        <p className="text-[13px] text-muted">Todavía no hay clientes. Da de alta el primero.</p>
+      ) : null}
       <div className="grid grid-cols-3 gap-5">
         {clientes.map((c) => {
           const suyas = propuestas.filter((p) => p.clienteId === c.id);
@@ -74,9 +99,15 @@ export default async function ClientesPage() {
                   <span className="font-bold capitalize">{c.objetivo ?? "[ ]"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-ink-2">Propuestas enviadas</span>
+                  <span className="text-ink-2">Propuestas</span>
                   <span className="font-bold">{suyas.length}</span>
                 </div>
+                {responsable(c.responsableId) ? (
+                  <div className="flex justify-between">
+                    <span className="text-ink-2">Lo lleva</span>
+                    <span className="font-bold">{responsable(c.responsableId)}</span>
+                  </div>
+                ) : null}
               </div>
 
               <div className="grow" />
@@ -89,7 +120,7 @@ export default async function ClientesPage() {
                   VER FICHA
                 </Link>
                 <Link
-                  href="/propuestas/nueva"
+                  href={`/propuestas/nueva?cliente=${encodeURIComponent(c.id)}`}
                   className="flex h-10 grow items-center justify-center rounded-[3px] bg-ink text-[10.5px] font-bold tracking-[0.08em] text-white hover:brightness-125"
                 >
                   NUEVA PROPUESTA

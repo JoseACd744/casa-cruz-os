@@ -81,7 +81,7 @@ export function Sidebar({ usuario }: { usuario: UsuarioMenu }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-[236px] shrink-0 flex-col bg-ink px-4.5 py-6 text-ground">
+    <aside className="flex w-[236px] shrink-0 flex-col bg-ink px-4.5 py-6 text-ground print:hidden">
       <Link href="/inicio" className="flex items-center gap-3 px-1.5 pb-6">
         <span className="flex size-9 items-center justify-center border-[1.5px] border-ground text-[12px] font-bold">
           CC

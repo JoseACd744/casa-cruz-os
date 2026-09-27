@@ -204,6 +204,8 @@ export const clienteSchema = z
     plazasInteres: z.array(z.string()),
     kommoLeadId: z.string().nullable(),
     kommoEtapa: z.string().nullable(),
+    kommoUrl: z.string().nullable().optional().meta({ description: "Enlace al lead, si la API conoce la cuenta de Kommo." }),
+    responsableId: z.string().nullable(),
     notas: z.string().nullable(),
     actividad: z.array(z.object({ fecha: z.string(), texto: z.string() })),
   })

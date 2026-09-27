@@ -1,5 +1,6 @@
 import {
   confiabilidad,
+  fechaCorta,
   fechaDocumento,
   fechaHora,
   filtrarDesarrollos,
@@ -341,11 +342,17 @@ export function fuenteMock(): FuenteDeDatos {
         plazasInteres: entrada.plazasInteres ?? [],
         kommoLeadId: entrada.kommoLeadId ?? null,
         kommoEtapa: entrada.kommoEtapa ?? null,
+        responsableId: entrada.responsableId ?? null,
         notas: entrada.notas ?? null,
-        actividad: [],
+        actividad: [{ fecha: fechaCorta(new Date()).slice(0, 6), texto: "Alta en Casa Cruz OS." }],
       };
-      clientes.push(cliente);
+      clientes.unshift(cliente);
       return cliente;
+    },
+
+    async registrarActividad(clienteId, texto) {
+      const cliente = clientes.find((c) => c.id === clienteId);
+      cliente?.actividad.unshift({ fecha: fechaCorta(new Date()).slice(0, 6), texto });
     },
 
     async actualizarCliente(id, parche) {

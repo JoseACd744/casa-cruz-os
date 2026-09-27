@@ -492,6 +492,7 @@ export const clientes: Cliente[] = [
     plazasInteres: ["riviera-maya"],
     kommoLeadId: "4821",
     kommoEtapa: "Propuesta enviada",
+    responsableId: "u-jorge",
     notas:
       "Buscan departamento para vivir, financiado con crédito hipotecario. Les preocupa la entrega y quieren entender bien el esquema de pago antes de decidir.",
     actividad: [
@@ -515,6 +516,7 @@ export const clientes: Cliente[] = [
     plazasInteres: ["riviera-maya", "puebla"],
     kommoLeadId: "4903",
     kommoEtapa: "Calificado",
+    responsableId: "u-jorge",
     notas:
       "Familia mexicana viviendo en Houston. Quieren regresar a México y están comparando Playa del Carmen contra Puebla.",
     actividad: [
@@ -535,6 +537,7 @@ export const clientes: Cliente[] = [
     plazasInteres: ["riviera-maya"],
     kommoLeadId: "4877",
     kommoEtapa: "Sin respuesta",
+    responsableId: "u-mariana",
     notas: "Busca departamento para rentar. No contesta desde el 11 de septiembre.",
     actividad: [
       { fecha: "11 sep", texto: "Se envió la ficha de Real Aurora por WhatsApp." },

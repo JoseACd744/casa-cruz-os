@@ -167,8 +167,12 @@ export function Simulador({
         </Card>
 
         <div className="flex gap-3">
-          <button className="h-12.5 grow rounded-[3px] border border-[#C9C1B6] text-[11px] font-bold tracking-[0.08em] hover:bg-surface">
-            DESCARGAR PDF
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="h-12.5 grow rounded-[3px] border border-[#C9C1B6] text-[11px] font-bold tracking-[0.08em] hover:bg-surface print:hidden"
+          >
+            IMPRIMIR O GUARDAR PDF
           </button>
           <Link
             href="/propuestas/nueva"

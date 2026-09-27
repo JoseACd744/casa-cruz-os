@@ -265,6 +265,7 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
         plazasInteres: c.plazasInteres,
         kommoLeadId: c.kommoLeadId,
         kommoEtapa: c.kommoEtapa,
+        responsableId: c.responsableId,
         notas: c.notas,
         actividad: c.actividad.map((a) => ({
           fecha: fechaCorta(a.fecha).slice(0, 6),
@@ -547,7 +548,9 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
           plazasInteres: entrada.plazasInteres ?? [],
           kommoLeadId: entrada.kommoLeadId ?? null,
           kommoEtapa: entrada.kommoEtapa ?? null,
+          responsableId: entrada.responsableId ?? null,
           notas: entrada.notas ?? null,
+          actividad: { create: { texto: "Alta en Casa Cruz OS." } },
         },
       });
       const cliente = await this.obtenerCliente(creado.id);
@@ -555,8 +558,12 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
     },
 
     async actualizarCliente(id, parche) {
-      await db.cliente.update({ where: { id }, data: parche });
-      return this.obtenerCliente(id);
+      const { count } = await db.cliente.updateMany({ where: { id }, data: parche });
+      return count ? this.obtenerCliente(id) : null;
+    },
+
+    async registrarActividad(clienteId, texto) {
+      await db.actividad.create({ data: { clienteId, texto } });
     },
 
     async crearPropuesta(entrada) {

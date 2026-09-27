@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <SeleccionProvider>
-      <div className="flex h-screen overflow-hidden bg-ground">
+      <div className="flex h-screen overflow-hidden bg-ground print:h-auto print:overflow-visible print:bg-white">
         <Sidebar
           usuario={{
             nombre: usuario.nombre,
