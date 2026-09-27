@@ -18,6 +18,7 @@ import { almacenamientoConfigurado, almacenamientoLocal, DIRECTORIO_LOCAL } from
 import { kommoConfigurado } from "./kommo";
 import { rutas } from "./rutas";
 import { rutasArchivos } from "./rutas-archivos";
+import { rutasCapacitacion } from "./rutas-capacitacion";
 import { rutasEscritura } from "./rutas-escritura";
 import { rutasPdf } from "./rutas-pdf";
 import { rutasSesion } from "./rutas-sesion";
@@ -93,6 +94,7 @@ export async function construirServidor() {
         { name: "Alta de producto", description: "Crear, editar y publicar desarrollos." },
         { name: "Comercial", description: "Clientes y generación de propuestas." },
         { name: "Archivos", description: "Renders, planos y fotos en el bucket." },
+        { name: "Capacitación", description: "Ruta por plaza, evaluación y certificación." },
       ],
     },
     transform: jsonSchemaTransform,
@@ -115,6 +117,7 @@ export async function construirServidor() {
   await app.register(rutas);
   await app.register(rutasEscritura);
   await app.register(rutasArchivos);
+  await app.register(rutasCapacitacion);
   await app.register(rutasPdf);
 
   app.addHook("onClose", async () => {

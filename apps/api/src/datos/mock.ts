@@ -14,6 +14,7 @@ import {
   type Propuesta,
   type Tipologia,
   type Usuario,
+  type AvanceCapacitacion,
 } from "@casacruz/core";
 import type {
   EntradaCliente,
@@ -50,10 +51,23 @@ export function fuenteMock(): FuenteDeDatos {
   const cambios: Cambio[] = structuredClone(mock.cambios);
   const usuarios: Usuario[] = structuredClone(mock.usuarios);
   const hashes = new Map<string, string>();
+  const avances: Record<string, AvanceCapacitacion> = structuredClone(mock.avanceCapacitacion);
 
-  /** A cargo se cuenta, no se captura. */
+  const avanceDe = (usuarioId: string): AvanceCapacitacion =>
+    (avances[usuarioId] ??= { completados: [], intentos: [], certificaciones: [], preparacion: [] });
+  const venceDe = (usuarioId: string, plazaId: string) =>
+    avanceDe(usuarioId).certificaciones.find((c) => c.plazaId === plazaId)?.venceIso ?? null;
+
+  /**
+   * A cargo se cuenta, no se captura; y una certificación vencida ya no deja
+   * vender la plaza.
+   */
   const conCarga = (u: Usuario): Usuario => ({
     ...u,
+    plazasCertificadas: u.plazasCertificadas.filter((p) => {
+      const vence = venceDe(u.id, p);
+      return !vence || new Date(vence) > new Date();
+    }),
     desarrollosACargo: desarrollos.filter((d) => d.responsableId === u.id).length,
   });
 
@@ -380,6 +394,64 @@ export function fuenteMock(): FuenteDeDatos {
     async registrarAcceso(id) {
       const u = usuarios.find((x) => x.id === id);
       if (u) u.ultimoAcceso = fechaHora(new Date());
+    },
+
+    // ── Capacitación ───────────────────────────────────────────────────
+    async modulosCapacitacion() {
+      return mock.modulosCapacitacion;
+    },
+
+    async preguntasDe(plazaId) {
+      return mock.preguntasEvaluacion.filter((p) => p.plazaId === plazaId);
+    },
+
+    async avanceDe(usuarioId) {
+      const u = usuarios.find((x) => x.id === usuarioId);
+      const avance = avanceDe(usuarioId);
+      // Las certificaciones son las del usuario, con su vigencia si la tiene.
+      return {
+        ...avance,
+        certificaciones: (u?.plazasCertificadas ?? []).map((plazaId) => ({
+          plazaId,
+          venceIso: venceDe(usuarioId, plazaId),
+        })),
+      };
+    },
+
+    async completarModulo(usuarioId, moduloId) {
+      const avance = avanceDe(usuarioId);
+      if (!avance.completados.some((c) => c.moduloId === moduloId)) {
+        avance.completados.push({ moduloId, fechaIso: new Date().toISOString() });
+      }
+      const modulo = mock.modulosCapacitacion.find((m) => m.id === moduloId);
+      const u = usuarios.find((x) => x.id === usuarioId);
+      if (modulo && u && !u.plazasCertificadas.includes(modulo.plazaId) && !u.plazasEnProgreso.includes(modulo.plazaId)) {
+        u.plazasEnProgreso.push(modulo.plazaId);
+      }
+    },
+
+    async registrarIntento(usuarioId, intento) {
+      avanceDe(usuarioId).intentos.push(intento);
+    },
+
+    async certificar(usuarioId, plazaId, venceIso) {
+      const avance = avanceDe(usuarioId);
+      avance.certificaciones = [
+        ...avance.certificaciones.filter((c) => c.plazaId !== plazaId),
+        { plazaId, venceIso },
+      ];
+      const u = usuarios.find((x) => x.id === usuarioId);
+      if (!u) return;
+      if (!u.plazasCertificadas.includes(plazaId)) u.plazasCertificadas.push(plazaId);
+      u.plazasEnProgreso = u.plazasEnProgreso.filter((p) => p !== plazaId);
+    },
+
+    async guardarPreparacion(usuarioId, desarrolloId, items) {
+      const avance = avanceDe(usuarioId);
+      avance.preparacion = [
+        ...avance.preparacion.filter((p) => p.desarrolloId !== desarrolloId),
+        { desarrolloId, items },
+      ];
     },
 
     // ── Comercial ──────────────────────────────────────────────────────

@@ -147,7 +147,10 @@ function aUsuario(u: Prisma.UsuarioGetPayload<{ include: typeof incluirUsuario }
     correo: u.correo,
     telefono: u.telefono,
     rol: u.rol,
-    plazasCertificadas: u.plazas.filter((p) => p.certificado).map((p) => p.plazaId),
+    // Una certificación vencida ya no deja vender la plaza.
+    plazasCertificadas: u.plazas
+      .filter((p) => p.certificado && (!p.venceEl || p.venceEl > new Date()))
+      .map((p) => p.plazaId),
     plazasEnProgreso: u.plazas.filter((p) => !p.certificado && p.progreso > 0).map((p) => p.plazaId),
     activo: u.activo,
     debeCambiarContrasena: u.debeCambiarContrasena,
@@ -599,6 +602,84 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
 
     async registrarAcceso(id) {
       await db.usuario.updateMany({ where: { id }, data: { ultimoAcceso: new Date() } });
+    },
+
+    async modulosCapacitacion() {
+      const filas = await db.moduloCapacitacion.findMany({ orderBy: [{ plazaId: "asc" }, { orden: "asc" }] });
+      return filas.map((m) => ({ ...m, tipo: m.tipo as "video" | "documento" }));
+    },
+
+    async preguntasDe(plazaId) {
+      return db.preguntaEvaluacion.findMany({ where: { plazaId }, orderBy: { orden: "asc" } });
+    },
+
+    async avanceDe(usuarioId) {
+      const [plazas, completados, intentos, preparacion] = await Promise.all([
+        db.usuarioPlaza.findMany({ where: { usuarioId, certificado: true } }),
+        db.progresoModulo.findMany({ where: { usuarioId } }),
+        db.intentoEvaluacion.findMany({ where: { usuarioId }, orderBy: { fecha: "desc" } }),
+        db.preparacionDesarrollo.findMany({ where: { usuarioId } }),
+      ]);
+      return {
+        completados: completados.map((c) => ({ moduloId: c.moduloId, fechaIso: c.completadoEl.toISOString() })),
+        intentos: intentos.map((i) => ({
+          plazaId: i.plazaId,
+          aciertos: i.aciertos,
+          total: i.total,
+          aprobado: i.aprobado,
+          fechaIso: i.fecha.toISOString(),
+        })),
+        certificaciones: plazas.map((p) => ({ plazaId: p.plazaId, venceIso: p.venceEl?.toISOString() ?? null })),
+        preparacion: preparacion.map((p) => ({ desarrolloId: p.desarrolloId, items: p.items })),
+      };
+    },
+
+    async completarModulo(usuarioId, moduloId) {
+      const modulo = await db.moduloCapacitacion.findUnique({ where: { id: moduloId } });
+      if (!modulo) return;
+      await enLote(async (tx) => {
+        await tx.progresoModulo.upsert({
+          where: { usuarioId_moduloId: { usuarioId, moduloId } },
+          create: { usuarioId, moduloId },
+          update: {},
+        });
+        // Empezar un módulo pone la plaza "en progreso", si no estaba certificado.
+        await tx.usuarioPlaza.upsert({
+          where: { usuarioId_plazaId: { usuarioId, plazaId: modulo.plazaId } },
+          create: { usuarioId, plazaId: modulo.plazaId, certificado: false, progreso: 1 },
+          update: {},
+        });
+      });
+    },
+
+    async registrarIntento(usuarioId, intento) {
+      await db.intentoEvaluacion.create({
+        data: {
+          usuarioId,
+          plazaId: intento.plazaId,
+          aciertos: intento.aciertos,
+          total: intento.total,
+          aprobado: intento.aprobado,
+          fecha: new Date(intento.fechaIso),
+        },
+      });
+    },
+
+    async certificar(usuarioId, plazaId, venceIso) {
+      const venceEl = venceIso ? new Date(venceIso) : null;
+      await db.usuarioPlaza.upsert({
+        where: { usuarioId_plazaId: { usuarioId, plazaId } },
+        create: { usuarioId, plazaId, certificado: true, progreso: 100, venceEl },
+        update: { certificado: true, progreso: 100, venceEl },
+      });
+    },
+
+    async guardarPreparacion(usuarioId, desarrolloId, items) {
+      await db.preparacionDesarrollo.upsert({
+        where: { usuarioId_desarrolloId: { usuarioId, desarrolloId } },
+        create: { usuarioId, desarrolloId, items },
+        update: { items },
+      });
     },
 
     async crearCliente(entrada) {

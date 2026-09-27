@@ -14,6 +14,7 @@ export * from "./reglas";
 export * from "./cambios";
 export * from "./alta";
 export * from "./comercial";
+export * from "./capacitacion";
 export * from "./roles";
 export * from "./cuentas";
 export * from "./fechas";

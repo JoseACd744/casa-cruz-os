@@ -1,4 +1,8 @@
 import type {
+  AvanceCapacitacion,
+  IntentoEvaluacion,
+  ModuloCapacitacion,
+  Pregunta,
   Cambio,
   Cliente,
   Desarrollo,
@@ -181,6 +185,17 @@ export interface FuenteDeDatos {
   actualizarUsuario(id: string, parche: ParcheUsuario): Promise<Usuario | null>;
   guardarContrasena(id: string, hash: string, debeCambiar: boolean): Promise<void>;
   registrarAcceso(id: string): Promise<void>;
+
+  // ── Capacitación ─────────────────────────────────────────────────────
+  modulosCapacitacion(): Promise<ModuloCapacitacion[]>;
+  /** Con la respuesta correcta: sólo para calificar en el servidor. */
+  preguntasDe(plazaId: string): Promise<Pregunta[]>;
+  avanceDe(usuarioId: string): Promise<AvanceCapacitacion>;
+  completarModulo(usuarioId: string, moduloId: string): Promise<void>;
+  registrarIntento(usuarioId: string, intento: IntentoEvaluacion): Promise<void>;
+  /** Certifica al usuario en la plaza hasta la fecha dada: desde ya puede venderla. */
+  certificar(usuarioId: string, plazaId: string, venceIso: string | null): Promise<void>;
+  guardarPreparacion(usuarioId: string, desarrolloId: string, items: string[]): Promise<void>;
 
   // ── Comercial ────────────────────────────────────────────────────────
   crearCliente(entrada: EntradaCliente): Promise<Cliente>;

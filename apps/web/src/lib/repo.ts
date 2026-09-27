@@ -1,9 +1,13 @@
 import { cache } from "react";
 import {
   confiabilidad,
+  estadoDePlaza,
   filtrarDesarrollos,
   mock,
   novedadesDe,
+  PREPARACION,
+  type EstadoPlaza,
+  type PreguntaPublica,
   type Cambio,
   type Cliente,
   type Desarrollo,
@@ -14,7 +18,7 @@ import {
   type PropuestaPublica,
   type Usuario,
 } from "@casacruz/core";
-import { pedir, usandoApi } from "@/lib/api";
+import { ErrorDeApi, pedir, usandoApi } from "@/lib/api";
 
 /**
  * Acceso a datos de la web.
@@ -189,4 +193,45 @@ export async function pendientesDeValidar(usuarioId: string) {
     .map((d) => ({ desarrollo: d, confiabilidad: confiabilidad(d) }))
     .filter((x) => x.confiabilidad < 85)
     .sort((a, b) => a.confiabilidad - b.confiabilidad);
+}
+
+// ── Capacitación ─────────────────────────────────────────────────────────
+
+export interface Capacitacion {
+  plazas: EstadoPlaza[];
+  preparacion: { desarrolloId: string; items: string[] }[];
+  listaPreparacion: { clave: string; texto: string }[];
+}
+
+export async function obtenerCapacitacion(): Promise<Capacitacion> {
+  if (usandoApi) return (await pedir<Capacitacion>("/capacitacion"))!;
+
+  const usuario = await obtenerUsuarioActual();
+  const avance = mock.avanceCapacitacion[usuario.id] ?? {
+    completados: [],
+    intentos: [],
+    certificaciones: [],
+    preparacion: [],
+  };
+  const hoy = new Date();
+  return {
+    plazas: mock.plazas
+      .filter((p) => p.activa && mock.modulosCapacitacion.some((m) => m.plazaId === p.id))
+      .map((p) => estadoDePlaza(p.id, mock.modulosCapacitacion, avance, hoy)),
+    preparacion: avance.preparacion,
+    listaPreparacion: PREPARACION,
+  };
+}
+
+/** Las preguntas sin respuesta; o por qué todavía no se puede presentar. */
+export async function obtenerEvaluacion(
+  plazaId: string,
+): Promise<{ preguntas: PreguntaPublica[] } | { error: string }> {
+  if (!usandoApi) return { error: "La evaluación se presenta con la API conectada." };
+  try {
+    return (await pedir<{ preguntas: PreguntaPublica[] }>(`/capacitacion/${encodeURIComponent(plazaId)}/evaluacion`))!;
+  } catch (error) {
+    if (error instanceof ErrorDeApi && error.estado === 409) return { error: error.message };
+    throw error;
+  }
 }

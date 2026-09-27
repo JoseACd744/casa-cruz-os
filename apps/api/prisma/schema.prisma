@@ -90,53 +90,58 @@ enum DueDiligence {
 }
 
 model Plaza {
-  id        String  @id
+  id        String   @id
   nombre    String
-  activa    Boolean @default(true)
+  activa    Boolean  @default(true)
   gerente   Usuario? @relation("GerenteDePlaza", fields: [gerenteId], references: [id])
   gerenteId String?
 
   desarrollos Desarrollo[]
   usuarios    UsuarioPlaza[]
+  modulos     ModuloCapacitacion[]
+  preguntas   PreguntaEvaluacion[]
 
   @@map("plazas")
 }
 
 model Usuario {
-  id           String   @id @default(cuid())
-  nombre       String
-  correo       String   @unique
+  id                    String    @id @default(cuid())
+  nombre                String
+  correo                String    @unique
   /// Para que el cliente escriba a su asesor desde la propuesta.
-  telefono     String?
+  telefono              String?
   /// Hash scrypt. Nulo mientras el usuario no haya definido contraseña.
-  contrasenaHash String?
-  rol          Rol      @default(cerrador)
-  activo       Boolean  @default(true)
+  contrasenaHash        String?
+  rol                   Rol       @default(cerrador)
+  activo                Boolean   @default(true)
   /// Entró con clave temporal: antes de trabajar tiene que elegir la suya.
-  debeCambiarContrasena Boolean @default(false)
-  ultimoAcceso DateTime?
-  creadoEl     DateTime @default(now())
+  debeCambiarContrasena Boolean   @default(false)
+  ultimoAcceso          DateTime?
+  creadoEl              DateTime  @default(now())
 
-  plazas          UsuarioPlaza[]
-  plazasAsuCargo  Plaza[]        @relation("GerenteDePlaza")
-  desarrollos     Desarrollo[]   @relation("ResponsableDeDesarrollo")
-  cambios         Cambio[]       @relation("AutorDelCambio")
-  cambiosAprobados Cambio[]      @relation("AprobadorDelCambio")
-  validaciones    Validacion[]
-  propuestas      Propuesta[]
-  clientes        Cliente[]      @relation("ResponsableDeCliente")
+  plazas           UsuarioPlaza[]
+  plazasAsuCargo   Plaza[]                 @relation("GerenteDePlaza")
+  desarrollos      Desarrollo[]            @relation("ResponsableDeDesarrollo")
+  cambios          Cambio[]                @relation("AutorDelCambio")
+  cambiosAprobados Cambio[]                @relation("AprobadorDelCambio")
+  validaciones     Validacion[]
+  propuestas       Propuesta[]
+  clientes         Cliente[]               @relation("ResponsableDeCliente")
+  progreso         ProgresoModulo[]
+  intentos         IntentoEvaluacion[]
+  preparacion      PreparacionDesarrollo[]
 
   @@map("usuarios")
 }
 
 /// Certificación de un cerrador en una plaza: sin ella puede consultar, no vender.
 model UsuarioPlaza {
-  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   usuarioId   String
-  plaza       Plaza    @relation(fields: [plazaId], references: [id], onDelete: Cascade)
+  plaza       Plaza     @relation(fields: [plazaId], references: [id], onDelete: Cascade)
   plazaId     String
-  certificado Boolean  @default(false)
-  progreso    Int      @default(0)
+  certificado Boolean   @default(false)
+  progreso    Int       @default(0)
   venceEl     DateTime?
 
   @@id([usuarioId, plazaId])
@@ -174,6 +179,7 @@ model Desarrollo {
   multimedia   Multimedia[]
   validaciones Validacion[]
   cambios      Cambio[]
+  preparacion  PreparacionDesarrollo[]
 
   @@index([plazaId])
   @@index([estatus])
@@ -181,19 +187,19 @@ model Desarrollo {
 }
 
 model Tipologia {
-  id              String  @id
-  desarrollo      Desarrollo @relation(fields: [desarrolloId], references: [id], onDelete: Cascade)
-  desarrolloId    String
-  nombre          String
-  recamaras       Int?
-  banos           Float?
-  m2Construccion  Float?
-  m2Terreno       Float?
+  id               String     @id
+  desarrollo       Desarrollo @relation(fields: [desarrolloId], references: [id], onDelete: Cascade)
+  desarrolloId     String
+  nombre           String
+  recamaras        Int?
+  banos            Float?
+  m2Construccion   Float?
+  m2Terreno        Float?
   estacionamientos Int?
-  planoUrl        String?
-  orden           Int     @default(0)
+  planoUrl         String?
+  orden            Int        @default(0)
 
-  niveles       NivelPrecio[]
+  niveles        NivelPrecio[]
   propuestaItems PropuestaItem[]
 
   @@index([desarrolloId])
@@ -262,13 +268,13 @@ model InfoInterna {
 }
 
 model Documento {
-  id            String      @id @default(cuid())
-  interna       InfoInterna @relation(fields: [desarrolloId], references: [desarrolloId], onDelete: Cascade)
-  desarrolloId  String
-  nombre        String
-  tipo          FuenteTipo
-  url           String?
-  cargadoEl     DateTime    @default(now())
+  id           String      @id @default(cuid())
+  interna      InfoInterna @relation(fields: [desarrolloId], references: [desarrolloId], onDelete: Cascade)
+  desarrolloId String
+  nombre       String
+  tipo         FuenteTipo
+  url          String?
+  cargadoEl    DateTime    @default(now())
 
   @@index([desarrolloId])
   @@map("documentos")
@@ -387,19 +393,91 @@ model Propuesta {
 }
 
 model PropuestaItem {
-  id          String     @id @default(cuid())
-  propuesta   Propuesta  @relation(fields: [propuestaId], references: [id], onDelete: Cascade)
-  propuestaId String
+  id              String     @id @default(cuid())
+  propuesta       Propuesta  @relation(fields: [propuestaId], references: [id], onDelete: Cascade)
+  propuestaId     String
   /// El desarrollo se guarda por id aunque la tipología aún no exista.
-  desarrolloId String
-  tipologia   Tipologia? @relation(fields: [tipologiaId], references: [id])
-  tipologiaId String?
-  nivel       String?
+  desarrolloId    String
+  tipologia       Tipologia? @relation(fields: [tipologiaId], references: [id])
+  tipologiaId     String?
+  nivel           String?
   /// Precio congelado al enviar: lo que vio el cliente no cambia después.
-  precioCongelado Decimal? @db.Decimal(14, 2)
-  razon       String?
-  orden       Int        @default(0)
+  precioCongelado Decimal?   @db.Decimal(14, 2)
+  razon           String?
+  orden           Int        @default(0)
 
   @@index([propuestaId])
   @@map("propuesta_items")
+}
+
+// ── Capacitación ─────────────────────────────────────────────────────────
+
+/// Un módulo de la ruta de certificación de una plaza.
+model ModuloCapacitacion {
+  id      String  @id
+  plaza   Plaza   @relation(fields: [plazaId], references: [id])
+  plazaId String
+  orden   Int
+  titulo  String
+  tipo    String
+  detalle String
+  url     String?
+  /// Contenido de ejemplo mientras llega el real.
+  ejemplo Boolean @default(false)
+
+  progreso ProgresoModulo[]
+
+  @@index([plazaId])
+  @@map("modulos_capacitacion")
+}
+
+/// La respuesta correcta vive aquí y nunca sale al navegador.
+model PreguntaEvaluacion {
+  id       String   @id
+  plaza    Plaza    @relation(fields: [plazaId], references: [id])
+  plazaId  String
+  orden    Int
+  texto    String
+  opciones String[]
+  correcta Int
+
+  @@index([plazaId])
+  @@map("preguntas_evaluacion")
+}
+
+model ProgresoModulo {
+  usuario      Usuario            @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId    String
+  modulo       ModuloCapacitacion @relation(fields: [moduloId], references: [id], onDelete: Cascade)
+  moduloId     String
+  completadoEl DateTime           @default(now())
+
+  @@id([usuarioId, moduloId])
+  @@map("progreso_modulos")
+}
+
+model IntentoEvaluacion {
+  id        String   @id @default(cuid())
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId String
+  plazaId   String
+  aciertos  Int
+  total     Int
+  aprobado  Boolean
+  fecha     DateTime @default(now())
+
+  @@index([usuarioId])
+  @@map("intentos_evaluacion")
+}
+
+/// Lo que cada cerrador ya revisó antes de presentar un desarrollo.
+model PreparacionDesarrollo {
+  usuario      Usuario    @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId    String
+  desarrollo   Desarrollo @relation(fields: [desarrolloId], references: [id], onDelete: Cascade)
+  desarrolloId String
+  items        String[]   @default([])
+
+  @@id([usuarioId, desarrolloId])
+  @@map("preparacion_desarrollos")
 }

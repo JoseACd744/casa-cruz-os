@@ -1,3 +1,4 @@
+import type { AvanceCapacitacion, ModuloCapacitacion, Pregunta } from "./capacitacion";
 import type {
   Cambio,
   Cliente,
@@ -781,3 +782,131 @@ export const cambios: Cambio[] = [
     resueltoIso: null,
   },
 ];
+
+// ── Capacitación (contenido de ejemplo mientras llega el real) ────────────
+
+const PLAZAS_CON_CONTENIDO: { id: string; nombre: string; producto: string }[] = [
+  { id: "riviera-maya", nombre: "la Riviera Maya", producto: "Playa Park, Real Aurora, Playa Encantada y Aukena" },
+  { id: "puebla", nombre: "Puebla", producto: "Cascatta y Parque Toscana" },
+  { id: "queretaro", nombre: "Querétaro", producto: "la plaza en apertura" },
+];
+
+export const modulosCapacitacion: ModuloCapacitacion[] = PLAZAS_CON_CONTENIDO.flatMap((p) => [
+  { id: `${p.id}-mercado`, plazaId: p.id, orden: 1, titulo: `El mercado de ${p.nombre}`, tipo: "video" as const, detalle: "Video · 18 min", url: null, ejemplo: true },
+  { id: `${p.id}-desarrolladores`, plazaId: p.id, orden: 2, titulo: "Desarrolladores y convenios de la plaza", tipo: "documento" as const, detalle: "Documento · 12 páginas", url: null, ejemplo: true },
+  { id: `${p.id}-producto`, plazaId: p.id, orden: 3, titulo: `Producto: ${p.producto}`, tipo: "video" as const, detalle: "Video · 26 min", url: null, ejemplo: true },
+  { id: `${p.id}-objeciones`, plazaId: p.id, orden: 4, titulo: `Objeciones frecuentes en ${p.nombre}`, tipo: "documento" as const, detalle: "Documento + casos", url: null, ejemplo: true },
+]);
+
+const GENERALES: Omit<Pregunta, "id" | "plazaId" | "orden">[] = [
+  {
+    texto: "Registras un cambio de precio con la lista oficial adjunta. ¿Qué pasa?",
+    opciones: [
+      "Se publica de inmediato y el precio cuenta como validado hoy",
+      "Queda pendiente hasta que un gerente lo apruebe",
+      "Sólo queda como nota en el historial",
+    ],
+    correcta: 0,
+  },
+  {
+    texto: "¿Quién puede ver la comisión autorizada de un desarrollo?",
+    opciones: [
+      "El cliente, desde su propuesta",
+      "Cerrador, gerente y corporativo; nunca el cliente",
+      "Sólo corporativo",
+    ],
+    correcta: 1,
+  },
+  {
+    texto: "La disponibilidad no se confirma desde hace 20 días. ¿Qué haces antes de enviarla?",
+    opciones: [
+      "Enviarla igual: el cliente lo entenderá",
+      "Confirmarla con el desarrollador y registrar la validación",
+      "Quitar la propiedad del inventario",
+    ],
+    correcta: 1,
+  },
+  {
+    texto: "Un desarrollo de la plaza está en due diligence. ¿Puedes incluirlo en una propuesta?",
+    opciones: [
+      "Sí, si el cliente lo pide",
+      "No: sólo lo publicado llega al cliente",
+      "Sí, marcándolo como preventa",
+    ],
+    correcta: 1,
+  },
+  {
+    texto: "Un cliente pide una plaza en la que no estás certificado. ¿Qué haces?",
+    opciones: [
+      "Se la propones igual",
+      "Lo canalizas con un cerrador certificado en esa plaza",
+      "Le mandas la ficha por WhatsApp sin propuesta",
+    ],
+    correcta: 1,
+  },
+];
+
+const PROPIAS: Record<string, Omit<Pregunta, "id" | "plazaId" | "orden">[]> = {
+  "riviera-maya": [
+    {
+      texto: "¿Qué debe saber el cliente de las torres de Playa Park?",
+      opciones: [
+        "Que no cuentan con elevador, sólo escaleras",
+        "Que tienen roof garden",
+        "Que se entregan amuebladas",
+      ],
+      correcta: 0,
+    },
+  ],
+};
+
+export const preguntasEvaluacion: Pregunta[] = PLAZAS_CON_CONTENIDO.flatMap((p) =>
+  [...GENERALES, ...(PROPIAS[p.id] ?? [])].map((q, i) => ({
+    ...q,
+    id: `${p.id}-p${i + 1}`,
+    plazaId: p.id,
+    orden: i + 1,
+  })),
+);
+
+/** Dónde va cada quien. Las vigencias salen de las certificaciones de cada usuario. */
+export const avanceCapacitacion: Record<string, AvanceCapacitacion> = {
+  "u-jorge": {
+    completados: [
+      { moduloId: "puebla-mercado", fechaIso: "2026-09-02T16:00:00.000Z" },
+      { moduloId: "puebla-desarrolladores", fechaIso: "2026-09-05T16:00:00.000Z" },
+      { moduloId: "puebla-producto", fechaIso: "2026-09-12T16:00:00.000Z" },
+    ],
+    intentos: [],
+    certificaciones: [{ plazaId: "riviera-maya", venceIso: "2027-03-15T06:00:00.000Z" }],
+    preparacion: [{ desarrolloId: "playa-park", items: ["video", "objeciones", "esquema"] }],
+  },
+  "u-mariana": {
+    completados: [],
+    intentos: [],
+    certificaciones: [{ plazaId: "riviera-maya", venceIso: "2027-02-01T06:00:00.000Z" }],
+    preparacion: [],
+  },
+  "u-luis": {
+    completados: [],
+    intentos: [],
+    certificaciones: [{ plazaId: "puebla", venceIso: "2027-01-20T06:00:00.000Z" }],
+    preparacion: [],
+  },
+  "u-gerente-rm": {
+    completados: [],
+    intentos: [],
+    certificaciones: [{ plazaId: "riviera-maya", venceIso: "2027-06-01T06:00:00.000Z" }],
+    preparacion: [],
+  },
+  "u-corp": {
+    completados: [],
+    intentos: [],
+    certificaciones: [
+      { plazaId: "riviera-maya", venceIso: null },
+      { plazaId: "puebla", venceIso: null },
+      { plazaId: "queretaro", venceIso: null },
+    ],
+    preparacion: [],
+  },
+};
