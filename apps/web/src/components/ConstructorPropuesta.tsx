@@ -8,6 +8,7 @@ import { Card, Eyebrow, Falta, Foto } from "@/components/ui";
 import { money } from "@casacruz/core";
 import type { Propuesta } from "@casacruz/core";
 import { crearPropuesta } from "@/lib/acciones/comercial";
+import { Logotipo } from "./Marca";
 
 export interface OpcionTipologia {
   id: string;
@@ -364,7 +365,7 @@ export function ConstructorPropuesta({
           <div className="bg-surface p-4.5">
             <div className="overflow-hidden rounded-[3px] border border-line bg-panel">
               <div className="flex flex-col items-center gap-1.5 bg-ink p-4">
-                <span className="text-[8px] font-bold tracking-[0.3em] text-tan">CASA CRUZ</span>
+                <Logotipo className="h-4.5 text-white" />
                 <span className="text-[14px] font-bold text-white">Hola {cliente.nombre.split(" ")[0]}</span>
                 <span className="text-[9px] text-[#B8B1A7]">
                   Seleccionamos {items.length} {items.length === 1 ? "opción" : "opciones"} para ustedes

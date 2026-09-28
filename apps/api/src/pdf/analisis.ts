@@ -1,6 +1,6 @@
 import { galeria, money, nombreVisible, planoDe } from "@casacruz/core";
 import type { Cliente, Desarrollo, Propuesta, Tipologia } from "@casacruz/core";
-import { DISCLAIMER, baseCss, escapar, iconos, imagen, marca, monograma } from "./estilo";
+import { DISCLAIMER, baseCss, escapar, iconos, imagen, isotipo, marca } from "./estilo";
 import { mapaHtml } from "./mapa";
 
 /**
@@ -190,7 +190,7 @@ section { background: ${marca.fondoAnalisis}; }
     <div style="font-size:13px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;margin-top:4px;color:#D4CEC6;">
       Elaborado por: ${escapar(asesor)}
     </div>
-    <div style="display:flex;justify-content:center;margin-top:14px;">${monograma(40, "#FFFFFF")}</div>
+    <div style="display:flex;justify-content:center;margin-top:14px;">${isotipo(57, marca.blanco)}</div>
   </header>
 
   ${desarrollos

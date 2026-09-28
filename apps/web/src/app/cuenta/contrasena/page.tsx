@@ -4,6 +4,7 @@ import { FormClave } from "@/components/FormClave";
 import { usandoApi } from "@/lib/api";
 import { obtenerUsuarioActual } from "@/lib/repo";
 import { haySesion } from "@/lib/sesion";
+import { Isotipo } from "@/components/Marca";
 
 /**
  * Cambiar la clave. Quien entró con una clave temporal llega aquí antes de
@@ -18,9 +19,7 @@ export default async function CambiarClavePage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-ground px-8">
       <div className="flex w-105 flex-col gap-5.5">
-        <span className="flex size-10.5 items-center justify-center border-[1.5px] border-ink text-[13px] font-bold">
-          CC
-        </span>
+        <Isotipo className="h-11 self-start" />
         <div className="flex flex-col gap-2">
           <h1 className="text-[28px] font-extrabold tracking-[-0.01em]">
             {temporal ? `Hola, ${usuario.nombre.split(" ")[0]}` : "Cambiar clave"}

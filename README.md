@@ -10,7 +10,7 @@ apps/
   web/     Next.js 16 — portal del equipo y micrositio del cliente
   api/     Fastify + Prisma — Base Maestra, gobierno del dato (se despliega sola)
 packages/
-  core/    tipos, reglas de negocio y datos de demostración (se empaqueta dentro de cada app)
+  core/    tipos, reglas de negocio, la marca y datos de demostración (se empaqueta dentro de cada app)
 ```
 
 ## Arrancar
@@ -132,6 +132,27 @@ DATABASE_URL=postgresql://…/casacruz_pruebas CLAVE_DEMO=casacruz pnpm --filter
   Webhooks, la URL `https://<api>/webhooks/kommo?clave=<secreto>` para los eventos de leads. Un
   lead nuevo crea al cliente y un cambio de etapa la actualiza; cada aviso queda en la bitácora
   (visible en Clientes para gerente y corporativo).
+
+## Marca
+
+El logotipo es el de Casa Cruz tal como aparece en los documentos del diseñador (la ficha de
+propiedad): se pasó a vectores desde ahí, no es un diseño nuevo.
+
+- **Un solo origen**: `packages/core/src/marca.ts` (isotipo, palabra «casacruz» y lema). La web
+  lo dibuja con `apps/web/src/components/Marca.tsx`, que toma el color del texto, y los PDFs con
+  `isotipo()` de `apps/api/src/pdf/estilo.ts`.
+- **Archivos para usar fuera del sistema** (correo, Kommo, WhatsApp, impresión), en
+  `apps/web/public/marca/` y publicados en `https://<web>/marca/…`:
+  - `logotipo.svg` / `.png`: a color, como el original (isotipo negro, texto `#302C29`).
+  - `logotipo-blanco.svg` / `.png`: para fondos oscuros.
+  - `isotipo.svg` / `.png` e `isotipo-blanco.svg` / `.png`.
+  - `perfil.png`: 1080 × 1080, para la foto de perfil de WhatsApp y Kommo.
+- **Íconos de la web**: `apps/web/src/app/icon.svg`, `favicon.ico` y `apple-icon.png`.
+- Todo se regenera con `pnpm --filter @casacruz/api marca`.
+- El lema usa Montserrat (licencia OFL). Si el diseñador tiene los archivos vectoriales
+  originales (AI, SVG o PDF), conviene pedírselos y cambiar los trazos de `marca.ts`: los
+  actuales se reconstruyeron desde una imagen de 101 px de alto; a la vista coinciden con el
+  original, pero no son el archivo fuente.
 
 ## Desplegar
 

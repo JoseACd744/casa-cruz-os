@@ -1,6 +1,6 @@
 import { galeria, money } from "@casacruz/core";
 import type { Desarrollo, Tipologia } from "@casacruz/core";
-import { DISCLAIMER, baseCss, escapar, iconos, imagen, marca, monograma } from "./estilo";
+import { DISCLAIMER, baseCss, escapar, iconos, imagen, isotipo, marca } from "./estilo";
 
 /**
  * Ficha de propiedad, calcada del formato de Casa Cruz.
@@ -138,7 +138,7 @@ body { width: 1920px; height: 1080px; background: ${marca.fondoFicha}; padding: 
       <div class="boton">Brochure ${cursor}</div>
       <div class="boton">Video ${cursor}</div>
       <div style="flex:1;"></div>
-      ${monograma(58)}
+      ${isotipo(84)}
     </div>
   </div>
 

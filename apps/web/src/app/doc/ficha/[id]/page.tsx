@@ -5,6 +5,7 @@ import { estadoValidaciones, galeria } from "@casacruz/core";
 import { hace, money } from "@casacruz/core";
 import { usandoApi } from "@/lib/api";
 import { obtenerDesarrollo } from "@/lib/repo";
+import { Isotipo } from "@/components/Marca";
 
 export default async function FichaPage({
   params,
@@ -167,9 +168,7 @@ export default async function FichaPage({
                 VIDEO
               </span>
               <div className="grow" />
-              <span className="flex size-11.5 items-center justify-center border-[1.5px] border-ink text-[13px] font-bold">
-                CC
-              </span>
+              <Isotipo className="h-14 text-black" />
             </div>
 
             <p className="pt-3.5 text-[7.6px] leading-relaxed font-medium tracking-[0.04em] text-muted uppercase">

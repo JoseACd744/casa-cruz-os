@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import { COLORES_MARCA, svgIsotipo } from "@casacruz/core";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -115,10 +116,7 @@ export const iconos = {
     </svg>`,
 };
 
-/** Monograma de Casa Cruz. */
-export function monograma(tamano = 46, color = marca.tinta): string {
-  return `
-    <div style="width:${tamano}px;height:${tamano}px;border:1.5px solid ${color};display:flex;align-items:center;justify-content:center;font-size:${Math.round(
-      tamano * 0.28,
-    )}px;font-weight:700;letter-spacing:0.02em;color:${color};">CC</div>`;
+/** Isotipo de Casa Cruz al alto indicado (el ancho sale de la proporción). */
+export function isotipo(alto: number, color: string = COLORES_MARCA.isotipo): string {
+  return svgIsotipo({ alto, color, estilo: "display:block;flex-shrink:0;" });
 }

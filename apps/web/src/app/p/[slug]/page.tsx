@@ -6,6 +6,7 @@ import { galeria, iniciales, mesAnio, money, nombreVisible } from "@casacruz/cor
 import { obtenerPropuestaPublica } from "@/lib/repo";
 import { tokenDeSesion } from "@/lib/sesion";
 import type { Desarrollo, PropuestaItem } from "@casacruz/core";
+import { Isotipo, Logotipo } from "@/components/Marca";
 
 export async function generateMetadata({
   params,
@@ -206,12 +207,7 @@ export default async function PropuestaPublicaPage({
     <main className="mx-auto w-full max-w-250 bg-ground">
       <RegistroVista slug={propuesta.slug} esEquipo={esEquipo} />
       <header className="flex flex-col bg-ink px-6 py-10 text-white md:px-16 md:py-13">
-        <div className="flex items-center gap-3">
-          <span className="flex size-9.5 items-center justify-center border-[1.5px] border-ground text-[12px] font-bold">
-            CC
-          </span>
-          <span className="text-[12px] font-bold tracking-[0.28em]">CASA CRUZ</span>
-        </div>
+        <Logotipo className="h-11 self-start md:h-13" />
         <span className="pt-11 text-[11px] font-bold tracking-[0.24em] text-tan">
           PROPUESTA PERSONALIZADA · {mesAnio(new Date(propuesta.creadaIso)).toUpperCase()}
         </span>
@@ -340,9 +336,7 @@ export default async function PropuestaPublicaPage({
       </section>
 
       <footer className="flex items-center gap-4 bg-ink px-6 py-6.5 text-[#A09991] md:px-16">
-        <span className="flex size-8 shrink-0 items-center justify-center border border-[#A09991] text-[10px] font-bold">
-          CC
-        </span>
+        <Isotipo className="h-9" />
         <span className="max-w-165 text-[10px] leading-relaxed">
           Imágenes únicamente ilustrativas. Los precios pueden cambiar sin previo aviso y están
           sujetos a disponibilidad. Propuesta generada por Casa Cruz OS el {propuesta.creadaEl}.

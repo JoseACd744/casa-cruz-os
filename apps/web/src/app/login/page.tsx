@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { usandoApi } from "@/lib/api";
 import { COOKIE_SESION } from "@/lib/sesion";
+import { MarcaOS } from "@/components/Marca";
 
 /** En local se precargan las credenciales de demostración; en producción, nunca. */
 const PRECARGA = process.env.NODE_ENV !== "production";
@@ -57,15 +58,7 @@ export default async function LoginPage({
   return (
     <div className="flex min-h-screen bg-ground">
       <div className="flex w-155 shrink-0 flex-col bg-ink px-15 py-14 text-white">
-        <div className="flex items-center gap-3.5">
-          <span className="flex size-10.5 items-center justify-center border-[1.5px] border-ground text-[13px] font-bold">
-            CC
-          </span>
-          <span className="flex flex-col gap-1">
-            <span className="text-[13px] font-bold tracking-[0.26em]">CASA CRUZ</span>
-            <span className="text-[9.5px] font-semibold tracking-[0.34em] text-tan">OS</span>
-          </span>
-        </div>
+        <MarcaOS grande />
 
         <div className="grow" />
 

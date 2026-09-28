@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Card, Dot, Eyebrow, Foto } from "@/components/ui";
+import { Isotipo } from "./Marca";
 
 export interface Recomendacion {
   id: string;
@@ -37,9 +38,7 @@ export function AsistenteIA({ respuestas }: { respuestas: Respuesta[] }) {
         </div>
 
         <div className="flex gap-3.5">
-          <span className="flex size-8.5 shrink-0 items-center justify-center border-[1.3px] border-ink text-[10px] font-bold">
-            CC
-          </span>
+          <Isotipo className="h-9 self-start" titulo="Casa Cruz OS" />
           <div className="flex grow flex-col gap-3.5">
             <p className="text-[13.5px] leading-relaxed">{r.intro}</p>
 

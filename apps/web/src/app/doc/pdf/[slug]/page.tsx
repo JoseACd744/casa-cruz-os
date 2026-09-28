@@ -5,6 +5,7 @@ import { etiquetaRol, galeria, money, nombreVisible } from "@casacruz/core";
 import { usandoApi } from "@/lib/api";
 import { obtenerPropuestaPublica } from "@/lib/repo";
 import type { Desarrollo, PropuestaItem } from "@casacruz/core";
+import { Isotipo, Palabra } from "@/components/Marca";
 
 interface Resuelto {
   item: PropuestaItem;
@@ -80,11 +81,9 @@ export default async function PdfComparativoPage({
       <div className="flex grow items-start justify-center overflow-auto p-8 print:p-0">
         <div className="doc-fit flex h-264 w-204 shrink-0 flex-col bg-white px-12 py-11.5 shadow-2xl print:shadow-none">
           <div className="flex items-start gap-3.5 border-b-2 border-ink pb-5">
-            <span className="flex size-9.5 shrink-0 items-center justify-center border-[1.4px] border-ink text-[12px] font-bold">
-              CC
-            </span>
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold tracking-[0.26em]">CASA CRUZ</span>
+            <Isotipo className="h-11" titulo="" />
+            <div className="flex flex-col gap-2">
+              <Palabra className="h-3 self-start" />
               <span className="text-[16px] font-extrabold tracking-[-0.01em]">
                 Propuesta comparativa
               </span>

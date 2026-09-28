@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { Isotipo } from "@/components/Marca";
 
 /**
  * Cuando la API falla, se dice: la web nunca rellena con datos de demostración,
@@ -19,9 +20,7 @@ export default function Error({
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-ground px-8 text-center">
-      <span className="flex size-12 items-center justify-center border-[1.5px] border-ink text-[14px] font-bold">
-        CC
-      </span>
+      <Isotipo className="h-13" />
       <h1 className="text-[28px] font-extrabold tracking-[-0.015em]">
         No pudimos consultar la Base Maestra
       </h1>

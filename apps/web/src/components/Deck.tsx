@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Foto } from "@/components/ui";
+import { Isotipo, Logotipo, Palabra } from "./Marca";
 
 export type Slide =
   | { tipo: "portada"; cliente: string; fecha: string; asesor: string; titulo: string }
@@ -36,9 +37,7 @@ function Lamina({ slide }: { slide: Slide }) {
   if (slide.tipo === "portada") {
     return (
       <div className="flex h-full flex-col justify-end bg-ink px-16 py-14 text-white">
-        <span className="flex size-11 items-center justify-center border-[1.5px] border-ground text-[13px] font-bold">
-          CC
-        </span>
+        <Logotipo className="h-12 self-start" />
         <div className="grow" />
         <span className="text-[11px] font-bold tracking-[0.24em] text-tan">{slide.fecha}</span>
         <h1 className="pt-4 text-[54px] leading-none font-extrabold tracking-[-0.02em] whitespace-pre-line">
@@ -80,10 +79,8 @@ function Lamina({ slide }: { slide: Slide }) {
     return (
       <div className="flex h-full flex-col bg-[#F7F5F1] px-11 py-9">
         <div className="flex items-center gap-3 border-b border-line-strong pb-4.5">
-          <span className="flex size-7.5 items-center justify-center border-[1.3px] border-ink text-[10px] font-bold">
-            CC
-          </span>
-          <span className="text-[10px] font-bold tracking-[0.28em]">CASA CRUZ</span>
+          <Isotipo className="h-8" titulo="" />
+          <Palabra className="h-3" />
           <div className="grow" />
           <span className="text-[10px] font-semibold tracking-[0.18em] text-muted uppercase">
             {slide.subtitulo}

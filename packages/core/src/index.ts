@@ -19,4 +19,5 @@ export * from "./roles";
 export * from "./cuentas";
 export * from "./fechas";
 export * from "./galeria";
+export * from "./marca";
 export * as mock from "./mock";

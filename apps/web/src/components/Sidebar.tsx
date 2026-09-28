@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MarcaOS } from "./Marca";
 
 const nav = [
   { href: "/inicio", label: "Inicio", icon: "casa" },
@@ -82,14 +83,8 @@ export function Sidebar({ usuario }: { usuario: UsuarioMenu }) {
 
   return (
     <aside className="flex w-[236px] shrink-0 flex-col bg-ink px-4.5 py-6 text-ground print:hidden">
-      <Link href="/inicio" className="flex items-center gap-3 px-1.5 pb-6">
-        <span className="flex size-9 items-center justify-center border-[1.5px] border-ground text-[12px] font-bold">
-          CC
-        </span>
-        <span className="flex flex-col gap-[3px]">
-          <span className="text-[12px] font-bold tracking-[0.18em]">CASA CRUZ</span>
-          <span className="text-[9.5px] font-semibold tracking-[0.3em] text-tan">OS</span>
-        </span>
+      <Link href="/inicio" className="flex items-center px-1.5 pb-6">
+        <MarcaOS />
       </Link>
 
       <nav className="flex flex-col gap-0.5">
