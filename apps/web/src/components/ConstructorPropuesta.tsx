@@ -145,30 +145,36 @@ export function ConstructorPropuesta({
 
   return (
     <div className="flex items-start gap-7 overflow-auto p-7">
-      <div className="flex w-220 shrink-0 flex-col gap-4.5">
-        <Card className="flex items-center gap-5 p-5">
-          <span className="flex size-5.5 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-white">
+      {/* Las columnas ceden ancho en proporción hasta su mínimo: así caben en laptops sin scroll
+          lateral. Con menos de 840px (lo que pide una propiedad en un renglón), el cliente y cada
+          propiedad se acomodan en dos renglones. */}
+      <div className="@container flex w-220 min-w-140 flex-col gap-4.5">
+        <Card className="flex items-start gap-5 p-5 @min-[840px]:items-center">
+          <span className="flex size-5.5 shrink-0 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-white">
             1
           </span>
-          <div className="flex w-58 flex-col gap-1">
-            <Eyebrow>Cliente</Eyebrow>
-            <Link href={`/clientes/${cliente.id}`} className="text-[16px] font-bold hover:text-tan-deep">
-              {cliente.nombre}
-            </Link>
+          <div className="flex min-w-0 grow flex-wrap items-center gap-x-5 gap-y-3.5">
+            <div className="flex w-58 grow flex-col gap-1 @min-[840px]:grow-0">
+              <Eyebrow>Cliente</Eyebrow>
+              <Link href={`/clientes/${cliente.id}`} className="text-[16px] font-bold hover:text-tan-deep">
+                {cliente.nombre}
+              </Link>
+            </div>
+            <div className="flex basis-full gap-5 @min-[840px]:basis-auto">
+              <div className="flex flex-col gap-1">
+                <Eyebrow>Presupuesto</Eyebrow>
+                <span className="text-[13.5px] font-semibold">{cliente.presupuesto}</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Eyebrow>Buscan</Eyebrow>
+                <span className="text-[13.5px] font-semibold">{cliente.recamaras}</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Eyebrow>Plazas</Eyebrow>
+                <span className="text-[13.5px] font-semibold">{cliente.plazas}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <Eyebrow>Presupuesto</Eyebrow>
-            <span className="text-[13.5px] font-semibold">{cliente.presupuesto}</span>
-          </div>
-          <div className="flex flex-col gap-1">
-            <Eyebrow>Buscan</Eyebrow>
-            <span className="text-[13.5px] font-semibold">{cliente.recamaras}</span>
-          </div>
-          <div className="flex flex-col gap-1">
-            <Eyebrow>Plazas</Eyebrow>
-            <span className="text-[13.5px] font-semibold">{cliente.plazas}</span>
-          </div>
-          <div className="grow" />
           <Link href="/propuestas/nueva" className="text-[11px] font-semibold text-tan-deep underline hover:text-ink">
             Cambiar
           </Link>
@@ -210,7 +216,7 @@ export function ConstructorPropuesta({
                     d.motivo ? "border-alert/50 bg-alert-soft/30" : "border-line"
                   }`}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-3 @min-[840px]:flex-nowrap">
                     <Foto src={d.foto} className="h-14 w-19 shrink-0" />
                     <div className="flex w-40 flex-col gap-1">
                       <span className="text-[14.5px] font-bold">{d.nombre}</span>
@@ -219,54 +225,57 @@ export function ConstructorPropuesta({
                       </span>
                     </div>
 
-                    {d.tipologias.length ? (
-                      <>
-                        <div className="flex w-40 flex-col gap-1">
-                          <Eyebrow>Tipología</Eyebrow>
-                          <select
-                            aria-label={`Tipología de ${d.nombre}`}
-                            value={tipoId}
-                            onChange={(e) => {
-                              setTipologias((prev) => ({ ...prev, [d.id]: e.target.value }));
-                              setNiveles((prev) => ({ ...prev, [d.id]: "" }));
-                            }}
-                            className="h-8 rounded-[3px] border border-line bg-panel px-2 text-[12px] font-semibold"
-                          >
-                            {d.tipologias.map((t) => (
-                              <option key={t.id} value={t.id}>
-                                {t.nombre}
-                              </option>
-                            ))}
-                          </select>
+                    {/* Angosto: tipología, nivel y precio bajan a su propio renglón, bajo la foto. */}
+                    <div className="order-last flex basis-full items-center gap-4 @min-[840px]:order-none @min-[840px]:basis-auto">
+                      {d.tipologias.length ? (
+                        <>
+                          <div className="flex w-40 grow flex-col gap-1 @min-[840px]:grow-0">
+                            <Eyebrow>Tipología</Eyebrow>
+                            <select
+                              aria-label={`Tipología de ${d.nombre}`}
+                              value={tipoId}
+                              onChange={(e) => {
+                                setTipologias((prev) => ({ ...prev, [d.id]: e.target.value }));
+                                setNiveles((prev) => ({ ...prev, [d.id]: "" }));
+                              }}
+                              className="h-8 rounded-[3px] border border-line bg-panel px-2 text-[12px] font-semibold"
+                            >
+                              {d.tipologias.map((t) => (
+                                <option key={t.id} value={t.id}>
+                                  {t.nombre}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex w-34 flex-col gap-1">
+                            <Eyebrow>Nivel</Eyebrow>
+                            <select
+                              aria-label={`Nivel de ${d.nombre}`}
+                              value={nivel}
+                              onChange={(e) => setNiveles((prev) => ({ ...prev, [d.id]: e.target.value }))}
+                              className="h-8 rounded-[3px] border border-line bg-panel px-2 text-[12px] font-semibold"
+                            >
+                              <option value="">El más accesible</option>
+                              {(tipo?.niveles ?? []).map((n) => (
+                                <option key={n.nombre} value={n.nombre}>
+                                  {n.nombre}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-74 grow @min-[840px]:grow-0">
+                          <Falta>[SIN TIPOLOGÍAS]</Falta>
                         </div>
-                        <div className="flex w-34 flex-col gap-1">
-                          <Eyebrow>Nivel</Eyebrow>
-                          <select
-                            aria-label={`Nivel de ${d.nombre}`}
-                            value={nivel}
-                            onChange={(e) => setNiveles((prev) => ({ ...prev, [d.id]: e.target.value }))}
-                            className="h-8 rounded-[3px] border border-line bg-panel px-2 text-[12px] font-semibold"
-                          >
-                            <option value="">El más accesible</option>
-                            {(tipo?.niveles ?? []).map((n) => (
-                              <option key={n.nombre} value={n.nombre}>
-                                {n.nombre}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="w-74">
-                        <Falta>[SIN TIPOLOGÍAS]</Falta>
-                      </div>
-                    )}
+                      )}
 
-                    <div className="flex w-28 flex-col gap-1">
-                      <Eyebrow>Precio desde</Eyebrow>
-                      <span className={`text-[14px] font-bold ${precio ? "" : "text-alert"}`}>
-                        {precio ? money(precio) : "Consultar"}
-                      </span>
+                      <div className="flex w-28 flex-col gap-1">
+                        <Eyebrow>Precio desde</Eyebrow>
+                        <span className={`text-[14px] font-bold ${precio ? "" : "text-alert"}`}>
+                          {precio ? money(precio) : "Consultar"}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="grow" />
@@ -308,7 +317,7 @@ export function ConstructorPropuesta({
             </span>
             <Eyebrow>Formato de salida</Eyebrow>
           </div>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-3 @2xl:grid-cols-4">
             {FORMATOS.map((f) => {
               const on = formato === f.id;
               return (
@@ -354,7 +363,7 @@ export function ConstructorPropuesta({
         </Card>
       </div>
 
-      <div className="flex w-115 shrink-0 flex-col gap-4">
+      <div className="flex w-115 min-w-85 flex-col gap-4">
         <Card className="overflow-hidden">
           <div className="flex items-center gap-2.5 border-b border-line px-4.5 py-3.5">
             <Eyebrow>Vista previa</Eyebrow>

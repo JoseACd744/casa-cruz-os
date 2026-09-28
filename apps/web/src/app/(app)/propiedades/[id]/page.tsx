@@ -30,7 +30,7 @@ function Tipologias({ d }: { d: Desarrollo }) {
   return (
     <div className="flex flex-col gap-4">
       {d.tipologias.map((t) => (
-        <Card key={t.id} className="flex gap-5 p-4.5">
+        <Card key={t.id} className="flex flex-wrap gap-5 p-4.5 @min-[740px]:flex-nowrap">
           <Foto src={planoDe(d, t.id)} label="Plano" className="h-37 w-50 shrink-0 object-contain" />
           <div className="flex w-55 flex-col gap-2.5">
             <span className="text-[17px] leading-tight font-bold">{t.nombre}</span>
@@ -51,7 +51,8 @@ function Tipologias({ d }: { d: Desarrollo }) {
                 : "[DISPONIBILIDAD]"}
             </Badge>
           </div>
-          <div className="flex grow flex-col">
+          {/* Angosta: la tabla de precios baja a su propio renglón, bajo el plano. */}
+          <div className="flex grow basis-full flex-col @min-[740px]:basis-auto">
             <div className="flex rounded-t-[2px] bg-tan">
               <span className="grow px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-ink">NIVEL</span>
               <span className="px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-ink">PRECIO DESDE</span>
@@ -160,7 +161,10 @@ export default async function PropiedadPage({
       </header>
 
       <div className="flex items-start gap-7 overflow-auto p-7">
-        <div className="flex w-251 flex-col gap-4.5">
+        {/* La columna principal cede ancho hasta su mínimo para caber en laptops sin scroll lateral
+            (la lateral no: con menos de 344px sus botones se parten). Por dentro, tipologías y
+            trazabilidad se apilan cuando no caben en un renglón. */}
+        <div className="@container flex w-251 min-w-140 flex-col gap-4.5">
           <div className="flex items-end gap-3.5">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2.5">
@@ -308,37 +312,43 @@ export default async function PropiedadPage({
                   <Card className="px-4.5">
                     {traza.length ? (
                       traza.map((c) => (
-                        <div key={c.id} className="flex gap-4.5 border-b border-line py-4 last:border-0">
+                        <div
+                          key={c.id}
+                          className="flex flex-wrap gap-x-4.5 gap-y-2 border-b border-line py-4 last:border-0 @min-[920px]:flex-nowrap"
+                        >
                           <span className="w-33 font-mono text-[11px] text-muted">{c.fecha}</span>
-                          <span className="w-32 text-[12px] font-semibold">{c.usuario}</span>
-                          <div className="flex grow flex-col gap-1.5">
-                            <span className="text-[12.5px]">{c.campo}</span>
-                            <span className="text-[12px] text-muted">
-                              {c.valorAnterior} → <span className="font-bold text-ink">{c.valorNuevo}</span>
-                            </span>
-                            {c.nota ? <span className="text-[11.5px] text-ink-2">“{c.nota}”</span> : null}
-                          </div>
-                          <div className="flex w-62 flex-col gap-1 self-center">
-                            <span className="text-[11px] text-tan-deep">{etiquetaFuente[c.fuente]}</span>
-                            {c.evidencia && /^https?:\/\//.test(c.evidencia) ? (
-                              <a
-                                href={c.evidencia}
-                                target="_blank"
-                                rel="noopener"
-                                className="text-[10.5px] font-semibold text-ink-2 underline hover:text-ink"
-                              >
-                                Ver evidencia
-                              </a>
-                            ) : (
-                              <span className="text-[10.5px] text-muted">
-                                {c.evidencia ?? "sin evidencia adjunta"}
+                          <span className="w-32 grow text-[12px] font-semibold @min-[920px]:grow-0">{c.usuario}</span>
+                          {/* Angosta: el cambio y su fuente bajan a su propio renglón; el estado queda arriba. */}
+                          <div className="order-last flex grow basis-full gap-4.5 @min-[920px]:order-none @min-[920px]:basis-auto">
+                            <div className="flex grow flex-col gap-1.5">
+                              <span className="text-[12.5px]">{c.campo}</span>
+                              <span className="text-[12px] text-muted">
+                                {c.valorAnterior} → <span className="font-bold text-ink">{c.valorNuevo}</span>
                               </span>
-                            )}
-                            {c.aprobadoPor ? (
-                              <span className="text-[10.5px] text-muted">
-                                {c.estado === "rechazado" ? "Rechazó" : "Aprobó"} {c.aprobadoPor}
-                              </span>
-                            ) : null}
+                              {c.nota ? <span className="text-[11.5px] text-ink-2">“{c.nota}”</span> : null}
+                            </div>
+                            <div className="flex w-62 flex-col gap-1 self-center">
+                              <span className="text-[11px] text-tan-deep">{etiquetaFuente[c.fuente]}</span>
+                              {c.evidencia && /^https?:\/\//.test(c.evidencia) ? (
+                                <a
+                                  href={c.evidencia}
+                                  target="_blank"
+                                  rel="noopener"
+                                  className="text-[10.5px] font-semibold text-ink-2 underline hover:text-ink"
+                                >
+                                  Ver evidencia
+                                </a>
+                              ) : (
+                                <span className="text-[10.5px] text-muted">
+                                  {c.evidencia ?? "sin evidencia adjunta"}
+                                </span>
+                              )}
+                              {c.aprobadoPor ? (
+                                <span className="text-[10.5px] text-muted">
+                                  {c.estado === "rechazado" ? "Rechazó" : "Aprobó"} {c.aprobadoPor}
+                                </span>
+                              ) : null}
+                            </div>
                           </div>
                           {c.estado === "pendiente" ? (
                             <Badge tono="warn">pendiente</Badge>
