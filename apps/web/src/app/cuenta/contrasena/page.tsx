@@ -17,8 +17,8 @@ export default async function CambiarClavePage() {
   const temporal = usuario.debeCambiarContrasena;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-ground px-8">
-      <div className="flex w-105 flex-col gap-5.5">
+    <div className="flex min-h-dvh items-center justify-center bg-ground px-6 py-8 md:px-8">
+      <div className="flex w-full max-w-105 flex-col gap-5.5">
         <Isotipo className="h-11 self-start" />
         <div className="flex flex-col gap-2">
           <h1 className="text-[28px] font-extrabold tracking-[-0.01em]">

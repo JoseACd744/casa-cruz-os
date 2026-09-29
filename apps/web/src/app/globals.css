@@ -114,3 +114,13 @@
     padding-bottom: 0;
   }
 }
+
+/* Sin capa a propósito: gana a las utilidades. Un campo de menos de 16 px hace que iOS
+   acerque la pantalla al enfocarlo; en teléfono todos van a 16 px. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}

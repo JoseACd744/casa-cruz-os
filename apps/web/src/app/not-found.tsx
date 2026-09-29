@@ -3,7 +3,7 @@ import { Isotipo } from "@/components/Marca";
 
 export default function NoEncontrado() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-ground px-8 text-center">
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-5 bg-ground px-6 text-center md:px-8">
       <Isotipo className="h-13" />
       <h1 className="text-[28px] font-extrabold tracking-[-0.015em]">Esta página no existe</h1>
       <p className="max-w-115 text-[13.5px] leading-relaxed text-ink-2">
