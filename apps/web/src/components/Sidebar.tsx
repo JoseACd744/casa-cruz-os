@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MarcaOS } from "./Marca";
 
-const nav = [
+export const nav = [
   { href: "/inicio", label: "Inicio", icon: "casa" },
   { href: "/propiedades", label: "Propiedades", icon: "edificio" },
   { href: "/propuestas", label: "Propuestas", icon: "documento" },
@@ -14,7 +14,7 @@ const nav = [
   { href: "/preguntar", label: "Preguntar", icon: "chispa" },
 ] as const;
 
-function Icono({ nombre, color }: { nombre: string; color: string }) {
+export function Icono({ nombre, color }: { nombre: string; color: string }) {
   const props = {
     width: 17,
     height: 17,
@@ -78,20 +78,26 @@ export interface UsuarioMenu {
   plazas: { nombre: string; certificada: boolean }[];
 }
 
+/** Si `href` es la sección en la que estamos (también sus subrutas). */
+export function esActivo(pathname: string, href: string) {
+  return (
+    pathname === href ||
+    (href !== "/inicio" && pathname.startsWith(href.split("/").slice(0, 2).join("/")))
+  );
+}
+
 export function Sidebar({ usuario }: { usuario: UsuarioMenu }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-[236px] shrink-0 flex-col bg-ink px-4.5 py-6 text-ground print:hidden">
+    <aside className="hidden w-[236px] shrink-0 flex-col bg-ink md:flex px-4.5 py-6 text-ground print:hidden">
       <Link href="/inicio" className="flex items-center px-1.5 pb-6">
         <MarcaOS />
       </Link>
 
       <nav className="flex flex-col gap-0.5">
         {nav.map((item) => {
-          const activo =
-            pathname === item.href ||
-            (item.href !== "/inicio" && pathname.startsWith(item.href.split("/").slice(0, 2).join("/")));
+          const activo = esActivo(pathname, item.href);
           return (
             <Link
               key={item.href}

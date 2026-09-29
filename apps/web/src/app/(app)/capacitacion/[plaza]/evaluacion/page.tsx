@@ -10,7 +10,7 @@ export default async function EvaluacionPage({ params }: { params: Promise<{ pla
 
   return (
     <>
-      <header className="flex h-15 shrink-0 items-center gap-3.5 border-b border-line bg-panel px-8">
+      <header className="encabezado">
         <Link
           href={`/capacitacion?plaza=${plazaId}`}
           className="flex items-center gap-2 text-[11.5px] font-semibold tracking-[0.06em] text-ink-2 hover:text-ink"
@@ -23,7 +23,7 @@ export default async function EvaluacionPage({ params }: { params: Promise<{ pla
         <span className="text-[11.5px] text-faint">/</span>
         <span className="text-[11.5px] font-semibold tracking-[0.06em] uppercase">Evaluación · {plaza}</span>
       </header>
-      <div className="flex justify-center overflow-auto p-8">
+      <div className="flex justify-center overflow-auto p-4 md:p-8">
         <Card className="flex w-215 flex-col gap-5 p-7">
           <div className="flex flex-col gap-1.5">
             <h1 className="text-[24px] font-extrabold tracking-[-0.01em]">Evaluación de certificación · {plaza}</h1>

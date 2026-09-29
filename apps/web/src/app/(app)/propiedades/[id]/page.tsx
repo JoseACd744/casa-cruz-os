@@ -138,7 +138,7 @@ export default async function PropiedadPage({
 
   return (
     <>
-      <header className="flex h-15 shrink-0 items-center gap-3.5 border-b border-line bg-panel px-8">
+      <header className="encabezado">
         <Link
           href="/propiedades"
           className="flex items-center gap-2 text-[11.5px] font-semibold tracking-[0.06em] text-ink-2 hover:text-ink"
@@ -160,7 +160,7 @@ export default async function PropiedadPage({
         </Link>
       </header>
 
-      <div className="flex items-start gap-7 overflow-auto p-7">
+      <div className="flex items-start gap-7 overflow-auto p-4 md:p-7">
         {/* La columna principal cede ancho hasta su mínimo para caber en laptops sin scroll lateral
             (la lateral no: con menos de 344px sus botones se parten). Por dentro, tipologías y
             trazabilidad se apilan cuando no caben en un renglón. */}

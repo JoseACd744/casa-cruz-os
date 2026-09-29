@@ -23,7 +23,7 @@ import {
 
 function Encabezado({ detalle }: { detalle: string }) {
   return (
-    <header className="flex h-15 shrink-0 items-center gap-3.5 border-b border-line bg-panel px-8">
+    <header className="encabezado">
       <Link
         href="/propuestas"
         className="flex items-center gap-2 text-[11.5px] font-semibold tracking-[0.06em] text-ink-2 hover:text-ink"
@@ -54,7 +54,7 @@ export default async function NuevaPropuestaPage({
     return (
       <>
         <Encabezado detalle="Paso 1: ¿para quién es?" />
-        <div className="flex justify-center overflow-auto p-8">
+        <div className="flex justify-center overflow-auto p-4 md:p-8">
           <Card className="flex w-215 flex-col gap-4 p-7">
             <div className="flex items-end gap-3">
               <div className="flex flex-col gap-1.5">

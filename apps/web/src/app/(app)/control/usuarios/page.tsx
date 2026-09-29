@@ -49,7 +49,7 @@ export default async function UsuariosPage() {
 
   return (
     <>
-      <header className="flex h-15 shrink-0 items-center gap-3.5 border-b border-line bg-panel px-8">
+      <header className="encabezado">
         <Link
           href="/control"
           className="flex items-center gap-2 text-[11.5px] font-semibold tracking-[0.06em] text-ink-2 hover:text-ink"
@@ -67,7 +67,7 @@ export default async function UsuariosPage() {
         </span>
       </header>
 
-      <div className="flex items-start gap-5 overflow-auto p-7">
+      <div className="flex items-start gap-5 overflow-auto p-4 md:p-7">
         <div className="flex w-235 shrink-0 flex-col gap-4.5">
           <div className="flex items-end gap-3.5">
             <div className="flex flex-col gap-1.5">

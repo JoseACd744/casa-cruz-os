@@ -35,7 +35,7 @@ export default async function ClientesPage() {
     id === actual.id ? "Tú" : (equipo.find((u) => u.id === id)?.nombre ?? null);
 
   return (
-    <div className="flex flex-col gap-5 overflow-auto p-8">
+    <div className="flex flex-col gap-5 overflow-auto p-4 md:p-8">
       <div className="flex items-end gap-4">
         <div className="flex flex-col gap-1.5">
           <h1 className="text-[30px] font-extrabold tracking-[-0.015em]">Clientes</h1>

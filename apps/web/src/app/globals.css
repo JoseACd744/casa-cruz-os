@@ -79,3 +79,38 @@
   text-transform: uppercase;
   color: var(--color-muted);
 }
+
+/* Encabezado de página (migas y acciones): en teléfono envuelve y ocupa el ancho;
+   desde md es la franja de 60 px de siempre. */
+@utility encabezado {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.875rem;
+  row-gap: 0.25rem;
+  min-height: 3.75rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-panel);
+  @media (min-width: 768px) {
+    flex-wrap: nowrap;
+    padding: 0 2rem;
+  }
+}
+
+/* Objetivo táctil cómodo en teléfono (40 px); en escritorio recupera su tamaño. */
+@utility tocable {
+  min-height: 2.5rem;
+  @media (min-width: 768px) {
+    min-height: 0;
+  }
+}
+
+/* Espacio para la barra inferior del teléfono (respeta la muesca de iOS). */
+@utility pie-movil {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  @media (min-width: 768px) {
+    padding-bottom: 0;
+  }
+}

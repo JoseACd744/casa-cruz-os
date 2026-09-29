@@ -61,7 +61,7 @@ export default async function CapacitacionPage({
   const hechos = capacitacion.preparacion.find((p) => p.desarrolloId === desarrollo?.id)?.items ?? [];
 
   return (
-    <div className="flex flex-col gap-5 overflow-auto p-7">
+    <div className="flex flex-col gap-5 overflow-auto p-4 md:p-7">
       <div className="flex flex-col gap-1.5">
         <h1 className="text-[28px] font-extrabold tracking-[-0.015em]">Capacitación y certificaciones</h1>
         <span className="text-[13px] text-ink-2">

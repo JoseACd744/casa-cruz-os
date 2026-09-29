@@ -37,7 +37,7 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
       : (equipo.find((u) => u.id === cliente.responsableId)?.nombre ?? "[SIN ASIGNAR]");
 
   return (
-    <div className="flex flex-col gap-5 overflow-auto p-7">
+    <div className="flex flex-col gap-5 overflow-auto p-4 md:p-7">
       <div className="flex items-end gap-4">
         <div className="flex flex-col gap-2">
           <span className="text-[10.5px] font-semibold tracking-[0.08em] text-muted uppercase">

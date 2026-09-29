@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Montserrat, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -18,6 +18,14 @@ export const metadata: Metadata = {
   title: "Casa Cruz OS",
   description:
     "Sistema central de producto, conocimiento comercial y generación de propuestas de Casa Cruz.",
+};
+
+// viewport-fit=cover deja usar las zonas seguras (muesca y barra de gestos) en el teléfono.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#1C1B19",
 };
 
 export default function RootLayout({

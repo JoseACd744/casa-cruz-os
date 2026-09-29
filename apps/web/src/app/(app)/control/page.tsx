@@ -82,7 +82,7 @@ export default async function ControlPage() {
 
   return (
     <>
-      <header className="flex h-15 shrink-0 items-center gap-3.5 border-b border-line bg-panel px-8">
+      <header className="encabezado">
         <span className="text-[11.5px] font-semibold tracking-[0.06em]">CONTROL DEL DATO</span>
         <div className="grow" />
         {esGerente ? (
@@ -95,7 +95,7 @@ export default async function ControlPage() {
         ) : null}
       </header>
 
-      <div className="flex flex-col gap-5 overflow-auto p-7">
+      <div className="flex flex-col gap-5 overflow-auto p-4 md:p-7">
         <Seccion titulo="Flujo de alta de un listing">
           <div className="flex gap-2.5">
             {(Object.keys(pipeline) as (keyof typeof pipeline)[]).map((k) => {
