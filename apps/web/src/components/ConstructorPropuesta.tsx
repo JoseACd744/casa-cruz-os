@@ -145,11 +145,11 @@ export function ConstructorPropuesta({
   ];
 
   return (
-    <div className="flex items-start gap-7 overflow-auto p-7">
+    <div className="flex flex-col gap-5 overflow-auto p-4 md:flex-row md:items-start md:gap-7 md:p-7">
       {/* Las columnas ceden ancho en proporción hasta su mínimo: así caben en laptops sin scroll
           lateral. Con menos de 840px (lo que pide una propiedad en un renglón), el cliente y cada
           propiedad se acomodan en dos renglones. */}
-      <div className="@container flex w-220 min-w-140 flex-col gap-4.5">
+      <div className="@container flex w-full flex-col gap-4.5 md:w-220 md:min-w-140">
         <Card className="flex items-start gap-5 p-5 @min-[840px]:items-center">
           <span className="flex size-5.5 shrink-0 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-white">
             1
@@ -227,10 +227,10 @@ export function ConstructorPropuesta({
                     </div>
 
                     {/* Angosto: tipología, nivel y precio bajan a su propio renglón, bajo la foto. */}
-                    <div className="order-last flex basis-full items-center gap-4 @min-[840px]:order-none @min-[840px]:basis-auto">
+                    <div className="order-last flex min-w-0 basis-full flex-wrap items-center gap-x-4 gap-y-3 @min-[840px]:order-none @min-[840px]:basis-auto @min-[840px]:flex-nowrap">
                       {d.tipologias.length ? (
                         <>
-                          <div className="flex w-40 grow flex-col gap-1 @min-[840px]:grow-0">
+                          <div className="flex w-40 min-w-0 flex-1 basis-32 flex-col gap-1 @min-[840px]:flex-none">
                             <Eyebrow>Tipología</Eyebrow>
                             <select
                               aria-label={`Tipología de ${d.nombre}`}
@@ -239,7 +239,7 @@ export function ConstructorPropuesta({
                                 setTipologias((prev) => ({ ...prev, [d.id]: e.target.value }));
                                 setNiveles((prev) => ({ ...prev, [d.id]: "" }));
                               }}
-                              className="h-8 rounded-[3px] border border-line bg-panel px-2 text-[12px] font-semibold"
+                              className="h-10 w-full rounded-[3px] border border-line bg-panel px-2 text-[12px] font-semibold md:h-8"
                             >
                               {d.tipologias.map((t) => (
                                 <option key={t.id} value={t.id}>
@@ -248,13 +248,13 @@ export function ConstructorPropuesta({
                               ))}
                             </select>
                           </div>
-                          <div className="flex w-34 flex-col gap-1">
+                          <div className="flex w-34 min-w-0 flex-1 basis-32 flex-col gap-1 @min-[840px]:flex-none">
                             <Eyebrow>Nivel</Eyebrow>
                             <select
                               aria-label={`Nivel de ${d.nombre}`}
                               value={nivel}
                               onChange={(e) => setNiveles((prev) => ({ ...prev, [d.id]: e.target.value }))}
-                              className="h-8 rounded-[3px] border border-line bg-panel px-2 text-[12px] font-semibold"
+                              className="h-10 w-full rounded-[3px] border border-line bg-panel px-2 text-[12px] font-semibold md:h-8"
                             >
                               <option value="">El más accesible</option>
                               {(tipo?.niveles ?? []).map((n) => (
@@ -271,7 +271,7 @@ export function ConstructorPropuesta({
                         </div>
                       )}
 
-                      <div className="flex w-28 flex-col gap-1">
+                      <div className="flex w-28 basis-full flex-col gap-1 @min-[840px]:basis-auto">
                         <Eyebrow>Precio desde</Eyebrow>
                         <span className={`text-[14px] font-bold ${precio ? "" : "text-alert"}`}>
                           {precio ? money(precio) : "Consultar"}
@@ -302,7 +302,7 @@ export function ConstructorPropuesta({
                       value={razones[d.id] ?? ""}
                       onChange={(e) => setRazones((prev) => ({ ...prev, [d.id]: e.target.value }))}
                       placeholder="Por qué la elegimos: la razón que va a leer el cliente…"
-                      className="h-9 rounded-[3px] border border-line bg-panel px-3 text-[12px]"
+                      className="h-11 rounded-[3px] border border-line bg-panel px-3 text-[12px] md:h-9"
                     />
                   )}
                 </div>
@@ -347,7 +347,7 @@ export function ConstructorPropuesta({
                   type="button"
                   onClick={() => setOpciones((prev) => ({ ...prev, [o.id]: !prev[o.id] }))}
                   aria-pressed={on}
-                  className={`flex h-9.5 items-center gap-2 rounded-full border px-3.5 text-[12px] font-semibold ${
+                  className={`flex h-10 items-center gap-2 rounded-full border px-3.5 text-[12px] font-semibold md:h-9.5 ${
                     on ? "border-ink bg-ink text-white" : "border-line bg-panel text-ink-2"
                   }`}
                 >
@@ -364,8 +364,10 @@ export function ConstructorPropuesta({
         </Card>
       </div>
 
-      <div className="flex w-115 min-w-85 flex-col gap-4">
-        <Card className="overflow-hidden">
+      {/* En el teléfono esta columna se disuelve (contents): sus tarjetas quedan bajo el formulario y
+          los botones de generar se anclan al pie de la pantalla. */}
+      <div className="contents md:flex md:w-115 md:min-w-85 md:flex-col md:gap-4">
+        <Card className="hidden overflow-hidden md:block">
           <div className="flex items-center gap-2.5 border-b border-line px-4.5 py-3.5">
             <Eyebrow>Vista previa</Eyebrow>
             <div className="grow" />
@@ -432,30 +434,33 @@ export function ConstructorPropuesta({
           </div>
         ) : null}
 
-        <button
-          type="button"
-          onClick={() => generar(true)}
-          disabled={!puedeGenerar}
-          className="flex h-15 items-center justify-center gap-3 rounded-[3px] bg-ink text-[13px] font-bold tracking-[0.12em] text-white disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {generando ? "GENERANDO…" : "GENERAR Y ENVIAR"}
-          {!generando && (
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={() => generar(false)}
-          disabled={!puedeGenerar}
-          className="h-11 rounded-[3px] border border-[#C9C1B6] text-[11px] font-bold tracking-[0.1em] hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          GUARDAR COMO BORRADOR
-        </button>
-        <span className="text-center text-[11px] text-muted">
-          La propuesta congela el precio de cada opción al momento de generarse.
-        </span>
+        <div className="sticky bottom-0 z-10 -mx-4 -mb-4 flex gap-2 border-t border-line bg-ground px-4 py-3 md:static md:m-0 md:flex-col md:gap-4 md:border-0 md:bg-transparent md:p-0">
+          <button
+            type="button"
+            onClick={() => generar(true)}
+            disabled={!puedeGenerar}
+            className="flex h-12 flex-[2] items-center justify-center gap-3 rounded-[3px] bg-ink text-[12px] font-bold tracking-[0.1em] text-white disabled:cursor-not-allowed disabled:opacity-40 md:h-15 md:flex-none md:text-[13px] md:tracking-[0.12em]"
+          >
+            {generando ? "GENERANDO…" : "GENERAR Y ENVIAR"}
+            {!generando && (
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => generar(false)}
+            disabled={!puedeGenerar}
+            className="h-12 flex-1 rounded-[3px] border border-[#C9C1B6] bg-panel text-[11px] font-bold tracking-[0.1em] hover:bg-surface disabled:cursor-not-allowed disabled:opacity-40 md:h-11 md:bg-transparent"
+          >
+            <span className="md:hidden">BORRADOR</span>
+          <span className="hidden md:inline">GUARDAR COMO BORRADOR</span>
+          </button>
+          <span className="hidden text-center text-[11px] text-muted md:block">
+            La propuesta congela el precio de cada opción al momento de generarse.
+          </span>
+        </div>
       </div>
     </div>
   );

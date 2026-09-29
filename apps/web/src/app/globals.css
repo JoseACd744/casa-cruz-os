@@ -56,12 +56,12 @@
 
 /* Las láminas (ficha, PDF, presentación) tienen tamaño de documento fijo.
    En pantallas chicas se reducen para que quepan completas, sin scroll lateral. */
-@media (max-width: 1440px) {
+@media (min-width: 768px) and (max-width: 1440px) {
   .doc-fit {
     zoom: 0.8;
   }
 }
-@media (max-width: 1150px) {
+@media (min-width: 768px) and (max-width: 1150px) {
   .doc-fit {
     zoom: 0.6;
   }

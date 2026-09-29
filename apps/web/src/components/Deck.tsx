@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Foto } from "@/components/ui";
 import { Isotipo, Logotipo, Palabra } from "./Marca";
+import { LaminaEscalada } from "@/components/LaminaEscalada";
 
 export type Slide =
   | { tipo: "portada"; cliente: string; fecha: string; asesor: string; titulo: string }
@@ -219,19 +220,34 @@ function Lamina({ slide }: { slide: Slide }) {
 
 export function Deck({ slides }: { slides: Slide[] }) {
   const [i, setI] = useState(0);
+  const toque = useRef<number | null>(null);
 
   return (
-    <div className="flex grow flex-col items-center gap-5 overflow-auto p-8 print:p-0">
-      <div className="doc-fit h-180 w-320 shrink-0 overflow-hidden bg-white shadow-2xl print:shadow-none">
-        <Lamina slide={slides[i]} />
-      </div>
+    <div
+      className="flex grow flex-col items-center gap-5 overflow-auto p-4 md:p-8 print:p-0"
+      onTouchStart={(e) => {
+        toque.current = e.touches[0]?.clientX ?? null;
+      }}
+      onTouchEnd={(e) => {
+        const inicio = toque.current;
+        toque.current = null;
+        const fin = e.changedTouches[0]?.clientX;
+        if (inicio === null || fin === undefined || Math.abs(fin - inicio) < 60) return;
+        setI((v) => (fin < inicio ? Math.min(slides.length - 1, v + 1) : Math.max(0, v - 1)));
+      }}
+    >
+      <LaminaEscalada ancho={1280} alto={720}>
+        <div className="doc-fit h-180 w-320 shrink-0 overflow-hidden bg-white shadow-2xl print:shadow-none">
+          <Lamina slide={slides[i]} />
+        </div>
+      </LaminaEscalada>
 
-      <div className="flex items-center gap-4 print:hidden">
+      <div className="flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-3 print:hidden">
         <button
           type="button"
           onClick={() => setI((v) => Math.max(0, v - 1))}
           disabled={i === 0}
-          className="flex h-10 items-center gap-2 rounded-[3px] border border-[#55504A] px-4 text-[11px] font-bold tracking-[0.08em] text-ground disabled:opacity-30"
+          className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[3px] border border-[#55504A] px-4 text-[11px] font-bold tracking-[0.08em] text-ground disabled:opacity-30 md:h-10 md:flex-none"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M11 6l-6 6 6 6" />
@@ -239,7 +255,7 @@ export function Deck({ slides }: { slides: Slide[] }) {
           ANTERIOR
         </button>
 
-        <div className="flex gap-1.5">
+        <div className="hidden gap-1.5 md:flex">
           {slides.map((s, j) => (
             <button
               key={j}
@@ -253,7 +269,7 @@ export function Deck({ slides }: { slides: Slide[] }) {
           ))}
         </div>
 
-        <span className="w-32 text-center text-[11px] font-semibold tracking-[0.08em] text-[#A09991] uppercase">
+        <span className="order-first basis-full text-center text-[11px] md:order-none md:w-32 md:basis-auto font-semibold tracking-[0.08em] text-[#A09991] uppercase">
           {i + 1} / {slides.length} · {NOMBRES[slides[i].tipo]}
         </span>
 
@@ -261,7 +277,7 @@ export function Deck({ slides }: { slides: Slide[] }) {
           type="button"
           onClick={() => setI((v) => Math.min(slides.length - 1, v + 1))}
           disabled={i === slides.length - 1}
-          className="flex h-10 items-center gap-2 rounded-[3px] border border-[#55504A] px-4 text-[11px] font-bold tracking-[0.08em] text-ground disabled:opacity-30"
+          className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[3px] border border-[#55504A] px-4 text-[11px] font-bold tracking-[0.08em] text-ground disabled:opacity-30 md:h-10 md:flex-none"
         >
           SIGUIENTE
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
