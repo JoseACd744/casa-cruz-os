@@ -7,7 +7,7 @@ import { Icono, esActivo, nav, type UsuarioMenu } from "./Sidebar";
 
 /**
  * Navegación del teléfono: barra inferior con lo que más se usa y una hoja
- * «Más» con el resto, las plazas y la cuenta. Desde md la reemplaza el menú lateral.
+ * «Más» con el resto, las plazas y la cuenta. Desde app (1280 px) la reemplaza el menú lateral.
  */
 
 const PRINCIPALES = nav.slice(0, 4);
@@ -28,7 +28,7 @@ export function NavegacionMovil({ usuario }: { usuario: UsuarioMenu }) {
   const base = "flex h-16 flex-1 flex-col items-center justify-center gap-1 text-[10px] font-semibold";
 
   return (
-    <div className="md:hidden print:hidden">
+    <div className="app:hidden print:hidden">
       <nav
         aria-label="Navegación principal"
         className="fixed inset-x-0 bottom-0 z-40 flex border-t border-[#35322E] bg-ink pb-[env(safe-area-inset-bottom)] text-[#B8B1A7]"

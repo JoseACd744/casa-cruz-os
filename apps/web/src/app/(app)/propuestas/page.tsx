@@ -25,18 +25,18 @@ export default async function PropuestasPage() {
   const vistas = propuestas.filter((p) => p.vistas > 0).length;
 
   return (
-    <div className="flex flex-col gap-5 overflow-auto p-4 md:p-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end">
+    <div className="flex flex-col gap-5 overflow-auto p-4 app:p-8">
+      <div className="flex flex-col gap-4 app:flex-row app:items-end">
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-[24px] font-extrabold tracking-[-0.015em] md:text-[30px]">Propuestas</h1>
+          <h1 className="text-[24px] font-extrabold tracking-[-0.015em] app:text-[30px]">Propuestas</h1>
           <p className="text-[13px] text-ink-2">
             {propuestas.length} propuestas generadas · {vistas} abiertas por el cliente
           </p>
         </div>
-        <div className="hidden grow md:block" />
+        <div className="hidden grow app:block" />
         <Link
           href="/propuestas/nueva"
-          className="flex h-12 items-center justify-center gap-2.5 md:h-11.5 md:justify-start rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
+          className="flex h-12 items-center justify-center gap-2.5 app:h-11.5 app:justify-start rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
             <path d="M12 5v14M5 12h14" />
@@ -45,16 +45,16 @@ export default async function PropuestasPage() {
         </Link>
       </div>
 
-      <Card className="p-3 md:overflow-hidden md:p-0">
+      <Card className="p-3 app:overflow-hidden app:p-0">
         <Tabla
           columnas={[
-            { titulo: "Cliente", ancho: "md:w-65", principal: true },
+            { titulo: "Cliente", ancho: "app:w-65", principal: true },
             { titulo: "Propiedades" },
-            { titulo: "Formato", ancho: "md:w-40" },
-            { titulo: "Enviada", ancho: "md:w-40" },
-            { titulo: "Vistas", ancho: "md:w-22" },
-            { titulo: "Estado", ancho: "md:w-48" },
-            { titulo: "", ancho: "md:w-60" },
+            { titulo: "Formato", ancho: "app:w-40" },
+            { titulo: "Enviada", ancho: "app:w-40" },
+            { titulo: "Vistas", ancho: "app:w-22" },
+            { titulo: "Estado", ancho: "app:w-48" },
+            { titulo: "", ancho: "app:w-60" },
           ]}
           filas={filas.map(({ propuesta: p, cliente, propiedades }) => ({
             clave: p.id,
@@ -76,7 +76,7 @@ export default async function PropuestasPage() {
                 <BotonAccion
                   key="e"
                   accion={marcarEnviada.bind(null, p.slug)}
-                  className="tocable flex items-center rounded-[3px] border border-[#C9C1B6] px-2.5 text-[9.5px] font-bold tracking-[0.06em] hover:bg-surface md:h-8"
+                  className="tocable flex items-center rounded-[3px] border border-[#C9C1B6] px-2.5 text-[9.5px] font-bold tracking-[0.06em] hover:bg-surface app:h-8"
                 >
                   MARCAR ENVIADA
                 </BotonAccion>
@@ -97,7 +97,7 @@ export default async function PropuestasPage() {
                     key={texto}
                     href={href}
                     target="_blank"
-                    className="flex h-10 flex-1 items-center justify-center rounded-[3px] border border-[#C9C1B6] px-3 text-[10px] font-bold tracking-[0.06em] hover:bg-surface md:h-8.5 md:flex-none"
+                    className="flex h-10 flex-1 items-center justify-center rounded-[3px] border border-[#C9C1B6] px-3 text-[10px] font-bold tracking-[0.06em] hover:bg-surface app:h-8.5 app:flex-none"
                   >
                     {texto}
                   </Link>

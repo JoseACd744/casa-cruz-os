@@ -79,7 +79,7 @@ export default async function PdfComparativoPage({
         pdfUrl={usandoApi ? `/descargas/analisis/${propuesta.slug}` : null}
       />
 
-      <div className="flex grow items-start justify-center overflow-auto p-4 md:p-8 print:p-0">
+      <div className="flex grow items-start justify-center overflow-auto p-4 app:p-8 print:p-0">
         <LaminaEscalada ancho={816} alto={1056}>
           <div className="doc-fit flex h-264 w-204 shrink-0 flex-col bg-white px-12 py-11.5 shadow-2xl print:shadow-none">
             <div className="flex items-start gap-3.5 border-b-2 border-ink pb-5">

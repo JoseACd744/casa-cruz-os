@@ -96,9 +96,9 @@ export default async function ControlPage() {
         ) : null}
       </header>
 
-      <div className="flex flex-col gap-5 overflow-auto p-4 md:p-7">
+      <div className="flex flex-col gap-5 overflow-auto p-4 app:p-7">
         <Seccion titulo="Flujo de alta de un listing">
-          <div className="grid grid-cols-2 gap-2.5 md:flex">
+          <div className="grid grid-cols-2 gap-2.5 app:flex">
             {(Object.keys(pipeline) as (keyof typeof pipeline)[]).map((k) => {
               const publicado = k === "publicado";
               return (
@@ -133,10 +133,10 @@ export default async function ControlPage() {
           </div>
         </Seccion>
 
-        <div className="flex flex-col gap-5 md:flex-row md:items-start">
+        <div className="flex flex-col gap-5 app:flex-row app:items-start">
           <Seccion
             titulo={`Cambios pendientes de aprobación`}
-            className="md:w-203 md:shrink-0"
+            className="app:w-203 app:min-w-0 app:shrink"
             accion={<Badge tono="warn">{pendientes.length}</Badge>}
           >
             <div className="flex flex-col gap-2.5">
@@ -148,7 +148,7 @@ export default async function ControlPage() {
                   key={c.id}
                   className="flex flex-wrap items-center gap-x-4.5 gap-y-3 rounded-[3px] border border-line px-4 py-3.5"
                 >
-                  <div className="flex w-full flex-col gap-1 md:w-54">
+                  <div className="flex w-full flex-col gap-1 app:w-54">
                     <Link
                       href={`/propiedades/${c.desarrolloId}`}
                       className="text-[13.5px] font-bold hover:text-tan-deep"
@@ -157,11 +157,11 @@ export default async function ControlPage() {
                     </Link>
                     <span className="text-[11px] text-muted">{c.campo}</span>
                   </div>
-                  <div className="flex flex-col gap-1 md:w-47">
+                  <div className="flex flex-col gap-1 app:w-47">
                     <span className="text-[12px] text-muted line-through">{c.valorAnterior}</span>
                     <span className="text-[14px] font-bold">{c.valorNuevo}</span>
                   </div>
-                  <div className="flex grow basis-full flex-col gap-1 md:basis-auto">
+                  <div className="flex grow basis-full flex-col gap-1 app:basis-auto">
                     <span className="text-[11px] font-semibold text-ink-2">
                       {c.usuario} · {c.fecha}
                     </span>
@@ -187,7 +187,7 @@ export default async function ControlPage() {
                     const motivo = motivoParaNoAprobar(c, actual);
                     if (motivo) {
                       return (
-                        <span className="text-[10.5px] leading-snug text-muted md:w-44 md:text-right">
+                        <span className="text-[10.5px] leading-snug text-muted app:w-44 app:text-right">
                           {c.usuarioId === actual.id ? "Tu cambio: lo valida otro gerente" : motivo.mensaje}
                         </span>
                       );
@@ -197,7 +197,7 @@ export default async function ControlPage() {
                         <BotonAccion
                           accion={resolverCambio.bind(null, c.id, "aprobar")}
                           enCurso="APROBANDO…"
-                          className="h-11 flex-1 rounded-[3px] bg-ink px-3.5 md:h-9 md:flex-none text-[10.5px] font-bold tracking-[0.08em] text-white hover:brightness-125"
+                          className="h-11 flex-1 rounded-[3px] bg-ink px-3.5 app:h-9 app:flex-none text-[10.5px] font-bold tracking-[0.08em] text-white hover:brightness-125"
                         >
                           APROBAR
                         </BotonAccion>
@@ -205,7 +205,7 @@ export default async function ControlPage() {
                           accion={resolverCambio.bind(null, c.id, "rechazar")}
                           enCurso="…"
                           confirmar={`¿Rechazar el cambio de ${c.campo} en ${c.desarrolloNombre}? El valor actual se queda como está.`}
-                          className="h-11 flex-1 rounded-[3px] border border-[#C9C1B6] px-3.5 md:h-9 md:flex-none text-[10.5px] font-bold tracking-[0.08em] text-alert-ink hover:bg-alert-soft"
+                          className="h-11 flex-1 rounded-[3px] border border-[#C9C1B6] px-3.5 app:h-9 app:flex-none text-[10.5px] font-bold tracking-[0.08em] text-alert-ink hover:bg-alert-soft"
                         >
                           RECHAZAR
                         </BotonAccion>
@@ -219,7 +219,7 @@ export default async function ControlPage() {
 
           <Seccion titulo="Quién ve y quién edita" className="grow">
             <div className="flex">
-              <span className="w-32 md:w-39.5" />
+              <span className="w-32 app:w-39.5" />
               {["CLI", "CER", "GER", "CORP"].map((h) => (
                 <span
                   key={h}
@@ -231,7 +231,7 @@ export default async function ControlPage() {
             </div>
             {PERMISOS.map((p) => (
               <div key={p.campo} className="flex items-center border-t border-line py-2.5">
-                <span className="w-32 text-[11.5px] md:w-39.5">{p.campo}</span>
+                <span className="w-32 text-[11.5px] app:w-39.5">{p.campo}</span>
                 {p.celdas.map((c, i) => (
                   <span key={i} className="grow text-center">
                     <span
@@ -257,10 +257,10 @@ export default async function ControlPage() {
         >
           <Tabla
             columnas={[
-              { titulo: "Responsable", ancho: "md:w-50", principal: true },
-              { titulo: "A su cargo", ancho: "md:w-33" },
+              { titulo: "Responsable", ancho: "app:w-50", principal: true },
+              { titulo: "A su cargo", ancho: "app:w-33" },
               ...CAMPOS.map((c) => ({ titulo: c.etiqueta })),
-              { titulo: "Confiabilidad", ancho: "md:w-33" },
+              { titulo: "Confiabilidad", ancho: "app:w-33" },
             ]}
             filas={responsables.map((e) => ({
               clave: e.usuario.id,

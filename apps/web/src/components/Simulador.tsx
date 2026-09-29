@@ -54,14 +54,14 @@ export function Simulador({
   }, [precio, enganche, plazo, tasa]);
 
   const pill = (on: boolean) =>
-    `h-11 flex-1 rounded-[3px] border px-3 text-[13px] font-bold md:flex-none md:px-5 ${
+    `h-11 flex-1 rounded-[3px] border px-3 text-[13px] font-bold app:flex-none app:px-5 ${
       on ? "border-ink bg-ink text-white" : "border-[#C9C1B6] bg-panel hover:bg-surface"
     }`;
 
   return (
-    <div className="flex flex-col gap-5 overflow-auto p-4 md:flex-row md:items-start md:gap-6 md:p-7">
-      <div className="flex w-full flex-col gap-4.5 md:w-175 md:shrink-0">
-        <Card className="flex flex-col gap-4.5 p-4 md:p-5.5">
+    <div className="flex flex-col gap-5 overflow-auto p-4 app:flex-row app:items-start app:gap-6 app:p-7">
+      <div className="flex w-full flex-col gap-4.5 app:w-175 app:min-w-0 app:shrink">
+        <Card className="flex flex-col gap-4.5 p-4 app:p-5.5">
           <div className="flex items-center gap-4">
             <div className="h-16 w-21.5 shrink-0 rounded-[3px] bg-placeholder" />
             <div className="flex flex-col gap-1">
@@ -125,13 +125,13 @@ export function Simulador({
         </Card>
       </div>
 
-      <div className="flex w-full grow flex-col gap-4.5 md:w-auto">
-        <div className="flex flex-col gap-5 rounded-card bg-ink p-5 md:p-6.5">
+      <div className="flex w-full grow flex-col gap-4.5 app:w-auto">
+        <div className="flex flex-col gap-5 rounded-card bg-ink p-5 app:p-6.5">
           <span className="text-[10px] font-bold tracking-[0.18em] text-tan">
             MENSUALIDAD ESTIMADA
           </span>
           <div className="flex items-baseline gap-2.5">
-            <span className="text-[38px] font-extrabold md:text-[50px] tracking-[-0.03em] text-white">
+            <span className="text-[38px] font-extrabold app:text-[50px] tracking-[-0.03em] text-white">
               {money(calculo.pago)}
             </span>
             <span className="text-[14px] text-[#A09991]">MXN / mes</span>

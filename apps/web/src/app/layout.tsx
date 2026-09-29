@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   title: "Casa Cruz OS",
   description:
     "Sistema central de producto, conocimiento comercial y generación de propuestas de Casa Cruz.",
+  // Al añadirla a la pantalla de inicio del iPhone se abre sin la barra de Safari.
+  appleWebApp: { capable: true, title: "Casa Cruz", statusBarStyle: "default" },
 };
 
 // viewport-fit=cover deja usar las zonas seguras (muesca y barra de gestos) en el teléfono.

@@ -90,7 +90,7 @@ export function Sidebar({ usuario }: { usuario: UsuarioMenu }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-[236px] shrink-0 flex-col bg-ink md:flex px-4.5 py-6 text-ground print:hidden">
+    <aside className="hidden w-[236px] shrink-0 flex-col bg-ink app:flex px-4.5 py-6 text-ground print:hidden">
       <Link href="/inicio" className="flex items-center px-1.5 pb-6">
         <MarcaOS />
       </Link>

@@ -56,26 +56,26 @@ export default async function LoginPage({
   const { error, vencida } = await searchParams;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-ground md:flex-row">
-      <div className="flex w-full shrink-0 flex-col bg-ink px-6 py-7 text-white md:w-155 md:px-15 md:py-14">
+    <div className="flex min-h-dvh flex-col bg-ground app:flex-row">
+      <div className="flex w-full shrink-0 flex-col bg-ink px-6 py-7 text-white app:w-155 app:px-15 app:py-14">
         <MarcaOS grande />
 
-        <div className="hidden grow md:block" />
+        <div className="hidden grow app:block" />
 
-        <span className="hidden text-[10.5px] font-bold tracking-[0.24em] text-tan md:block">
+        <span className="hidden text-[10.5px] font-bold tracking-[0.24em] text-tan app:block">
           SISTEMA CENTRAL DE PRODUCTO
         </span>
-        <p className="max-w-115 pt-5 text-[17px] leading-snug font-bold tracking-[-0.01em] md:text-[34px] md:leading-tight">
+        <p className="max-w-115 pt-5 text-[17px] leading-snug font-bold tracking-[-0.01em] app:text-[34px] app:leading-tight">
           La información pertenece a Casa Cruz, no a una persona.
         </p>
-        <p className="hidden max-w-110 pt-5.5 text-[14px] leading-relaxed text-[#B8B1A7] md:block">
+        <p className="hidden max-w-110 pt-5.5 text-[14px] leading-relaxed text-[#B8B1A7] app:block">
           Un dato se captura una vez y sirve para producir todos los formatos: la ficha, la
           propuesta, la presentación y el micrositio del cliente.
         </p>
 
-        <div className="hidden grow md:block" />
+        <div className="hidden grow app:block" />
 
-        <div className="hidden gap-10 border-t border-[#35322E] pt-6 md:flex">
+        <div className="hidden gap-10 border-t border-[#35322E] pt-6 app:flex">
           {[
             ["6", "DESARROLLOS"],
             ["4", "PLAZAS"],
@@ -89,7 +89,7 @@ export default async function LoginPage({
         </div>
       </div>
 
-      <div className="flex grow items-center justify-center px-6 py-8 md:px-0 md:py-0">
+      <div className="flex grow items-center justify-center px-6 py-8 app:px-0 app:py-0">
         <form action={entrar} className="flex w-full max-w-105 flex-col gap-5.5">
           <div className="flex flex-col gap-2">
             <h1 className="text-[28px] font-extrabold tracking-[-0.01em]">Entrar</h1>

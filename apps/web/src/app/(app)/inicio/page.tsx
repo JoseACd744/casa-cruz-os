@@ -79,10 +79,10 @@ export default async function InicioPage() {
   const fecha = fechaLarga(hoy);
 
   return (
-    <div className="flex h-full flex-col gap-5 overflow-auto p-4 md:p-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end">
+    <div className="flex h-full flex-col gap-5 overflow-auto p-4 app:p-8">
+      <div className="flex flex-col gap-4 app:flex-row app:items-end">
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-[24px] font-extrabold tracking-[-0.015em] md:text-[30px]">
+          <h1 className="text-[24px] font-extrabold tracking-[-0.015em] app:text-[30px]">
             {saludo(hoy)}, {usuario.nombre.split(" ")[0]}
           </h1>
           <p className="text-[13px] text-ink-2">
@@ -92,10 +92,10 @@ export default async function InicioPage() {
               : `${pendientes.length} ${pendientes.length === 1 ? "desarrollo tuyo necesita" : "desarrollos tuyos necesitan"} validación`}
           </p>
         </div>
-        <div className="hidden grow md:block" />
+        <div className="hidden grow app:block" />
         <Link
           href="/propiedades"
-          className="flex h-12 items-center justify-center gap-2.5 md:h-11.5 md:justify-start rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
+          className="flex h-12 items-center justify-center gap-2.5 app:h-11.5 app:justify-start rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
             <circle cx="11" cy="11" r="7" />
@@ -105,7 +105,7 @@ export default async function InicioPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+      <div className="grid grid-cols-2 gap-3 app:grid-cols-4 app:gap-4">
         {kpis.map((k) => (
           <Card key={k.label} className="flex flex-col gap-2.5 p-4.5">
             <Eyebrow>{k.label}</Eyebrow>
@@ -124,10 +124,10 @@ export default async function InicioPage() {
         ))}
       </div>
 
-      <div className="flex flex-col gap-5 md:flex-row">
+      <div className="flex flex-col gap-5 app:flex-row">
         <Seccion
           titulo="Tus desarrollos por validar"
-          className="md:w-154 md:shrink-0"
+          className="app:w-154 app:shrink-0"
           accion={
             <Link href="/control" className="text-[11px] font-semibold text-tan-deep hover:text-ink">
               Ver todo
@@ -143,17 +143,17 @@ export default async function InicioPage() {
                 <Dot tono={semaforo(score)} />
                 <Link
                   href={`/propiedades/${desarrollo.id}`}
-                  className="text-[13.5px] font-bold hover:text-tan-deep md:w-37"
+                  className="text-[13.5px] font-bold hover:text-tan-deep app:w-37"
                 >
                   {desarrollo.nombre}
                 </Link>
-                <span className="order-last basis-full text-[12px] text-ink-2 md:order-none md:grow md:basis-auto">
+                <span className="order-last basis-full text-[12px] text-ink-2 app:order-none app:grow app:basis-auto">
                   {advertencia(desarrollo) ?? "Revisar campos pendientes"}
                 </span>
-                <span className="ml-auto text-[11.5px] font-semibold md:ml-0">{score}%</span>
+                <span className="ml-auto text-[11.5px] font-semibold app:ml-0">{score}%</span>
                 <Link
                   href={`/propiedades/${desarrollo.id}#confiabilidad`}
-                  className="flex h-10 items-center rounded-[3px] border border-[#C9C1B6] px-3 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface md:h-8"
+                  className="flex h-10 items-center rounded-[3px] border border-[#C9C1B6] px-3 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface app:h-8"
                 >
                   VALIDAR
                 </Link>
@@ -187,11 +187,11 @@ export default async function InicioPage() {
       >
         <Tabla
           columnas={[
-            { titulo: "Cliente", ancho: "md:w-65", principal: true },
+            { titulo: "Cliente", ancho: "app:w-65", principal: true },
             { titulo: "Propiedades" },
-            { titulo: "Enviada", ancho: "md:w-35" },
-            { titulo: "Vistas", ancho: "md:w-24" },
-            { titulo: "Estado", ancho: "md:w-45" },
+            { titulo: "Enviada", ancho: "app:w-35" },
+            { titulo: "Vistas", ancho: "app:w-24" },
+            { titulo: "Estado", ancho: "app:w-45" },
           ]}
           filas={filas.map(({ propuesta, cliente }) => ({
             clave: propuesta.id,

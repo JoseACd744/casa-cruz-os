@@ -14,7 +14,7 @@ export function Tabs({
 
   return (
     <div className="flex flex-col gap-4.5">
-      <div role="tablist" data-scroll-x className="flex gap-1 overflow-x-auto border-b border-line-strong">
+      <div role="tablist" data-scroll-x className="flex shrink-0 gap-1 overflow-x-auto border-b border-line-strong">
         {paneles.map((p) => {
           const on = p.id === activo;
           return (

@@ -68,11 +68,11 @@ export default async function UsuariosPage() {
         </span>
       </header>
 
-      <div className="flex flex-col gap-5 overflow-auto p-4 md:flex-row md:items-start md:p-7">
-        <div className="flex w-full flex-col gap-4.5 md:w-235 md:shrink-0">
+      <div className="flex flex-col gap-5 overflow-auto p-4 app:flex-row app:items-start app:p-7">
+        <div className="flex w-full flex-col gap-4.5 app:w-235 app:min-w-0 app:shrink">
           <div className="flex items-end gap-3.5">
             <div className="flex flex-col gap-1.5">
-              <h1 className="text-[24px] font-extrabold md:text-[26px] tracking-[-0.015em]">Usuarios</h1>
+              <h1 className="text-[24px] font-extrabold app:text-[26px] tracking-[-0.015em]">Usuarios</h1>
               <span className="text-[12.5px] text-ink-2">
                 El rol define qué ve y qué edita. La certificación define qué plazas puede vender.
               </span>
@@ -81,14 +81,14 @@ export default async function UsuariosPage() {
 
           {administra ? <InvitarUsuario plazas={plazas} /> : null}
 
-          <Card className="p-3 md:overflow-hidden md:p-0">
+          <Card className="p-3 app:overflow-hidden app:p-0">
             <Tabla
               columnas={[
-                { titulo: "Usuario", ancho: "md:w-57", principal: true },
-                { titulo: "Rol", ancho: "md:w-37" },
+                { titulo: "Usuario", ancho: "app:w-57", principal: true },
+                { titulo: "Rol", ancho: "app:w-37" },
                 { titulo: "Plazas certificadas" },
-                { titulo: "Último acceso", ancho: "md:w-33" },
-                { titulo: "Estado", ancho: "md:w-27" },
+                { titulo: "Último acceso", ancho: "app:w-33" },
+                { titulo: "Estado", ancho: "app:w-27" },
               ]}
               filas={usuarios.map((u) => ({
                 clave: u.id,
@@ -126,7 +126,7 @@ export default async function UsuariosPage() {
           </Card>
 
           <Seccion titulo="Roles">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 app:grid-cols-4 app:gap-4">
               {ROLES.map((r) => (
                 <div key={r.nombre} className="flex flex-col gap-2 rounded-[3px] border border-line p-3.5">
                   <span className="text-[13px] font-bold">{r.nombre}</span>
@@ -138,7 +138,7 @@ export default async function UsuariosPage() {
           </Seccion>
         </div>
 
-        <Card className="flex w-full grow flex-col gap-3.5 self-stretch p-5.5 md:w-auto">
+        <Card className="flex w-full grow flex-col gap-3.5 self-stretch p-5.5 app:w-auto">
           <Eyebrow>Auditoría reciente</Eyebrow>
           {cambios.map((c) => (
             <div key={c.id} className="flex flex-col gap-1.5 border-b border-line pb-3">

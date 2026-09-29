@@ -15,14 +15,14 @@ export function BarraDoc({
   pdfUrl?: string | null;
 }) {
   const estiloBoton =
-    "flex h-11 items-center gap-2.5 rounded-[3px] bg-tan px-4.5 md:h-10 text-[10.5px] font-bold tracking-[0.1em] text-ink hover:brightness-105";
+    "flex h-11 items-center gap-2.5 rounded-[3px] bg-tan px-4.5 app:h-10 text-[10.5px] font-bold tracking-[0.1em] text-ink hover:brightness-105";
   const icono = (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1C1B19" strokeWidth="1.8">
       <path d="M6 9V3h12v6M6 18H4v-6h16v6h-2M8 14h8v7H8z" />
     </svg>
   );
   return (
-    <div className="flex min-h-15 shrink-0 flex-wrap items-center gap-x-3.5 gap-y-2 bg-ink px-4 py-2 md:px-6 md:py-0 print:hidden">
+    <div className="flex min-h-15 shrink-0 flex-wrap items-center gap-x-3.5 gap-y-2 bg-ink px-4 py-2 app:px-6 app:py-0 print:hidden">
       <Link
         href={volverHref}
         className="flex items-center gap-2 text-[11.5px] font-semibold tracking-[0.06em] text-[#B8B1A7] uppercase hover:text-white"

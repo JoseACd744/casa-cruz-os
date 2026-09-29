@@ -29,8 +29,8 @@ export function AsistenteIA({ respuestas }: { respuestas: Respuesta[] }) {
   const r = respuestas[indice];
 
   return (
-    <div className="flex flex-col gap-5 overflow-auto p-4 md:flex-row md:items-stretch md:gap-6 md:p-7">
-      <Card className="flex w-full flex-col gap-4.5 p-4 md:w-235 md:shrink-0 md:p-6">
+    <div className="flex flex-col gap-5 overflow-auto p-4 app:flex-row app:items-stretch app:gap-6 app:p-7">
+      <Card className="flex w-full flex-col gap-4.5 p-4 app:w-235 app:min-w-0 app:shrink app:p-6">
         <div className="flex justify-end">
           <div className="max-w-140 rounded-[4px] rounded-br-none bg-ink px-4.5 py-4">
             <span className="text-[13.5px] leading-relaxed text-white">{r.pregunta}</span>
@@ -119,7 +119,7 @@ export function AsistenteIA({ respuestas }: { respuestas: Respuesta[] }) {
               key={x.pregunta}
               type="button"
               onClick={() => setIndice(i)}
-              className={`min-h-10 rounded-full border px-3.5 py-1.5 text-left text-[11.5px] font-semibold md:h-9 md:min-h-0 md:py-0 ${
+              className={`min-h-10 rounded-full border px-3.5 py-1.5 text-left text-[11.5px] font-semibold app:h-9 app:min-h-0 app:py-0 ${
                 i === indice
                   ? "border-ink bg-ink text-white"
                   : "border-line bg-surface text-ink-2 hover:border-[#C9C1B6]"
@@ -153,7 +153,7 @@ export function AsistenteIA({ respuestas }: { respuestas: Respuesta[] }) {
         </div>
       </Card>
 
-      <div className="flex w-full grow flex-col gap-5 md:w-auto">
+      <div className="flex w-full grow flex-col gap-5 app:w-auto">
         <div className="flex flex-col gap-3.5 rounded-card bg-ink p-5.5">
           <span className="text-[10px] font-bold tracking-[0.16em] text-tan">
             REGLAS DE LA CAPA DE IA

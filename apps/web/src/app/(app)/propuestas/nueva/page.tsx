@@ -54,7 +54,7 @@ export default async function NuevaPropuestaPage({
     return (
       <>
         <Encabezado detalle="Paso 1: ¿para quién es?" />
-        <div className="flex justify-center overflow-auto p-4 md:p-8">
+        <div className="flex justify-center overflow-auto p-4 app:p-8">
           <Card className="flex w-215 flex-col gap-4 p-7">
             <div className="flex items-end gap-3">
               <div className="flex flex-col gap-1.5">

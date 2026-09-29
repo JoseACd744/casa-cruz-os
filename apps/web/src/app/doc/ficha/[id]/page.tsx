@@ -46,7 +46,7 @@ export default async function FichaPage({
         }
       />
 
-      <div className="flex grow items-start justify-center overflow-auto p-4 md:p-8 print:p-0">
+      <div className="flex grow items-start justify-center overflow-auto p-4 app:p-8 print:p-0">
         <LaminaEscalada ancho={1280} alto={720}>
           <div className="doc-fit flex h-180 w-320 shrink-0 gap-9 bg-[#F7F5F1] px-11 py-10 shadow-2xl print:shadow-none">
             <div className="flex w-130 shrink-0 flex-col gap-3">

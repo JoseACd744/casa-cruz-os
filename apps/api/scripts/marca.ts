@@ -12,6 +12,7 @@ import { COLORES_MARCA, ISOTIPO, LOGOTIPO, svgIsotipo, svgLogotipo } from "@casa
  * - apps/web/public/marca: logotipo e isotipo en SVG y PNG (a color y en blanco)
  *   y una imagen de perfil cuadrada para WhatsApp y Kommo.
  * - apps/web/src/app: los íconos de la web (icon.svg, favicon.ico, apple-icon.png).
+ * - apps/web/public/icons: los íconos de la app instalable (192, 512 y maskable).
  *
  * Si el diseñador entrega los vectores originales, se cambian los trazos en
  * marca.ts y se vuelve a correr esto.
@@ -20,6 +21,7 @@ import { COLORES_MARCA, ISOTIPO, LOGOTIPO, svgIsotipo, svgLogotipo } from "@casa
 const raiz = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 const carpetaMarca = join(raiz, "apps/web/public/marca");
 const carpetaApp = join(raiz, "apps/web/src/app");
+const carpetaIconos = join(raiz, "apps/web/public/icons");
 const TINTA = "#1C1B19"; // --color-ink de la web
 const BLANCO = "#FFFFFF";
 
@@ -120,6 +122,14 @@ writeFileSync(
   join(carpetaApp, "apple-icon.png"),
   await png(pagina, isotipoCuadrado({ color: BLANCO, fondo: TINTA, ocupa: 0.62 }), 180, 180),
 );
+// Íconos de la app instalable (PWA): el maskable deja el isotipo dentro del 60 % central,
+// porque cada teléfono lo recorta con su propia forma (círculo, cuadro redondeado…).
+mkdirSync(carpetaIconos, { recursive: true });
+const cuadroTinta = (ocupa: number) => isotipoCuadrado({ color: BLANCO, fondo: TINTA, ocupa });
+writeFileSync(join(carpetaIconos, "icon-192.png"), await png(pagina, cuadroTinta(0.62), 192, 192));
+writeFileSync(join(carpetaIconos, "icon-512.png"), await png(pagina, cuadroTinta(0.62), 512, 512));
+writeFileSync(join(carpetaIconos, "icon-maskable-512.png"), await png(pagina, cuadroTinta(0.5), 512, 512));
+
 const medidas = [16, 32, 48];
 const favicon = [];
 for (const lado of medidas) favicon.push({ lado, datos: await png(pagina, icono, lado, lado) });

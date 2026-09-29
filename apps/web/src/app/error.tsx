@@ -19,7 +19,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-5 bg-ground px-6 text-center md:px-8">
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-5 bg-ground px-6 text-center app:px-8">
       <Isotipo className="h-13" />
       <h1 className="text-[28px] font-extrabold tracking-[-0.015em]">
         No pudimos consultar la Base Maestra

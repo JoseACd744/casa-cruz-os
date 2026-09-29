@@ -206,7 +206,7 @@ function EditorTipologia({
 
       <form action={accion} className="flex flex-col gap-4">
         {tipologia ? <input type="hidden" name="tipologiaId" value={tipologia.id} /> : null}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 app:grid-cols-6">
           <div className="col-span-2">
             <CampoTexto id={`${prefijo}-nombre`} nombre="nombre" etiqueta="Nombre" valor={tipologia?.nombre} requerido placeholder="Departamento 2 habitaciones" />
           </div>
@@ -220,7 +220,7 @@ function EditorTipologia({
         <input type="hidden" name="planoUrl" value={tipologia?.planoUrl ?? ""} />
 
         <div className="flex flex-col">
-          <div className="hidden grid-cols-[1.4fr_1fr_1fr_0.7fr_2rem] gap-2 rounded-t-[2px] bg-tan px-3 py-2 md:grid">
+          <div className="hidden grid-cols-[1.4fr_1fr_1fr_0.7fr_2rem] gap-2 rounded-t-[2px] bg-tan px-3 py-2 app:grid">
             {["NIVEL", "PRECIO DE VENTA", "PRECIO DE LISTA", "DISPONIBLES", ""].map((t, i) => (
               <span key={i} className="text-[9.5px] font-bold tracking-[0.12em] text-ink">
                 {t}
@@ -230,11 +230,11 @@ function EditorTipologia({
           {filas.map((f) => {
             const fija = protegido && f.existente;
             return (
-              <div key={f.clave} className="grid grid-cols-2 items-end gap-2 border-b border-line px-3 py-3 md:grid-cols-[1.4fr_1fr_1fr_0.7fr_2rem] md:items-center md:py-2">
-                <label className="col-span-2 flex flex-col gap-1 md:col-span-1"><span className="eyebrow md:hidden">Nivel</span><input name="nivelNombre" defaultValue={f.nombre} readOnly={fija} aria-label="Nivel" className={fija ? bloqueada : celda} /></label>
-                <label className="flex flex-col gap-1"><span className="eyebrow md:hidden">Precio de venta</span><input name="nivelPrecio" defaultValue={f.precioVenta === null ? "" : money(f.precioVenta)} readOnly={fija} inputMode="decimal" placeholder="$0" aria-label="Precio de venta" className={fija ? bloqueada : celda} /></label>
-                <label className="flex flex-col gap-1"><span className="eyebrow md:hidden">Precio de lista</span><input name="nivelLista" defaultValue={f.precioLista === null ? "" : money(f.precioLista)} readOnly={fija} inputMode="decimal" placeholder="igual a venta" aria-label="Precio de lista" className={fija ? bloqueada : celda} /></label>
-                <label className="flex flex-col gap-1"><span className="eyebrow md:hidden">Disponibles</span><input name="nivelDisponibles" defaultValue={f.disponibles ?? ""} readOnly={fija} inputMode="numeric" placeholder="—" aria-label="Disponibles" className={fija ? bloqueada : celda} /></label>
+              <div key={f.clave} className="grid grid-cols-2 items-end gap-2 border-b border-line px-3 py-3 app:grid-cols-[1.4fr_1fr_1fr_0.7fr_2rem] app:items-center app:py-2">
+                <label className="col-span-2 flex flex-col gap-1 app:col-span-1"><span className="eyebrow app:hidden">Nivel</span><input name="nivelNombre" defaultValue={f.nombre} readOnly={fija} aria-label="Nivel" className={fija ? bloqueada : celda} /></label>
+                <label className="flex flex-col gap-1"><span className="eyebrow app:hidden">Precio de venta</span><input name="nivelPrecio" defaultValue={f.precioVenta === null ? "" : money(f.precioVenta)} readOnly={fija} inputMode="decimal" placeholder="$0" aria-label="Precio de venta" className={fija ? bloqueada : celda} /></label>
+                <label className="flex flex-col gap-1"><span className="eyebrow app:hidden">Precio de lista</span><input name="nivelLista" defaultValue={f.precioLista === null ? "" : money(f.precioLista)} readOnly={fija} inputMode="decimal" placeholder="igual a venta" aria-label="Precio de lista" className={fija ? bloqueada : celda} /></label>
+                <label className="flex flex-col gap-1"><span className="eyebrow app:hidden">Disponibles</span><input name="nivelDisponibles" defaultValue={f.disponibles ?? ""} readOnly={fija} inputMode="numeric" placeholder="—" aria-label="Disponibles" className={fija ? bloqueada : celda} /></label>
                 {fija ? (
                   <span />
                 ) : (
@@ -243,7 +243,7 @@ function EditorTipologia({
                     aria-label={`Quitar ${f.nombre}`}
                     onClick={() => setFilas((todas) => todas.filter((x) => x.clave !== f.clave))}
                     disabled={filas.length === 1}
-                    className="flex size-11 items-center justify-center justify-self-end rounded-[3px] border border-line hover:border-alert disabled:opacity-30 md:size-8 md:justify-self-auto"
+                    className="flex size-11 items-center justify-center justify-self-end rounded-[3px] border border-line hover:border-alert disabled:opacity-30 app:size-8 app:justify-self-auto"
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#96402F" strokeWidth="2">
                       <path d="M6 6l12 12M18 6L6 18" />
@@ -486,7 +486,7 @@ export function FormDocumento({ id, sinAlmacenamiento }: { id: string; sinAlmace
   const [estado, accion] = useActionState(subirDocumento.bind(null, id), ESTADO_INICIAL);
   return (
     <form action={accion} className="flex flex-col gap-3 rounded-[3px] border border-dashed border-[#C9C1B6] p-4">
-      <div className="grid grid-cols-1 items-end gap-3 md:grid-cols-[10rem_1fr_1fr_auto]">
+      <div className="grid grid-cols-1 items-end gap-3 app:grid-cols-[10rem_1fr_1fr_auto]">
         <CampoOpciones
           nombre="tipo"
           etiqueta="Tipo"

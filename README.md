@@ -133,6 +133,25 @@ DATABASE_URL=postgresql://…/casacruz_pruebas CLAVE_DEMO=casacruz pnpm --filter
   lead nuevo crea al cliente y un cambio de etapa la actualiza; cada aviso queda en la bitácora
   (visible en Clientes para gerente y corporativo).
 
+## En el teléfono
+
+Toda la web está pensada para el teléfono además del escritorio. El punto de quiebre es `app`
+(1280 px, definido en `globals.css`): por debajo —teléfonos y también tabletas— se usa el diseño
+móvil; desde ahí, el de escritorio. En teléfono el menú lateral pasa a una **barra inferior** (Inicio, Propiedades, Propuestas,
+Clientes y «Más»), las tablas se vuelven tarjetas y las láminas de documento (ficha, PDF,
+presentación) se escalan al ancho de la pantalla.
+
+- **Instalarla** (se abre a pantalla completa, con el ícono de Casa Cruz): en iPhone, Safari →
+  Compartir → *Añadir a pantalla de inicio*; en Android, Chrome → menú → *Instalar app*.
+- No funciona sin internet a propósito: siempre consulta la API, así nunca muestra precios viejos.
+  No hay service worker ni caché de datos.
+- Piezas compartidas: `Tabla.tsx` (fila en escritorio, tarjeta en teléfono), `NavegacionMovil.tsx`,
+  `LaminaEscalada.tsx`, y las utilidades `encabezado`, `tocable` y `pie-movil` de `globals.css`.
+- Al agregar una pantalla: móvil primero, `app:` para escritorio, botones de al menos 40 px y
+  campos a 16 px (iOS acerca la pantalla al enfocar campos más chicos).
+- Los íconos de la app instalable están en `apps/web/public/icons` y salen de
+  `pnpm --filter @casacruz/api marca`; el manifiesto, en `apps/web/src/app/manifest.ts`.
+
 ## Marca
 
 El logotipo es el de Casa Cruz tal como aparece en los documentos del diseñador (la ficha de

@@ -125,21 +125,21 @@ export function BarraSeleccion({ catalogo }: { catalogo: { id: string; nombre: s
     .join("  ·  ");
 
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2.5 bg-ink px-4 py-3 md:h-19 md:flex-nowrap md:px-8 md:py-0">
+    <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2.5 bg-ink px-4 py-3 app:h-19 app:flex-nowrap app:px-8 app:py-0">
       <span className="text-[12px] font-semibold text-white">
         {ids.length} {ids.length === 1 ? "propiedad seleccionada" : "propiedades seleccionadas"}
       </span>
-      <span className="hidden text-[11.5px] text-[#A09991] md:inline">{nombres}</span>
-      <div className="hidden grow md:block" />
+      <span className="hidden text-[11.5px] text-[#A09991] app:inline">{nombres}</span>
+      <div className="hidden grow app:block" />
       <Link
         href="/comparar"
-        className="flex h-11 flex-1 items-center justify-center rounded-[3px] border border-[#55504A] px-4 md:h-10.5 md:flex-none text-[11px] font-bold tracking-[0.1em] text-ground hover:bg-[#2E2C28]"
+        className="flex h-11 flex-1 items-center justify-center rounded-[3px] border border-[#55504A] px-4 app:h-10.5 app:flex-none text-[11px] font-bold tracking-[0.1em] text-ground hover:bg-[#2E2C28]"
       >
         COMPARAR
       </Link>
       <Link
         href="/propuestas/nueva"
-        className="flex h-11 flex-[2] items-center justify-center gap-2.5 rounded-[3px] bg-tan px-5 md:h-10.5 md:flex-none text-[11px] font-bold tracking-[0.1em] text-ink hover:brightness-105"
+        className="flex h-11 flex-[2] items-center justify-center gap-2.5 rounded-[3px] bg-tan px-5 app:h-10.5 app:flex-none text-[11px] font-bold tracking-[0.1em] text-ink hover:brightness-105"
       >
         GENERAR PROPUESTA
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1C1B19" strokeWidth="2">

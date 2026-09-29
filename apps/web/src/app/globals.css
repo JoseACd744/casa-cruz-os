@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 @theme {
+  /* Desde aquí (1280 px) la app usa el menú lateral y las columnas de escritorio; por debajo,
+     el diseño de teléfono (también en tabletas verticales, donde el escritorio no cabe). */
+  --breakpoint-app: 80rem;
+
   --color-ground: #ede9e3;
   --color-surface: #f7f5f1;
   --color-panel: #ffffff;
@@ -56,12 +60,12 @@
 
 /* Las láminas (ficha, PDF, presentación) tienen tamaño de documento fijo.
    En pantallas chicas se reducen para que quepan completas, sin scroll lateral. */
-@media (min-width: 768px) and (max-width: 1440px) {
+@media (min-width: 80rem) and (max-width: 1440px) {
   .doc-fit {
     zoom: 0.8;
   }
 }
-@media (min-width: 768px) and (max-width: 1150px) {
+@media (min-width: 80rem) and (max-width: 1150px) {
   .doc-fit {
     zoom: 0.6;
   }
@@ -81,7 +85,7 @@
 }
 
 /* Encabezado de página (migas y acciones): en teléfono envuelve y ocupa el ancho;
-   desde md es la franja de 60 px de siempre. */
+   desde app (1280 px) es la franja de 60 px de siempre. */
 @utility encabezado {
   display: flex;
   flex-shrink: 0;
@@ -93,7 +97,7 @@
   padding: 0.5rem 1rem;
   border-bottom: 1px solid var(--color-line);
   background: var(--color-panel);
-  @media (min-width: 768px) {
+  @media (min-width: 80rem) {
     flex-wrap: nowrap;
     padding: 0 2rem;
   }
@@ -102,7 +106,7 @@
 /* Objetivo táctil cómodo en teléfono (40 px); en escritorio recupera su tamaño. */
 @utility tocable {
   min-height: 2.5rem;
-  @media (min-width: 768px) {
+  @media (min-width: 80rem) {
     min-height: 0;
   }
 }
@@ -110,14 +114,14 @@
 /* Espacio para la barra inferior del teléfono (respeta la muesca de iOS). */
 @utility pie-movil {
   padding-bottom: calc(4rem + env(safe-area-inset-bottom));
-  @media (min-width: 768px) {
+  @media (min-width: 80rem) {
     padding-bottom: 0;
   }
 }
 
 /* Sin capa a propósito: gana a las utilidades. Un campo de menos de 16 px hace que iOS
    acerque la pantalla al enfocarlo; en teléfono todos van a 16 px. */
-@media (max-width: 767px) {
+@media (max-width: 79.99rem) {
   input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
   select,
   textarea {

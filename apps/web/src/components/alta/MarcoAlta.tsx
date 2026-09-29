@@ -48,8 +48,8 @@ export function MarcoAlta({
         </span>
       </header>
 
-      <div className="flex flex-col gap-5 overflow-auto p-4 md:p-7">
-        <div data-scroll-x className="flex gap-2.5 overflow-x-auto rounded-card border border-line bg-panel px-3 py-3 md:px-5.5 md:py-4.5">
+      <div className="flex flex-col gap-5 overflow-auto p-4 app:p-7">
+        <div data-scroll-x className="flex shrink-0 gap-2.5 overflow-x-auto rounded-card border border-line bg-panel px-3 py-3 app:px-5.5 app:py-4.5">
           {PASOS_ALTA.map((p, i) => {
             const n = i + 1;
             const seccion = secciones?.find((s) => s.seccion === p.seccion);
@@ -77,7 +77,7 @@ export function MarcoAlta({
                 </span>
               </>
             );
-            const estilo = `flex min-w-44 shrink-0 grow items-center gap-3 rounded-[3px] border p-3.5 md:min-w-0 md:shrink ${
+            const estilo = `flex min-w-44 shrink-0 grow items-center gap-3 rounded-[3px] border p-3.5 app:min-w-0 app:shrink ${
               actual ? "border-tan bg-tan-soft" : "border-transparent"
             }`;
             return base ? (
@@ -92,9 +92,9 @@ export function MarcoAlta({
           })}
         </div>
 
-        <div className="flex flex-col gap-5 md:flex-row md:items-start">
-          <Card className="flex w-full flex-col gap-5 p-4 md:w-235 md:shrink-0 md:p-6">{children}</Card>
-          <div className="flex w-full grow flex-col gap-5 md:w-auto">{columna}</div>
+        <div className="flex flex-col gap-5 app:flex-row app:items-start">
+          <Card className="flex w-full flex-col gap-5 p-4 app:w-235 app:min-w-0 app:shrink app:p-6">{children}</Card>
+          <div className="flex w-full grow flex-col gap-5 app:w-auto">{columna}</div>
         </div>
       </div>
     </>

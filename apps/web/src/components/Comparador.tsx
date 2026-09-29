@@ -127,22 +127,22 @@ export function Comparador({ catalogo }: { catalogo: FilaComparable[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-4.5 overflow-auto p-4 md:p-7">
+    <div className="flex flex-col gap-4.5 overflow-auto p-4 app:p-7">
       <div className="flex flex-wrap items-end gap-3.5">
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-[22px] font-extrabold md:text-[26px] tracking-[-0.015em]">
+          <h1 className="text-[22px] font-extrabold app:text-[26px] tracking-[-0.015em]">
             Comparando {cols.length} propiedades
           </h1>
           <span className="text-[12.5px] text-ink-2">
             Para Berenice y Fabián · 2 o 3 habitaciones en Playa del Carmen
           </span>
         </div>
-        <div className="hidden grow md:block" />
+        <div className="hidden grow app:block" />
         <button
           type="button"
           onClick={() => setResaltar((v) => !v)}
           aria-pressed={resaltar}
-          className={`flex h-10 items-center gap-2 rounded-full border px-3.5 text-[11.5px] font-semibold md:h-9.5 ${
+          className={`flex h-10 items-center gap-2 rounded-full border px-3.5 text-[11.5px] font-semibold app:h-9.5 ${
             resaltar ? "border-ink bg-ink text-white" : "border-line bg-panel text-ink-2"
           }`}
         >
@@ -162,7 +162,7 @@ export function Comparador({ catalogo }: { catalogo: FilaComparable[] }) {
         </button>
         <Link
           href="/propuestas/nueva"
-          className="flex h-11 items-center rounded-[3px] bg-ink px-5 text-[11px] font-bold tracking-[0.1em] text-white md:h-10.5"
+          className="flex h-11 items-center rounded-[3px] bg-ink px-5 text-[11px] font-bold tracking-[0.1em] text-white app:h-10.5"
         >
           USAR EN PROPUESTA
         </Link>
@@ -170,17 +170,17 @@ export function Comparador({ catalogo }: { catalogo: FilaComparable[] }) {
 
       <div
         data-scroll-x
-        className="overflow-x-auto rounded-card border border-line bg-panel md:overflow-hidden"
+        className="shrink-0 overflow-x-auto rounded-card border border-line bg-panel app:overflow-hidden"
       >
-        <div className="w-max min-w-full md:w-auto">
+        <div className="w-max min-w-full app:w-auto">
           <div className="flex border-b border-line">
-            <div className="sticky left-0 z-10 w-28 shrink-0 bg-surface p-3 md:static md:w-57 md:p-4.5">
+            <div className="sticky left-0 z-10 w-28 shrink-0 bg-surface p-3 app:static app:w-57 app:p-4.5">
               <span className="eyebrow">Criterio</span>
             </div>
             {cols.map((d) => (
               <div
                 key={d.id}
-                className="flex min-w-60 grow gap-3.5 border-l border-line p-4.5 md:min-w-0"
+                className="flex min-w-60 grow gap-3.5 border-l border-line p-4.5 app:min-w-0"
               >
                 <Foto src={d.foto} className="h-17 w-23 shrink-0" />
                 <div className="flex flex-col gap-1">
@@ -206,7 +206,7 @@ export function Comparador({ catalogo }: { catalogo: FilaComparable[] }) {
                   type="button"
                   onClick={() => quitar(d.id)}
                   aria-label={`Quitar ${d.nombre} de la comparación`}
-                  className="flex size-9 shrink-0 items-center justify-center self-start rounded-[3px] border border-line hover:border-alert md:size-7"
+                  className="flex size-9 shrink-0 items-center justify-center self-start rounded-[3px] border border-line hover:border-alert app:size-7"
                 >
                   <svg
                     width="12"
@@ -231,7 +231,7 @@ export function Comparador({ catalogo }: { catalogo: FilaComparable[] }) {
                 className={`flex border-t border-line ${fila % 2 ? "bg-[#FCFBF9]" : ""}`}
               >
                 <span
-                  className={`sticky left-0 z-10 w-28 shrink-0 px-3 py-3.5 text-[11px] font-bold tracking-[0.08em] text-muted md:static md:w-57 md:px-4.5 ${fila % 2 ? "bg-[#FCFBF9]" : "bg-panel"}`}
+                  className={`sticky left-0 z-10 w-28 shrink-0 px-3 py-3.5 text-[11px] font-bold tracking-[0.08em] text-muted app:static app:w-57 app:px-4.5 ${fila % 2 ? "bg-[#FCFBF9]" : "bg-panel"}`}
                 >
                   {c.campo}
                 </span>
@@ -241,7 +241,7 @@ export function Comparador({ catalogo }: { catalogo: FilaComparable[] }) {
                   return (
                     <span
                       key={d.id}
-                      className={`min-w-60 grow border-l border-line px-4.5 py-3.5 text-[13px] md:min-w-0 ${
+                      className={`min-w-60 grow border-l border-line px-4.5 py-3.5 text-[13px] app:min-w-0 ${
                         i === mejor ? "bg-tan-soft font-bold" : "font-medium"
                       } ${falta ? "text-alert" : ""}`}
                     >

@@ -61,16 +61,16 @@ export default async function CapacitacionPage({
   const hechos = capacitacion.preparacion.find((p) => p.desarrolloId === desarrollo?.id)?.items ?? [];
 
   return (
-    <div className="flex flex-col gap-5 overflow-auto p-4 md:p-7">
+    <div className="flex flex-col gap-5 overflow-auto p-4 app:p-7">
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-[24px] font-extrabold md:text-[28px] tracking-[-0.015em]">Capacitación y certificaciones</h1>
+        <h1 className="text-[24px] font-extrabold app:text-[28px] tracking-[-0.015em]">Capacitación y certificaciones</h1>
         <span className="text-[13px] text-ink-2">
           La tecnología no sustituye la capacitación: sólo puedes vender las plazas en las que estás
           certificado. La certificación dura un año.
         </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 app:grid-cols-4 app:gap-4">
         {capacitacion.plazas.map((p) => {
           const e = ESTADO[p.estado];
           return (
@@ -106,11 +106,11 @@ export default async function CapacitacionPage({
           ))}
       </div>
 
-      <div className="flex flex-col gap-5 md:flex-row md:items-start">
+      <div className="flex flex-col gap-5 app:flex-row app:items-start">
         {actual ? (
           <Seccion
             titulo={`Ruta de certificación · ${nombrePlaza(actual.plazaId)}`}
-            className="md:w-175 md:shrink-0"
+            className="app:w-175 app:shrink-0"
             accion={
               <span className={`text-[11.5px] font-bold ${actual.estado === "certificado" ? "text-ok-ink" : "text-warn-ink"}`}>
                 {actual.avance}%
@@ -140,7 +140,7 @@ export default async function CapacitacionPage({
                       href={m.url}
                       target="_blank"
                       rel="noopener"
-                      className="flex h-11 items-center rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface md:h-8.5"
+                      className="flex h-11 items-center rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface app:h-8.5"
                     >
                       {completado ? "REPASAR" : "EMPEZAR"}
                     </a>
@@ -148,7 +148,7 @@ export default async function CapacitacionPage({
                   {!completado && usandoApi ? (
                     <BotonAccion
                       accion={completarModulo.bind(null, m.id)}
-                      className="h-11 rounded-[3px] bg-ink px-3.5 text-[10.5px] font-bold tracking-[0.06em] text-white hover:brightness-125 md:h-8.5"
+                      className="h-11 rounded-[3px] bg-ink px-3.5 text-[10.5px] font-bold tracking-[0.06em] text-white hover:brightness-125 app:h-8.5"
                     >
                       MARCAR COMO VISTO
                     </BotonAccion>
@@ -181,19 +181,19 @@ export default async function CapacitacionPage({
                 ) : actual.puedeEvaluarse ? (
                   <Link
                     href={`/capacitacion/${actual.plazaId}/evaluacion`}
-                    className="flex h-11 items-center rounded-[3px] bg-tan px-3.5 text-[10.5px] font-bold tracking-[0.06em] text-ink hover:brightness-105 md:h-8.5"
+                    className="flex h-11 items-center rounded-[3px] bg-tan px-3.5 text-[10.5px] font-bold tracking-[0.06em] text-ink hover:brightness-105 app:h-8.5"
                   >
                     PRESENTAR EVALUACIÓN
                   </Link>
                 ) : (
-                  <span className="text-[11px] text-muted md:w-40 md:text-right">Termina los módulos para presentarla</span>
+                  <span className="text-[11px] text-muted app:w-40 app:text-right">Termina los módulos para presentarla</span>
                 )}
               </div>
             </div>
           </Seccion>
         ) : null}
 
-        <div className="flex w-full grow flex-col gap-5 md:w-auto">
+        <div className="flex w-full grow flex-col gap-5 app:w-auto">
           <Seccion titulo={desarrollo ? `Antes de vender ${desarrollo.nombre}` : "Antes de vender"}>
             {desarrollo ? (
               <>

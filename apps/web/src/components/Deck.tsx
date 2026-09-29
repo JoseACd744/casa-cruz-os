@@ -224,7 +224,7 @@ export function Deck({ slides }: { slides: Slide[] }) {
 
   return (
     <div
-      className="flex grow flex-col items-center gap-5 overflow-auto p-4 md:p-8 print:p-0"
+      className="flex grow flex-col items-center gap-5 overflow-auto p-4 app:p-8 print:p-0"
       onTouchStart={(e) => {
         toque.current = e.touches[0]?.clientX ?? null;
       }}
@@ -247,7 +247,7 @@ export function Deck({ slides }: { slides: Slide[] }) {
           type="button"
           onClick={() => setI((v) => Math.max(0, v - 1))}
           disabled={i === 0}
-          className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[3px] border border-[#55504A] px-4 text-[11px] font-bold tracking-[0.08em] text-ground disabled:opacity-30 md:h-10 md:flex-none"
+          className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[3px] border border-[#55504A] px-4 text-[11px] font-bold tracking-[0.08em] text-ground disabled:opacity-30 app:h-10 app:flex-none"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M11 6l-6 6 6 6" />
@@ -255,7 +255,7 @@ export function Deck({ slides }: { slides: Slide[] }) {
           ANTERIOR
         </button>
 
-        <div className="hidden gap-1.5 md:flex">
+        <div className="hidden gap-1.5 app:flex">
           {slides.map((s, j) => (
             <button
               key={j}
@@ -269,7 +269,7 @@ export function Deck({ slides }: { slides: Slide[] }) {
           ))}
         </div>
 
-        <span className="order-first basis-full text-center text-[11px] md:order-none md:w-32 md:basis-auto font-semibold tracking-[0.08em] text-[#A09991] uppercase">
+        <span className="order-first basis-full text-center text-[11px] app:order-none app:w-32 app:basis-auto font-semibold tracking-[0.08em] text-[#A09991] uppercase">
           {i + 1} / {slides.length} · {NOMBRES[slides[i].tipo]}
         </span>
 
@@ -277,7 +277,7 @@ export function Deck({ slides }: { slides: Slide[] }) {
           type="button"
           onClick={() => setI((v) => Math.min(slides.length - 1, v + 1))}
           disabled={i === slides.length - 1}
-          className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[3px] border border-[#55504A] px-4 text-[11px] font-bold tracking-[0.08em] text-ground disabled:opacity-30 md:h-10 md:flex-none"
+          className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[3px] border border-[#55504A] px-4 text-[11px] font-bold tracking-[0.08em] text-ground disabled:opacity-30 app:h-10 app:flex-none"
         >
           SIGUIENTE
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

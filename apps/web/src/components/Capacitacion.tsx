@@ -124,14 +124,14 @@ export function Evaluacion({
           {p.opciones.map((o, j) => (
             <label
               key={j}
-              className="flex min-h-11 cursor-pointer items-start gap-3 rounded-[3px] px-2 py-2.5 text-[13px] has-checked:bg-tan-soft md:min-h-0 md:gap-2.5 md:py-1.5 md:text-[12.5px]"
+              className="flex min-h-11 cursor-pointer items-start gap-3 rounded-[3px] px-2 py-2.5 text-[13px] has-checked:bg-tan-soft app:min-h-0 app:gap-2.5 app:py-1.5 app:text-[12.5px]"
             >
               <input
                 type="radio"
                 name={p.id}
                 checked={respuestas[p.id] === j}
                 onChange={() => setRespuestas((prev) => ({ ...prev, [p.id]: j }))}
-                className="mt-0.5 size-4.5 shrink-0 accent-[#1C1B19] md:size-auto"
+                className="mt-0.5 size-4.5 shrink-0 accent-[#1C1B19] app:size-auto"
               />
               {o}
             </label>
@@ -147,11 +147,11 @@ export function Evaluacion({
         <span className="text-[11.5px] text-muted">
           {Object.keys(respuestas).length} de {preguntas.length} respondidas · se aprueba con 80 %
         </span>
-        <div className="hidden grow md:block" />
+        <div className="hidden grow app:block" />
         <button
           type="submit"
           disabled={!completas || enviando}
-          className="flex h-12 w-full items-center justify-center rounded-[3px] bg-ink px-6 text-[11px] font-bold tracking-[0.1em] text-white disabled:cursor-not-allowed disabled:opacity-40 md:w-auto"
+          className="flex h-12 w-full items-center justify-center rounded-[3px] bg-ink px-6 text-[11px] font-bold tracking-[0.1em] text-white disabled:cursor-not-allowed disabled:opacity-40 app:w-auto"
         >
           {enviando ? "CALIFICANDO…" : "ENTREGAR EVALUACIÓN"}
         </button>
