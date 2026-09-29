@@ -4,6 +4,7 @@ import { alcanza, iniciales, type Rol } from "@casacruz/core";
 import { EditarUsuario, InvitarUsuario } from "@/components/Equipo";
 import { Badge, Card, Eyebrow, Seccion } from "@/components/ui";
 import { listarCambios, listarPlazas, listarUsuarios, obtenerUsuarioActual } from "@/lib/repo";
+import { Tabla } from "@/components/Tabla";
 
 const ROLES: { rol: Rol; nombre: string; puede: string }[] = [
   {
@@ -67,76 +68,65 @@ export default async function UsuariosPage() {
         </span>
       </header>
 
-      <div className="flex items-start gap-5 overflow-auto p-4 md:p-7">
-        <div className="flex w-235 shrink-0 flex-col gap-4.5">
+      <div className="flex flex-col gap-5 overflow-auto p-4 md:flex-row md:items-start md:p-7">
+        <div className="flex w-full flex-col gap-4.5 md:w-235 md:shrink-0">
           <div className="flex items-end gap-3.5">
             <div className="flex flex-col gap-1.5">
-              <h1 className="text-[26px] font-extrabold tracking-[-0.015em]">Usuarios</h1>
+              <h1 className="text-[24px] font-extrabold md:text-[26px] tracking-[-0.015em]">Usuarios</h1>
               <span className="text-[12.5px] text-ink-2">
                 El rol define qué ve y qué edita. La certificación define qué plazas puede vender.
               </span>
             </div>
-            <div className="grow" />
           </div>
 
           {administra ? <InvitarUsuario plazas={plazas} /> : null}
 
-          <Card className="overflow-hidden">
-            <div className="flex bg-surface">
-              {[
-                ["USUARIO", "w-57"],
-                ["ROL", "w-37"],
-                ["PLAZAS CERTIFICADAS", "grow"],
-                ["ÚLTIMO ACCESO", "w-33"],
-                ["ESTADO", "w-27"],
-              ].map(([t, w]) => (
-                <span
-                  key={t}
-                  className={`${w} px-4 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted`}
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-            {usuarios.map((u) => (
-              <div key={u.id} className="flex flex-col border-t border-line">
-                <div className="flex items-center">
-                  <div className="flex w-57 items-center gap-3 px-4 py-3">
+          <Card className="p-3 md:overflow-hidden md:p-0">
+            <Tabla
+              columnas={[
+                { titulo: "Usuario", ancho: "md:w-57", principal: true },
+                { titulo: "Rol", ancho: "md:w-37" },
+                { titulo: "Plazas certificadas" },
+                { titulo: "Último acceso", ancho: "md:w-33" },
+                { titulo: "Estado", ancho: "md:w-27" },
+              ]}
+              filas={usuarios.map((u) => ({
+                clave: u.id,
+                celdas: [
+                  <div key="u" className="flex items-center gap-3">
                     <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-tan-soft text-[10.5px] font-bold text-tan-deep">
                       {iniciales(u.nombre)}
                     </span>
-                    <span className="flex flex-col gap-0.5">
-                      <span className="text-[13px] font-bold">{u.nombre}</span>
-                      <span className="text-[10.5px] text-muted">{u.correo}</span>
+                    <span className="flex min-w-0 flex-col gap-0.5">
+                      <span className="font-bold">{u.nombre}</span>
+                      <span className="truncate text-[10.5px] text-muted">{u.correo}</span>
                     </span>
-                  </div>
-                  <span className="w-37 px-4 py-3">
-                    <Badge tono={u.rol === "corporativo" ? "dark" : u.rol === "gerente" ? "tan" : "ok"}>
-                      {u.rol}
-                    </Badge>
-                  </span>
-                  <span className="grow px-4 py-3 text-[12px] text-ink-2">
+                  </div>,
+                  <Badge key="r" tono={u.rol === "corporativo" ? "dark" : u.rol === "gerente" ? "tan" : "ok"}>
+                    {u.rol}
+                  </Badge>,
+                  <span key="p" className="text-[12px] text-ink-2">
                     {u.plazasCertificadas.map(nombrePlaza).join(" · ")}
                     {u.plazasEnProgreso.length
                       ? ` · ${u.plazasEnProgreso.map(nombrePlaza).join(" · ")} (en progreso)`
                       : ""}
-                  </span>
-                  <span className="w-33 px-4 py-3 text-[11.5px] text-muted">{u.ultimoAcceso}</span>
-                  <span className="w-27 px-4 py-3">
-                    <Badge tono={u.activo ? "ok" : "alert"}>
-                      {!u.activo ? "inactivo" : u.debeCambiarContrasena ? "invitado" : "activo"}
-                    </Badge>
-                  </span>
-                </div>
-                {administra ? (
+                  </span>,
+                  <span key="a" className="text-[11.5px] text-muted">
+                    {u.ultimoAcceso}
+                  </span>,
+                  <Badge key="e" tono={u.activo ? "ok" : "alert"}>
+                    {!u.activo ? "inactivo" : u.debeCambiarContrasena ? "invitado" : "activo"}
+                  </Badge>,
+                ],
+                extra: administra ? (
                   <EditarUsuario usuario={u} plazas={plazas} esYo={u.id === actual.id} />
-                ) : null}
-              </div>
-            ))}
+                ) : null,
+              }))}
+            />
           </Card>
 
           <Seccion titulo="Roles">
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
               {ROLES.map((r) => (
                 <div key={r.nombre} className="flex flex-col gap-2 rounded-[3px] border border-line p-3.5">
                   <span className="text-[13px] font-bold">{r.nombre}</span>
@@ -148,7 +138,7 @@ export default async function UsuariosPage() {
           </Seccion>
         </div>
 
-        <Card className="flex grow flex-col gap-3.5 self-stretch p-5.5">
+        <Card className="flex w-full grow flex-col gap-3.5 self-stretch p-5.5 md:w-auto">
           <Eyebrow>Auditoría reciente</Eyebrow>
           {cambios.map((c) => (
             <div key={c.id} className="flex flex-col gap-1.5 border-b border-line pb-3">

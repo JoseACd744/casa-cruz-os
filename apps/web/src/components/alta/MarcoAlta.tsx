@@ -48,8 +48,8 @@ export function MarcoAlta({
         </span>
       </header>
 
-      <div className="flex flex-col gap-5 overflow-auto p-7">
-        <Card className="flex gap-2.5 px-5.5 py-4.5">
+      <div className="flex flex-col gap-5 overflow-auto p-4 md:p-7">
+        <div data-scroll-x className="flex gap-2.5 overflow-x-auto rounded-card border border-line bg-panel px-3 py-3 md:px-5.5 md:py-4.5">
           {PASOS_ALTA.map((p, i) => {
             const n = i + 1;
             const seccion = secciones?.find((s) => s.seccion === p.seccion);
@@ -77,7 +77,7 @@ export function MarcoAlta({
                 </span>
               </>
             );
-            const estilo = `flex grow items-center gap-3 rounded-[3px] border p-3.5 ${
+            const estilo = `flex min-w-44 shrink-0 grow items-center gap-3 rounded-[3px] border p-3.5 md:min-w-0 md:shrink ${
               actual ? "border-tan bg-tan-soft" : "border-transparent"
             }`;
             return base ? (
@@ -90,11 +90,11 @@ export function MarcoAlta({
               </div>
             );
           })}
-        </Card>
+        </div>
 
-        <div className="flex items-start gap-5">
-          <Card className="flex w-235 shrink-0 flex-col gap-5 p-6">{children}</Card>
-          <div className="flex grow flex-col gap-5">{columna}</div>
+        <div className="flex flex-col gap-5 md:flex-row md:items-start">
+          <Card className="flex w-full flex-col gap-5 p-4 md:w-235 md:shrink-0 md:p-6">{children}</Card>
+          <div className="flex w-full grow flex-col gap-5 md:w-auto">{columna}</div>
         </div>
       </div>
     </>
@@ -104,7 +104,7 @@ export function MarcoAlta({
 /** Encabezado del paso dentro de la tarjeta. */
 export function TituloPaso({ paso, titulo, detalle }: { paso: number; titulo: string; detalle?: ReactNode }) {
   return (
-    <div className="flex items-end gap-3">
+    <div className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1.5">
         <span className="text-[10px] font-bold tracking-[0.16em] text-tan-deep">PASO {paso} DE 6</span>
         <h1 className="text-[24px] font-extrabold tracking-[-0.01em]">{titulo}</h1>
@@ -120,15 +120,15 @@ export function NavegacionPasos({ base, paso }: { base: string; paso: number }) 
   const anterior = PASOS_ALTA[paso - 2];
   const siguiente = PASOS_ALTA[paso];
   const estilo =
-    "flex h-12 items-center gap-2.5 rounded-[3px] border border-[#C9C1B6] px-5 text-[11px] font-bold tracking-[0.08em] hover:bg-surface";
+    "flex h-12 items-center justify-center gap-2.5 rounded-[3px] border border-[#C9C1B6] px-5 text-[11px] font-bold tracking-[0.08em] hover:bg-surface";
   return (
-    <div className="flex items-center gap-3 border-t border-line pt-5">
+    <div className="flex flex-col gap-3 border-t border-line pt-5 sm:flex-row sm:items-center">
       {anterior ? (
         <Link href={`${base}?paso=${paso - 1}`} className={estilo}>
           ANTERIOR: {anterior.nombre.toUpperCase()}
         </Link>
       ) : null}
-      <div className="grow" />
+      <div className="hidden grow sm:block" />
       {siguiente ? (
         <Link href={`${base}?paso=${paso + 1}`} className={estilo}>
           SIGUIENTE: {siguiente.nombre.toUpperCase()}

@@ -22,11 +22,21 @@ export interface Columna {
 export interface Fila {
   clave: string;
   celdas: ReactNode[];
+  /** Contenido a lo ancho bajo la fila (p. ej. un formulario de edición). */
+  extra?: ReactNode;
 }
 
 const encabezado = "px-3.5 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted uppercase";
 
-export function Tabla({ columnas, filas, vacio }: { columnas: Columna[]; filas: Fila[]; vacio?: ReactNode }) {
+export function Tabla({
+  columnas,
+  filas,
+  vacio,
+}: {
+  columnas: Columna[];
+  filas: Fila[];
+  vacio?: ReactNode;
+}) {
   if (filas.length === 0 && vacio) return <>{vacio}</>;
   return (
     <div className="flex flex-col gap-2.5 md:gap-0">
@@ -40,32 +50,44 @@ export function Tabla({ columnas, filas, vacio }: { columnas: Columna[]; filas: 
       {filas.map((fila) => (
         <div
           key={fila.clave}
-          className="flex flex-col gap-2.5 rounded-[3px] border border-line p-3.5 md:flex-row md:items-center md:gap-0 md:rounded-none md:border-0 md:border-b md:p-0"
+          className="flex flex-col gap-2.5 rounded-[3px] border border-line p-3.5 md:gap-0 md:rounded-none md:border-0 md:border-b md:p-0"
         >
-          {columnas.map((c, i) => {
-            const celda = fila.celdas[i];
-            if (c.principal) {
+          <div className="flex flex-col gap-2.5 md:flex-row md:items-center md:gap-0">
+            {columnas.map((c, i) => {
+              const celda = fila.celdas[i];
+              if (c.principal) {
+                return (
+                  <div
+                    key={i}
+                    className={`min-w-0 text-[14px] md:px-3.5 md:py-3.5 md:text-[13px] ${c.ancho ?? "grow"}`}
+                  >
+                    {celda}
+                  </div>
+                );
+              }
+              const acciones = c.titulo === "";
               return (
-                <div key={i} className={`min-w-0 text-[14px] md:px-3.5 md:py-3.5 md:text-[13px] ${c.ancho ?? "grow"}`}>
-                  {celda}
+                <div
+                  key={i}
+                  className={`flex min-w-0 items-center gap-3 md:block md:px-3.5 md:py-3.5 ${
+                    acciones ? "flex-wrap pt-1" : "justify-between"
+                  } ${c.ancho ?? "grow"}`}
+                >
+                  {acciones ? null : <span className="eyebrow shrink-0 md:hidden">{c.titulo}</span>}
+                  <div
+                    className={
+                      acciones
+                        ? "flex w-full flex-wrap gap-2 md:w-auto"
+                        : "min-w-0 text-right md:text-left"
+                    }
+                  >
+                    {celda}
+                  </div>
                 </div>
               );
-            }
-            const acciones = c.titulo === "";
-            return (
-              <div
-                key={i}
-                className={`flex min-w-0 items-center gap-3 md:block md:px-3.5 md:py-3.5 ${
-                  acciones ? "flex-wrap pt-1" : "justify-between"
-                } ${c.ancho ?? "grow"}`}
-              >
-                {acciones ? null : <span className="eyebrow shrink-0 md:hidden">{c.titulo}</span>}
-                <div className={acciones ? "flex w-full flex-wrap gap-2 md:w-auto" : "min-w-0 text-right md:text-left"}>
-                  {celda}
-                </div>
-              </div>
-            );
-          })}
+            })}
+          </div>
+          {fila.extra}
         </div>
       ))}
     </div>

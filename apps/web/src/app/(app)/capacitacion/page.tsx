@@ -63,14 +63,14 @@ export default async function CapacitacionPage({
   return (
     <div className="flex flex-col gap-5 overflow-auto p-4 md:p-7">
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-[28px] font-extrabold tracking-[-0.015em]">Capacitación y certificaciones</h1>
+        <h1 className="text-[24px] font-extrabold md:text-[28px] tracking-[-0.015em]">Capacitación y certificaciones</h1>
         <span className="text-[13px] text-ink-2">
           La tecnología no sustituye la capacitación: sólo puedes vender las plazas en las que estás
           certificado. La certificación dura un año.
         </span>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
         {capacitacion.plazas.map((p) => {
           const e = ESTADO[p.estado];
           return (
@@ -106,11 +106,11 @@ export default async function CapacitacionPage({
           ))}
       </div>
 
-      <div className="flex items-start gap-5">
+      <div className="flex flex-col gap-5 md:flex-row md:items-start">
         {actual ? (
           <Seccion
             titulo={`Ruta de certificación · ${nombrePlaza(actual.plazaId)}`}
-            className="w-175"
+            className="md:w-175 md:shrink-0"
             accion={
               <span className={`text-[11.5px] font-bold ${actual.estado === "certificado" ? "text-ok-ink" : "text-warn-ink"}`}>
                 {actual.avance}%
@@ -119,7 +119,7 @@ export default async function CapacitacionPage({
           >
             <div className="flex flex-col gap-3">
               {actual.modulos.map(({ modulo: m, completado }) => (
-                <div key={m.id} className="flex items-center gap-3.5 rounded-[3px] border border-line p-3.5">
+                <div key={m.id} className="flex flex-wrap items-center gap-x-3.5 gap-y-2.5 rounded-[3px] border border-line p-3.5">
                   <span
                     className={`flex size-7.5 shrink-0 items-center justify-center rounded-full text-[12px] font-bold ${
                       completado ? "bg-ink text-white" : "bg-[#EFEAE2] text-muted"
@@ -127,7 +127,7 @@ export default async function CapacitacionPage({
                   >
                     {m.orden}
                   </span>
-                  <div className="flex grow flex-col gap-1">
+                  <div className="flex min-w-0 grow basis-40 flex-col gap-1">
                     <span className="text-[13.5px] font-bold">{m.titulo}</span>
                     <span className="text-[11.5px] text-muted">
                       {m.detalle}
@@ -140,7 +140,7 @@ export default async function CapacitacionPage({
                       href={m.url}
                       target="_blank"
                       rel="noopener"
-                      className="flex h-8.5 items-center rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface"
+                      className="flex h-11 items-center rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface md:h-8.5"
                     >
                       {completado ? "REPASAR" : "EMPEZAR"}
                     </a>
@@ -148,7 +148,7 @@ export default async function CapacitacionPage({
                   {!completado && usandoApi ? (
                     <BotonAccion
                       accion={completarModulo.bind(null, m.id)}
-                      className="h-8.5 rounded-[3px] bg-ink px-3.5 text-[10.5px] font-bold tracking-[0.06em] text-white hover:brightness-125"
+                      className="h-11 rounded-[3px] bg-ink px-3.5 text-[10.5px] font-bold tracking-[0.06em] text-white hover:brightness-125 md:h-8.5"
                     >
                       MARCAR COMO VISTO
                     </BotonAccion>
@@ -157,14 +157,14 @@ export default async function CapacitacionPage({
               ))}
 
               <div
-                className={`flex items-center gap-3.5 rounded-[3px] border p-3.5 ${
+                className={`flex flex-wrap items-center gap-x-3.5 gap-y-2.5 rounded-[3px] border p-3.5 ${
                   actual.estado === "certificado" ? "border-ok/30 bg-ok-soft" : "border-line"
                 }`}
               >
                 <span className="flex size-7.5 shrink-0 items-center justify-center rounded-full bg-tan text-[12px] font-bold text-ink">
                   ✓
                 </span>
-                <div className="flex grow flex-col gap-1">
+                <div className="flex min-w-0 grow basis-40 flex-col gap-1">
                   <span className="text-[13.5px] font-bold">Evaluación de certificación</span>
                   <span className="text-[11.5px] text-muted">
                     {actual.estado === "certificado"
@@ -181,19 +181,19 @@ export default async function CapacitacionPage({
                 ) : actual.puedeEvaluarse ? (
                   <Link
                     href={`/capacitacion/${actual.plazaId}/evaluacion`}
-                    className="flex h-8.5 items-center rounded-[3px] bg-tan px-3.5 text-[10.5px] font-bold tracking-[0.06em] text-ink hover:brightness-105"
+                    className="flex h-11 items-center rounded-[3px] bg-tan px-3.5 text-[10.5px] font-bold tracking-[0.06em] text-ink hover:brightness-105 md:h-8.5"
                   >
                     PRESENTAR EVALUACIÓN
                   </Link>
                 ) : (
-                  <span className="w-40 text-right text-[11px] text-muted">Termina los módulos para presentarla</span>
+                  <span className="text-[11px] text-muted md:w-40 md:text-right">Termina los módulos para presentarla</span>
                 )}
               </div>
             </div>
           </Seccion>
         ) : null}
 
-        <div className="flex grow flex-col gap-5">
+        <div className="flex w-full grow flex-col gap-5 md:w-auto">
           <Seccion titulo={desarrollo ? `Antes de vender ${desarrollo.nombre}` : "Antes de vender"}>
             {desarrollo ? (
               <>

@@ -63,11 +63,11 @@ export function Evaluacion({
             : ""}
           .
         </p>
-        <div className="flex gap-3">
-          <Link href="/propiedades" className="flex h-11 items-center rounded-[3px] bg-ink px-5 text-[11px] font-bold tracking-[0.1em] text-white">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link href="/propiedades" className="flex h-11 items-center justify-center rounded-[3px] bg-ink px-5 text-[11px] font-bold tracking-[0.1em] text-white">
             IR AL INVENTARIO
           </Link>
-          <Link href="/capacitacion" className="flex h-11 items-center rounded-[3px] border border-[#C9C1B6] px-5 text-[11px] font-bold tracking-[0.1em]">
+          <Link href="/capacitacion" className="flex h-11 items-center justify-center rounded-[3px] border border-[#C9C1B6] px-5 text-[11px] font-bold tracking-[0.1em]">
             VOLVER A CAPACITACIÓN
           </Link>
         </div>
@@ -124,14 +124,14 @@ export function Evaluacion({
           {p.opciones.map((o, j) => (
             <label
               key={j}
-              className="flex cursor-pointer items-start gap-2.5 rounded-[3px] px-2 py-1.5 text-[12.5px] has-checked:bg-tan-soft"
+              className="flex min-h-11 cursor-pointer items-start gap-3 rounded-[3px] px-2 py-2.5 text-[13px] has-checked:bg-tan-soft md:min-h-0 md:gap-2.5 md:py-1.5 md:text-[12.5px]"
             >
               <input
                 type="radio"
                 name={p.id}
                 checked={respuestas[p.id] === j}
                 onChange={() => setRespuestas((prev) => ({ ...prev, [p.id]: j }))}
-                className="mt-0.5 accent-[#1C1B19]"
+                className="mt-0.5 size-4.5 shrink-0 accent-[#1C1B19] md:size-auto"
               />
               {o}
             </label>
@@ -143,15 +143,15 @@ export function Evaluacion({
           {error}
         </div>
       ) : null}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <span className="text-[11.5px] text-muted">
           {Object.keys(respuestas).length} de {preguntas.length} respondidas · se aprueba con 80 %
         </span>
-        <div className="grow" />
+        <div className="hidden grow md:block" />
         <button
           type="submit"
           disabled={!completas || enviando}
-          className="flex h-12 items-center rounded-[3px] bg-ink px-6 text-[11px] font-bold tracking-[0.1em] text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-12 w-full items-center justify-center rounded-[3px] bg-ink px-6 text-[11px] font-bold tracking-[0.1em] text-white disabled:cursor-not-allowed disabled:opacity-40 md:w-auto"
         >
           {enviando ? "CALIFICANDO…" : "ENTREGAR EVALUACIÓN"}
         </button>

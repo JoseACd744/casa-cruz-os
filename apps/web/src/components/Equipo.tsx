@@ -50,7 +50,7 @@ export function InvitarUsuario({ plazas }: { plazas: Plaza[] }) {
         INVITAR USUARIO
       </summary>
       <form action={accion} className="flex flex-col gap-4 p-5">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <CampoTexto id="invitar-nombre" nombre="nombre" etiqueta="Nombre" requerido placeholder="Nombre y apellido" />
           <CampoTexto id="invitar-correo" nombre="correo" etiqueta="Correo" tipo="email" requerido placeholder="nombre@casacruz.mx" />
           <CampoOpciones nombre="rol" etiqueta="Rol" valor="cerrador" opciones={ROLES} />
@@ -95,7 +95,7 @@ export function EditarUsuario({
       </summary>
       <div className="flex flex-col gap-4 px-4 pb-4">
         <form action={accion} className="flex flex-col gap-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <CampoOpciones nombre="rol" etiqueta="Rol" valor={usuario.rol} opciones={ROLES} />
             <CampoOpciones
               nombre="activo"
@@ -130,8 +130,8 @@ export function EditarUsuario({
         </form>
 
         <form action={restablecer} className="flex flex-col gap-2.5 border-t border-line pt-3.5">
-          <div className="flex items-center gap-3">
-            <span className="grow text-[11.5px] text-ink-2">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="min-w-0 grow basis-48 text-[11.5px] text-ink-2">
               ¿Perdió su clave? Genera una temporal nueva; la anterior deja de servir.
             </span>
             <button
