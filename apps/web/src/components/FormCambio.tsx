@@ -95,8 +95,8 @@ export function FormCambio({
   }
 
   return (
-    <div className="flex justify-center overflow-auto p-8">
-      <Card className="flex w-215 flex-col p-7">
+    <div className="flex justify-center overflow-auto p-4 md:p-8">
+      <Card className="flex w-full flex-col p-4 md:w-215 md:p-7">
         <form action={accion} className="flex flex-col gap-5">
           <input type="hidden" name="desarrolloId" value={desarrollo.id} />
           <input type="hidden" name="campo" value={campo} />
@@ -136,7 +136,7 @@ export function FormCambio({
                   type="button"
                   onClick={() => elegirCampo(c)}
                   aria-pressed={campo === c}
-                  className={`h-9.5 rounded-full border px-3.5 text-[12px] font-semibold ${
+                  className={`h-10 rounded-full border px-3.5 text-[12px] font-semibold md:h-9.5 ${
                     campo === c ? "border-ink bg-ink text-white" : "border-line bg-panel text-ink-2"
                   }`}
                 >
@@ -153,7 +153,7 @@ export function FormCambio({
                 alta.
               </p>
             ) : (
-              <div className="flex gap-4">
+              <div className="flex flex-col gap-4 md:flex-row">
                 <div className="flex grow flex-col gap-1.5">
                   <label htmlFor="tipologia" className="eyebrow">
                     Tipología
@@ -171,7 +171,7 @@ export function FormCambio({
                     ))}
                   </select>
                 </div>
-                <div className="flex w-60 flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 md:w-60">
                   <label htmlFor="nivel" className="eyebrow">
                     Nivel
                   </label>
@@ -192,8 +192,8 @@ export function FormCambio({
             )
           ) : null}
 
-          <div className="flex items-start gap-5">
-            <div className="flex w-52 flex-col gap-1.5 pt-0.5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-5">
+            <div className="flex flex-col gap-1.5 pt-0.5 md:w-52">
               <Eyebrow>Valor actual</Eyebrow>
               <span
                 className={`text-[20px] font-semibold ${
@@ -203,7 +203,7 @@ export function FormCambio({
                 {actual}
               </span>
             </div>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A98D6F" strokeWidth="2" className="mt-7.5 shrink-0">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A98D6F" strokeWidth="2" className="hidden shrink-0 md:mt-7.5 md:block">
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
             <div className="flex grow flex-col gap-1.5">
@@ -247,7 +247,7 @@ export function FormCambio({
                   type="button"
                   onClick={() => setFuente(f)}
                   aria-pressed={fuente === f}
-                  className={`h-9.5 rounded-full border px-3.5 text-[12px] font-semibold ${
+                  className={`h-10 rounded-full border px-3.5 text-[12px] font-semibold md:h-9.5 ${
                     fuente === f ? "border-ink bg-ink text-white" : "border-line bg-panel text-ink-2"
                   }`}
                 >
@@ -260,14 +260,14 @@ export function FormCambio({
           <div className="flex flex-col gap-2">
             <Eyebrow>Evidencia</Eyebrow>
             <div
-              className={`flex items-center gap-3 rounded-[3px] p-3.5 ${
+              className={`flex flex-wrap items-center gap-3 rounded-[3px] p-3.5 ${
                 archivo ? "border border-line bg-panel" : "border border-dashed border-alert/60 bg-alert-soft/40"
               }`}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B563E" strokeWidth="1.7">
                 <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5" />
               </svg>
-              <span className="grow text-[12.5px] font-semibold">
+              <span className="min-w-0 grow basis-40 text-[12.5px] font-semibold">
                 {archivo
                   ? `${archivo.nombre} · ${archivo.kb >= 1024 ? `${(archivo.kb / 1024).toFixed(1)} MB` : `${archivo.kb} KB`}`
                   : puedeAdjuntar
@@ -275,7 +275,7 @@ export function FormCambio({
                     : "El almacenamiento de archivos no está configurado: el cambio quedará pendiente"}
               </span>
               <label
-                className={`flex h-8.5 items-center rounded-[3px] border border-line bg-surface px-3.5 text-[10.5px] font-bold tracking-[0.06em] ${
+                className={`flex h-11 items-center rounded-[3px] border border-line bg-surface px-3.5 text-[10.5px] font-bold tracking-[0.06em] md:h-8.5 ${
                   puedeAdjuntar ? "cursor-pointer hover:border-[#C9C1B6]" : "cursor-not-allowed opacity-50"
                 }`}
               >
@@ -336,21 +336,21 @@ export function FormCambio({
             </div>
           ) : null}
 
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] text-muted">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="basis-full text-[11px] text-muted md:basis-auto">
               Se guardará a nombre de {usuario} · {ahora}
             </span>
-            <div className="grow" />
+            <div className="hidden grow md:block" />
             <Link
               href={`/propiedades/${desarrollo.id}`}
-              className="flex h-11.5 items-center rounded-[3px] border border-[#C9C1B6] px-5 text-[11px] font-bold tracking-[0.08em]"
+              className="flex h-12 flex-1 items-center justify-center rounded-[3px] border border-[#C9C1B6] px-5 md:h-11.5 md:flex-none text-[11px] font-bold tracking-[0.08em]"
             >
               CANCELAR
             </Link>
             <button
               type="submit"
               disabled={!listo}
-              className="flex h-11.5 items-center rounded-[3px] bg-ink px-6 text-[11px] font-bold tracking-[0.1em] text-white hover:brightness-125 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-12 flex-[2] items-center justify-center rounded-[3px] bg-ink px-6 text-[11px] md:h-11.5 md:flex-none font-bold tracking-[0.1em] text-white hover:brightness-125 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {enviando ? "GUARDANDO…" : pendiente ? "ENVIAR A APROBACIÓN" : "GUARDAR Y PUBLICAR"}
             </button>

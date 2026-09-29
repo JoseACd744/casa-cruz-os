@@ -14,7 +14,7 @@ export function Tabs({
 
   return (
     <div className="flex flex-col gap-4.5">
-      <div role="tablist" className="flex gap-1 border-b border-line-strong">
+      <div role="tablist" data-scroll-x className="flex gap-1 overflow-x-auto border-b border-line-strong">
         {paneles.map((p) => {
           const on = p.id === activo;
           return (
@@ -24,7 +24,7 @@ export function Tabs({
               aria-selected={on}
               type="button"
               onClick={() => setActivo(p.id)}
-              className={`h-11 border-b-2 px-4.5 text-[11px] font-bold tracking-[0.1em] transition-colors ${
+              className={`h-11 shrink-0 border-b-2 px-4.5 text-[11px] whitespace-nowrap font-bold tracking-[0.1em] transition-colors ${
                 on ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"
               }`}
             >

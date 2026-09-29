@@ -31,7 +31,7 @@ function Tipologias({ d }: { d: Desarrollo }) {
     <div className="flex flex-col gap-4">
       {d.tipologias.map((t) => (
         <Card key={t.id} className="flex flex-wrap gap-5 p-4.5 @min-[740px]:flex-nowrap">
-          <Foto src={planoDe(d, t.id)} label="Plano" className="h-37 w-50 shrink-0 object-contain" />
+          <Foto src={planoDe(d, t.id)} label="Plano" className="h-37 w-full shrink-0 object-contain @min-[740px]:w-50" />
           <div className="flex w-55 flex-col gap-2.5">
             <span className="text-[17px] leading-tight font-bold">{t.nombre}</span>
             <div className="flex gap-4 text-[12.5px] text-ink-2">
@@ -68,8 +68,8 @@ function Tipologias({ d }: { d: Desarrollo }) {
           </div>
         </Card>
       ))}
-      <Card className="flex items-center gap-6 px-4.5 py-4">
-        <Eyebrow>Esquema de pago</Eyebrow>
+      <Card className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4.5 py-4">
+        <Eyebrow className="basis-full md:basis-auto">Esquema de pago</Eyebrow>
         <span className="text-[13px] font-bold">
           {d.condiciones.enganchePct === null ? (
             <Falta>[ENGANCHE]</Falta>
@@ -160,15 +160,15 @@ export default async function PropiedadPage({
         </Link>
       </header>
 
-      <div className="flex items-start gap-7 overflow-auto p-4 md:p-7">
+      <div className="flex flex-col gap-5 overflow-auto p-4 md:flex-row md:items-start md:gap-7 md:p-7">
         {/* La columna principal cede ancho hasta su mínimo para caber en laptops sin scroll lateral
             (la lateral no: con menos de 344px sus botones se parten). Por dentro, tipologías y
             trazabilidad se apilan cuando no caben en un renglón. */}
-        <div className="@container flex w-251 min-w-140 flex-col gap-4.5">
-          <div className="flex items-end gap-3.5">
+        <div className="@container flex w-full flex-col gap-4.5 md:w-251 md:min-w-140">
+          <div className="flex flex-wrap items-end gap-3.5">
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-[38px] font-extrabold tracking-[-0.015em] uppercase">{d.nombre}</h1>
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                <h1 className="text-[28px] md:text-[38px] font-extrabold tracking-[-0.015em] uppercase">{d.nombre}</h1>
                 <Badge tono="dark">{d.tipo}s</Badge>
               </div>
               <span className="text-[12.5px] font-semibold tracking-[0.12em] text-ink-2 uppercase">
@@ -176,13 +176,13 @@ export default async function PropiedadPage({
                 {d.desarrollador ?? "[DESARROLLADOR]"}
               </span>
             </div>
-            <div className="grow" />
+            <div className="hidden grow md:block" />
             <Badge tono={d.estatus === "publicado" ? "ok" : "warn"}>{etiquetaEstatus[d.estatus]}</Badge>
           </div>
 
           <div className="flex flex-col gap-3">
-            <Foto src={fotos.principal} label="Render principal" className="h-68 w-full" />
-            <div className="grid grid-cols-4 gap-3">
+            <Foto src={fotos.principal} label="Render principal" className="h-52 w-full md:h-68" />
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               <Foto src={fotos.secundarias[0]} label="Amenidades" className="h-23 w-full" />
               <Foto src={fotos.secundarias[1]} label="Interiores" className="h-23 w-full" />
               <Foto src={fotos.planos[0]} label="Planos" className="h-23 w-full" />
@@ -237,7 +237,7 @@ export default async function PropiedadPage({
                 id: "argumentos",
                 label: "ARGUMENTOS COMERCIALES",
                 contenido: (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 @lg:grid-cols-2">
                     <Lista titulo="Argumentos de venta" items={d.comercial.argumentos} />
                     <Lista titulo="Objeciones frecuentes" items={d.comercial.objeciones} tono="alert" />
                     <Lista
@@ -268,7 +268,7 @@ export default async function PropiedadPage({
                         fichas ni propuestas.
                       </span>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 @lg:grid-cols-2">
                       <Card className="flex flex-col gap-3 p-4.5">
                         <Eyebrow>Condiciones Casa Cruz</Eyebrow>
                         {[
@@ -367,12 +367,12 @@ export default async function PropiedadPage({
           />
         </div>
 
-        <div className="flex w-86 shrink-0 flex-col gap-4">
+        <div className="flex w-full flex-col gap-4 md:w-86 md:shrink-0">
           <Card className="flex flex-col gap-2.5 p-4.5">
             <Link
               href={`/doc/ficha/${d.id}`}
               target="_blank"
-              className="flex h-11.5 items-center justify-center gap-2.5 rounded-[3px] bg-ink text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
+              className="flex h-12 items-center justify-center gap-2.5 rounded-[3px] bg-ink text-[11.5px] md:h-11.5 font-bold tracking-[0.1em] text-white hover:brightness-125"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8">
                 <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5" />
@@ -383,7 +383,7 @@ export default async function PropiedadPage({
             <div className="flex gap-2.5">
               <Link
                 href={`/propiedades/${d.id}/simulador`}
-                className="flex h-10.5 grow items-center justify-center rounded-[3px] border border-[#C9C1B6] text-[10.5px] font-bold tracking-[0.08em] hover:bg-surface"
+                className="flex h-11 grow items-center justify-center rounded-[3px] border border-[#C9C1B6] text-[10.5px] md:h-10.5 font-bold tracking-[0.08em] hover:bg-surface"
               >
                 SIMULADOR
               </Link>
@@ -392,7 +392,7 @@ export default async function PropiedadPage({
                 target="_blank"
                 rel="noopener"
                 title="Descarga la ficha en PDF para enviarla por WhatsApp o correo"
-                className="flex h-10.5 grow items-center justify-center rounded-[3px] border border-[#C9C1B6] text-[10.5px] font-bold tracking-[0.08em] hover:bg-surface"
+                className="flex h-11 grow items-center justify-center rounded-[3px] border border-[#C9C1B6] text-[10.5px] md:h-10.5 font-bold tracking-[0.08em] hover:bg-surface"
               >
                 COMPARTIR
               </a>
@@ -431,7 +431,7 @@ export default async function PropiedadPage({
                   <BotonAccion
                     accion={confirmarVigencia.bind(null, d.id, e.campo)}
                     enCurso="…"
-                    className="h-7 w-19 rounded-[3px] border border-line bg-surface text-[9.5px] font-bold tracking-[0.08em] hover:border-[#C9C1B6]"
+                    className="h-9 w-19 rounded-[3px] border border-line bg-surface md:h-7 text-[9.5px] font-bold tracking-[0.08em] hover:border-[#C9C1B6]"
                   >
                     CONFIRMAR
                   </BotonAccion>
@@ -443,7 +443,7 @@ export default async function PropiedadPage({
             </span>
             <Link
               href={`/propiedades/${d.id}/cambio`}
-              className="flex h-10 items-center justify-center rounded-[3px] border border-line bg-surface text-[10.5px] font-bold tracking-[0.08em] hover:border-[#C9C1B6]"
+              className="flex h-11 items-center justify-center rounded-[3px] border border-line bg-surface text-[10.5px] md:h-10 font-bold tracking-[0.08em] hover:border-[#C9C1B6]"
             >
               REGISTRAR UN CAMBIO
             </Link>

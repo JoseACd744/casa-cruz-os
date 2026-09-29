@@ -21,7 +21,7 @@ export default async function NuevoClientePage() {
         <span className="text-[11.5px] font-semibold tracking-[0.06em]">NUEVO CLIENTE</span>
       </header>
       <div className="flex justify-center overflow-auto p-4 md:p-8">
-        <Card className="flex w-215 flex-col gap-5 p-7">
+        <Card className="flex w-full flex-col gap-5 p-4 md:w-215 md:p-7">
           <div className="flex flex-col gap-1.5">
             <h1 className="text-[24px] font-extrabold tracking-[-0.01em]">Nuevo cliente</h1>
             <span className="text-[12.5px] text-ink-2">

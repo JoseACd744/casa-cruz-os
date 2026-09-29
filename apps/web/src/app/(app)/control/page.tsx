@@ -18,6 +18,7 @@ import {
   listarUsuarios,
   obtenerUsuarioActual,
 } from "@/lib/repo";
+import { Tabla } from "@/components/Tabla";
 
 const PERMISOS: { campo: string; celdas: ("V" | "E" | "A" | "—")[] }[] = [
   { campo: "Precio y multimedia", celdas: ["V", "E", "E", "E"] },
@@ -97,7 +98,7 @@ export default async function ControlPage() {
 
       <div className="flex flex-col gap-5 overflow-auto p-4 md:p-7">
         <Seccion titulo="Flujo de alta de un listing">
-          <div className="flex gap-2.5">
+          <div className="grid grid-cols-2 gap-2.5 md:flex">
             {(Object.keys(pipeline) as (keyof typeof pipeline)[]).map((k) => {
               const publicado = k === "publicado";
               return (
@@ -132,10 +133,10 @@ export default async function ControlPage() {
           </div>
         </Seccion>
 
-        <div className="flex items-start gap-5">
+        <div className="flex flex-col gap-5 md:flex-row md:items-start">
           <Seccion
             titulo={`Cambios pendientes de aprobación`}
-            className="w-203"
+            className="md:w-203 md:shrink-0"
             accion={<Badge tono="warn">{pendientes.length}</Badge>}
           >
             <div className="flex flex-col gap-2.5">
@@ -145,9 +146,9 @@ export default async function ControlPage() {
               {pendientes.map((c) => (
                 <div
                   key={c.id}
-                  className="flex items-center gap-4.5 rounded-[3px] border border-line px-4 py-3.5"
+                  className="flex flex-wrap items-center gap-x-4.5 gap-y-3 rounded-[3px] border border-line px-4 py-3.5"
                 >
-                  <div className="flex w-54 flex-col gap-1">
+                  <div className="flex w-full flex-col gap-1 md:w-54">
                     <Link
                       href={`/propiedades/${c.desarrolloId}`}
                       className="text-[13.5px] font-bold hover:text-tan-deep"
@@ -156,11 +157,11 @@ export default async function ControlPage() {
                     </Link>
                     <span className="text-[11px] text-muted">{c.campo}</span>
                   </div>
-                  <div className="flex w-47 flex-col gap-1">
+                  <div className="flex flex-col gap-1 md:w-47">
                     <span className="text-[12px] text-muted line-through">{c.valorAnterior}</span>
                     <span className="text-[14px] font-bold">{c.valorNuevo}</span>
                   </div>
-                  <div className="flex grow flex-col gap-1">
+                  <div className="flex grow basis-full flex-col gap-1 md:basis-auto">
                     <span className="text-[11px] font-semibold text-ink-2">
                       {c.usuario} · {c.fecha}
                     </span>
@@ -186,7 +187,7 @@ export default async function ControlPage() {
                     const motivo = motivoParaNoAprobar(c, actual);
                     if (motivo) {
                       return (
-                        <span className="w-44 text-right text-[10.5px] leading-snug text-muted">
+                        <span className="text-[10.5px] leading-snug text-muted md:w-44 md:text-right">
                           {c.usuarioId === actual.id ? "Tu cambio: lo valida otro gerente" : motivo.mensaje}
                         </span>
                       );
@@ -196,7 +197,7 @@ export default async function ControlPage() {
                         <BotonAccion
                           accion={resolverCambio.bind(null, c.id, "aprobar")}
                           enCurso="APROBANDO…"
-                          className="h-9 rounded-[3px] bg-ink px-3.5 text-[10.5px] font-bold tracking-[0.08em] text-white hover:brightness-125"
+                          className="h-11 flex-1 rounded-[3px] bg-ink px-3.5 md:h-9 md:flex-none text-[10.5px] font-bold tracking-[0.08em] text-white hover:brightness-125"
                         >
                           APROBAR
                         </BotonAccion>
@@ -204,7 +205,7 @@ export default async function ControlPage() {
                           accion={resolverCambio.bind(null, c.id, "rechazar")}
                           enCurso="…"
                           confirmar={`¿Rechazar el cambio de ${c.campo} en ${c.desarrolloNombre}? El valor actual se queda como está.`}
-                          className="h-9 rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.08em] text-alert-ink hover:bg-alert-soft"
+                          className="h-11 flex-1 rounded-[3px] border border-[#C9C1B6] px-3.5 md:h-9 md:flex-none text-[10.5px] font-bold tracking-[0.08em] text-alert-ink hover:bg-alert-soft"
                         >
                           RECHAZAR
                         </BotonAccion>
@@ -218,7 +219,7 @@ export default async function ControlPage() {
 
           <Seccion titulo="Quién ve y quién edita" className="grow">
             <div className="flex">
-              <span className="w-39.5" />
+              <span className="w-32 md:w-39.5" />
               {["CLI", "CER", "GER", "CORP"].map((h) => (
                 <span
                   key={h}
@@ -230,7 +231,7 @@ export default async function ControlPage() {
             </div>
             {PERMISOS.map((p) => (
               <div key={p.campo} className="flex items-center border-t border-line py-2.5">
-                <span className="w-39.5 text-[11.5px]">{p.campo}</span>
+                <span className="w-32 text-[11.5px] md:w-39.5">{p.campo}</span>
                 {p.celdas.map((c, i) => (
                   <span key={i} className="grow text-center">
                     <span
@@ -254,51 +255,41 @@ export default async function ControlPage() {
           titulo="Responsabilidad de actualización por cerrador"
           accion={<span className="text-[11px] text-muted">Validación semanal · rotación mensual</span>}
         >
-          <div className="flex rounded-[3px] bg-surface">
-            <span className="w-50 px-3.5 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted">
-              RESPONSABLE
-            </span>
-            <span className="w-33 px-3.5 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted">
-              A SU CARGO
-            </span>
-            {CAMPOS.map((c) => (
-              <span
-                key={c.campo}
-                className="grow px-3.5 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted uppercase"
-              >
-                {c.etiqueta}
-              </span>
-            ))}
-            <span className="w-33 px-3.5 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted">
-              CONFIABILIDAD
-            </span>
-          </div>
-          {responsables.map((e) => (
-            <div key={e.usuario.id} className="flex items-center border-b border-line">
-              <span className="w-50 px-3.5 py-3 text-[13px] font-semibold">{e.usuario.nombre}</span>
-              <span className="w-33 px-3.5 py-3 text-[12px] text-ink-2">
-                {e.cantidad} desarrollos
-              </span>
-              {e.peorPorCampo.map((estado, i) => (
-                <span key={i} className="grow px-3.5 py-3">
+          <Tabla
+            columnas={[
+              { titulo: "Responsable", ancho: "md:w-50", principal: true },
+              { titulo: "A su cargo", ancho: "md:w-33" },
+              ...CAMPOS.map((c) => ({ titulo: c.etiqueta })),
+              { titulo: "Confiabilidad", ancho: "md:w-33" },
+            ]}
+            filas={responsables.map((e) => ({
+              clave: e.usuario.id,
+              celdas: [
+                <span key="n" className="font-semibold">
+                  {e.usuario.nombre}
+                </span>,
+                <span key="d" className="text-[12px] text-ink-2">
+                  {e.cantidad} desarrollos
+                </span>,
+                ...e.peorPorCampo.map((estado, i) => (
                   <span
+                    key={i}
                     className={`rounded-[2px] px-2 py-1.5 text-[10px] font-bold tracking-[0.08em] ${estiloEstado[estado]}`}
                   >
                     {textoEstado[estado]}
                   </span>
-                </span>
-              ))}
-              <span className="w-33 px-3.5 py-3">
+                )),
                 <span
+                  key="p"
                   className={`text-[15px] font-extrabold ${
                     e.promedio >= 85 ? "text-ok-ink" : e.promedio >= 65 ? "text-warn-ink" : "text-alert-ink"
                   }`}
                 >
                   {e.promedio}%
-                </span>
-              </span>
-            </div>
-          ))}
+                </span>,
+              ],
+            }))}
+          />
         </Seccion>
       </div>
     </>

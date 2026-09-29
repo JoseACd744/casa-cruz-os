@@ -36,15 +36,15 @@ export default async function ClientesPage() {
 
   return (
     <div className="flex flex-col gap-5 overflow-auto p-4 md:p-8">
-      <div className="flex items-end gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-[30px] font-extrabold tracking-[-0.015em]">Clientes</h1>
+          <h1 className="text-[24px] md:text-[30px] font-extrabold tracking-[-0.015em]">Clientes</h1>
           <p className="text-[13px] text-ink-2">
             Los leads y su etapa vienen de Kommo. Casa Cruz OS guarda lo que buscan y lo que ya se
             les presentó.
           </p>
         </div>
-        <div className="grow" />
+        <div className="hidden grow md:block" />
         <span className="flex items-center gap-2 rounded-[3px] border border-line bg-panel px-3.5 py-2.5 text-[11px] font-semibold text-ink-2">
           <span className={`size-1.75 rounded-full ${conectado ? "bg-ok" : "bg-faint"}`} />
           {!conectado
@@ -57,7 +57,7 @@ export default async function ClientesPage() {
         </span>
         <Link
           href="/clientes/nuevo"
-          className="flex h-11.5 items-center gap-2.5 rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
+          className="flex h-12 items-center justify-center gap-2.5 rounded-[3px] bg-ink px-5 text-[11.5px] md:h-11.5 md:justify-start font-bold tracking-[0.1em] text-white hover:brightness-125"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
             <path d="M12 5v14M5 12h14" />
@@ -73,7 +73,7 @@ export default async function ClientesPage() {
           </summary>
           <div className="flex flex-col border-t border-line px-5 py-2">
             {kommo.eventos.map((e, i) => (
-              <div key={`${e.recibidoIso}-${i}`} className="flex gap-4 border-b border-line py-2 text-[12px] last:border-0">
+              <div key={`${e.recibidoIso}-${i}`} className="flex flex-wrap gap-x-4 gap-y-0.5 border-b border-line py-2 text-[12px] last:border-0">
                 <span className="w-36 font-mono text-[11px] text-muted">{fechaHora(new Date(e.recibidoIso))}</span>
                 <span className="w-32 font-semibold">{EVENTO[e.tipo] ?? e.tipo}</span>
                 <span className="w-24 text-ink-2">lead {e.leadId}</span>
@@ -87,7 +87,7 @@ export default async function ClientesPage() {
       {clientes.length === 0 ? (
         <p className="text-[13px] text-muted">Todavía no hay clientes. Da de alta el primero.</p>
       ) : null}
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3">
         {clientes.map((c) => {
           const suyas = propuestas.filter((p) => p.clienteId === c.id);
           return (

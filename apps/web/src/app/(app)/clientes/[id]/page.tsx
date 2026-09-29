@@ -38,21 +38,21 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="flex flex-col gap-5 overflow-auto p-4 md:p-7">
-      <div className="flex items-end gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="flex flex-col gap-2">
           <span className="text-[10.5px] font-semibold tracking-[0.08em] text-muted uppercase">
             Clientes / {cliente.nombre}
           </span>
-          <h1 className="text-[30px] font-extrabold tracking-[-0.015em]">{cliente.nombre}</h1>
+          <h1 className="text-[24px] font-extrabold tracking-[-0.015em] md:text-[30px]">{cliente.nombre}</h1>
           <span className="text-[12.5px] text-ink-2">
             {cliente.ciudadResidencia ?? "[CIUDAD DE RESIDENCIA]"} ·{" "}
             {cliente.telefono ?? "[TELÉFONO]"} · {cliente.correo ?? "[CORREO]"}
           </span>
         </div>
-        <div className="grow" />
+        <div className="hidden grow md:block" />
         <Link
           href={`/propuestas/nueva?cliente=${encodeURIComponent(cliente.id)}`}
-          className="flex h-11.5 items-center gap-2.5 rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
+          className="flex h-12 items-center justify-center gap-2.5 rounded-[3px] bg-ink px-5 text-[11.5px] md:h-11.5 md:justify-start font-bold tracking-[0.1em] text-white hover:brightness-125"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
             <path d="M12 5v14M5 12h14" />
@@ -61,10 +61,10 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
         </Link>
       </div>
 
-      <div className="flex items-start gap-5">
-        <div className="flex w-185 shrink-0 flex-col gap-5">
+      <div className="flex flex-col gap-5 md:flex-row md:items-start">
+        <div className="flex w-full flex-col gap-5 md:w-185 md:shrink-0">
           <Seccion titulo="Qué nos compartió el cliente">
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <Campo label="Presupuesto">
                 {moneyCorto(cliente.presupuestoMin)} – {moneyCorto(cliente.presupuestoMax)}
               </Campo>
@@ -105,7 +105,7 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
               ) : null}
               {propuestas.map((p) => (
                 <div key={p.id} className="flex flex-col gap-3.5 rounded-[3px] border border-line p-4">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                     <span className="text-[14px] font-bold">
                       Propuesta · {p.items.length} propiedades
                     </span>
@@ -113,16 +113,16 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
                     <div className="grow" />
                     <span className="font-mono text-[11px] text-muted">/{p.slug}</span>
                   </div>
-                  <div className="flex items-center gap-7">
+                  <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
                     <Campo label="Enviada">{p.enviadaEl ?? "sin enviar"}</Campo>
                     <Campo label="Vistas">{p.vistas || "—"}</Campo>
                     <Campo label="Formato">{etiquetaFormato[p.formato]}</Campo>
-                    <div className="grow" />
+                    <div className="hidden grow md:block" />
                     {p.estado === "borrador" ? (
                       <BotonAccion
                         accion={marcarEnviada.bind(null, p.slug)}
                         enCurso="…"
-                        className="flex h-9 items-center rounded-[3px] bg-ink px-3.5 text-[10.5px] font-bold tracking-[0.06em] text-white"
+                        className="flex h-11 items-center rounded-[3px] bg-ink px-3.5 text-[10.5px] font-bold tracking-[0.06em] text-white md:h-9"
                       >
                         MARCAR ENVIADA
                       </BotonAccion>
@@ -136,7 +136,7 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
                         key={texto}
                         href={href}
                         target="_blank"
-                        className="flex h-9 items-center rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface"
+                        className="flex h-11 items-center rounded-[3px] border border-[#C9C1B6] px-3.5 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface md:h-9"
                       >
                         {texto}
                       </Link>
@@ -148,7 +148,7 @@ export default async function ClientePage({ params }: { params: Promise<{ id: st
           </Seccion>
         </div>
 
-        <div className="flex grow flex-col gap-5">
+        <div className="flex w-full grow flex-col gap-5 md:w-auto">
           <Card className="flex flex-col gap-3.5 p-5.5">
             <div className="flex items-center gap-2.5">
               <span className={`size-2 rounded-full ${integraciones.kommo && cliente.kommoLeadId ? "bg-ok" : "bg-faint"}`} />

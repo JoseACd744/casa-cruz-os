@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BotonAccion } from "@/components/BotonAccion";
+import { Tabla } from "@/components/Tabla";
 import { Badge, Card, Eyebrow } from "@/components/ui";
 import { marcarEnviada } from "@/lib/acciones/comercial";
 import { etiquetaEstadoPropuesta, etiquetaFormato, tonoEstadoPropuesta } from "@/lib/etiquetas";
@@ -25,17 +26,17 @@ export default async function PropuestasPage() {
 
   return (
     <div className="flex flex-col gap-5 overflow-auto p-4 md:p-8">
-      <div className="flex items-end gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-[30px] font-extrabold tracking-[-0.015em]">Propuestas</h1>
+          <h1 className="text-[24px] font-extrabold tracking-[-0.015em] md:text-[30px]">Propuestas</h1>
           <p className="text-[13px] text-ink-2">
             {propuestas.length} propuestas generadas · {vistas} abiertas por el cliente
           </p>
         </div>
-        <div className="grow" />
+        <div className="hidden grow md:block" />
         <Link
           href="/propuestas/nueva"
-          className="flex h-11.5 items-center gap-2.5 rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
+          className="flex h-12 items-center justify-center gap-2.5 md:h-11.5 md:justify-start rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
             <path d="M12 5v14M5 12h14" />
@@ -44,70 +45,67 @@ export default async function PropuestasPage() {
         </Link>
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="flex bg-surface">
-          {[
-            ["CLIENTE", "w-65"],
-            ["PROPIEDADES", "grow"],
-            ["FORMATO", "w-40"],
-            ["ENVIADA", "w-40"],
-            ["VISTAS", "w-22"],
-            ["ESTADO", "w-48"],
-            ["", "w-60"],
-          ].map(([t, w], i) => (
-            <span
-              key={i}
-              className={`${w} px-4 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted`}
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-
-        {filas.map(({ propuesta: p, cliente, propiedades }) => (
-          <div key={p.id} className="flex items-center border-t border-line">
-            <Link
-              href={`/clientes/${p.clienteId}`}
-              className="w-65 px-4 py-3.5 text-[13px] font-bold hover:text-tan-deep"
-            >
-              {cliente?.nombre ?? "[CLIENTE]"}
-            </Link>
-            <span className="grow px-4 py-3.5 text-[12px] text-ink-2">{propiedades}</span>
-            <span className="w-40 px-4 py-3.5 text-[12px] text-ink-2">
-              {etiquetaFormato[p.formato]}
-            </span>
-            <span className="w-40 px-4 py-3.5 text-[12px] text-ink-2">
-              {p.enviadaEl ?? (
+      <Card className="p-3 md:overflow-hidden md:p-0">
+        <Tabla
+          columnas={[
+            { titulo: "Cliente", ancho: "md:w-65", principal: true },
+            { titulo: "Propiedades" },
+            { titulo: "Formato", ancho: "md:w-40" },
+            { titulo: "Enviada", ancho: "md:w-40" },
+            { titulo: "Vistas", ancho: "md:w-22" },
+            { titulo: "Estado", ancho: "md:w-48" },
+            { titulo: "", ancho: "md:w-60" },
+          ]}
+          filas={filas.map(({ propuesta: p, cliente, propiedades }) => ({
+            clave: p.id,
+            celdas: [
+              <Link key="c" href={`/clientes/${p.clienteId}`} className="font-bold hover:text-tan-deep">
+                {cliente?.nombre ?? "[CLIENTE]"}
+              </Link>,
+              <span key="p" className="text-[12px] text-ink-2">
+                {propiedades}
+              </span>,
+              <span key="f" className="text-[12px] text-ink-2">
+                {etiquetaFormato[p.formato]}
+              </span>,
+              p.enviadaEl ? (
+                <span key="e" className="text-[12px] text-ink-2">
+                  {p.enviadaEl}
+                </span>
+              ) : (
                 <BotonAccion
+                  key="e"
                   accion={marcarEnviada.bind(null, p.slug)}
-                  className="flex h-8 items-center rounded-[3px] border border-[#C9C1B6] px-2.5 text-[9.5px] font-bold tracking-[0.06em] hover:bg-surface"
+                  className="tocable flex items-center rounded-[3px] border border-[#C9C1B6] px-2.5 text-[9.5px] font-bold tracking-[0.06em] hover:bg-surface md:h-8"
                 >
                   MARCAR ENVIADA
                 </BotonAccion>
-              )}
-            </span>
-            <span className="w-22 px-4 py-3.5 text-[13px] font-bold">{p.vistas || "—"}</span>
-            <span className="w-48 px-4 py-3.5">
-              <Badge tono={tonoEstadoPropuesta[p.estado]}>{etiquetaEstadoPropuesta[p.estado]}</Badge>
-            </span>
-            <span className="flex w-60 gap-2 px-4 py-3.5">
-              {[
-                ["WEB", `/p/${p.slug}`],
-                ["PDF", `/doc/pdf/${p.slug}`],
-                ["DECK", `/doc/presentacion/${p.slug}`],
-              ].map(([texto, href]) => (
-                <Link
-                  key={texto}
-                  href={href}
-                  target="_blank"
-                  className="flex h-8.5 items-center rounded-[3px] border border-[#C9C1B6] px-3 text-[10px] font-bold tracking-[0.06em] hover:bg-surface"
-                >
-                  {texto}
-                </Link>
-              ))}
-            </span>
-          </div>
-        ))}
+              ),
+              <span key="v" className="text-[13px] font-bold">
+                {p.vistas || "—"}
+              </span>,
+              <Badge key="s" tono={tonoEstadoPropuesta[p.estado]}>
+                {etiquetaEstadoPropuesta[p.estado]}
+              </Badge>,
+              <div key="a" className="flex gap-2">
+                {[
+                  ["WEB", `/p/${p.slug}`],
+                  ["PDF", `/doc/pdf/${p.slug}`],
+                  ["DECK", `/doc/presentacion/${p.slug}`],
+                ].map(([texto, href]) => (
+                  <Link
+                    key={texto}
+                    href={href}
+                    target="_blank"
+                    className="flex h-10 flex-1 items-center justify-center rounded-[3px] border border-[#C9C1B6] px-3 text-[10px] font-bold tracking-[0.06em] hover:bg-surface md:h-8.5 md:flex-none"
+                  >
+                    {texto}
+                  </Link>
+                ))}
+              </div>,
+            ],
+          }))}
+        />
       </Card>
 
       <Card className="flex items-start gap-4 p-5">

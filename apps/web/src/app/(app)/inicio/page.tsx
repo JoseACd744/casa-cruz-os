@@ -18,6 +18,7 @@ import {
   obtenerUsuarioActual,
   pendientesDeValidar,
 } from "@/lib/repo";
+import { Tabla } from "@/components/Tabla";
 
 export default async function InicioPage() {
   const usuario = await obtenerUsuarioActual();
@@ -79,9 +80,9 @@ export default async function InicioPage() {
 
   return (
     <div className="flex h-full flex-col gap-5 overflow-auto p-4 md:p-8">
-      <div className="flex items-end gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="flex flex-col gap-1.5">
-          <h1 className="text-[30px] font-extrabold tracking-[-0.015em]">
+          <h1 className="text-[24px] font-extrabold tracking-[-0.015em] md:text-[30px]">
             {saludo(hoy)}, {usuario.nombre.split(" ")[0]}
           </h1>
           <p className="text-[13px] text-ink-2">
@@ -91,10 +92,10 @@ export default async function InicioPage() {
               : `${pendientes.length} ${pendientes.length === 1 ? "desarrollo tuyo necesita" : "desarrollos tuyos necesitan"} validación`}
           </p>
         </div>
-        <div className="grow" />
+        <div className="hidden grow md:block" />
         <Link
           href="/propiedades"
-          className="flex h-11.5 items-center gap-2.5 rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
+          className="flex h-12 items-center justify-center gap-2.5 md:h-11.5 md:justify-start rounded-[3px] bg-ink px-5 text-[11.5px] font-bold tracking-[0.1em] text-white hover:brightness-125"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
             <circle cx="11" cy="11" r="7" />
@@ -104,7 +105,7 @@ export default async function InicioPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         {kpis.map((k) => (
           <Card key={k.label} className="flex flex-col gap-2.5 p-4.5">
             <Eyebrow>{k.label}</Eyebrow>
@@ -123,10 +124,10 @@ export default async function InicioPage() {
         ))}
       </div>
 
-      <div className="flex gap-5">
+      <div className="flex flex-col gap-5 md:flex-row">
         <Seccion
           titulo="Tus desarrollos por validar"
-          className="w-154"
+          className="md:w-154 md:shrink-0"
           accion={
             <Link href="/control" className="text-[11px] font-semibold text-tan-deep hover:text-ink">
               Ver todo
@@ -137,22 +138,22 @@ export default async function InicioPage() {
             {pendientes.map(({ desarrollo, confiabilidad: score }) => (
               <div
                 key={desarrollo.id}
-                className="flex items-center gap-3.5 rounded-[3px] border border-line px-3.5 py-3"
+                className="flex flex-wrap items-center gap-x-3.5 gap-y-2 rounded-[3px] border border-line px-3.5 py-3"
               >
                 <Dot tono={semaforo(score)} />
                 <Link
                   href={`/propiedades/${desarrollo.id}`}
-                  className="w-37 text-[13.5px] font-bold hover:text-tan-deep"
+                  className="text-[13.5px] font-bold hover:text-tan-deep md:w-37"
                 >
                   {desarrollo.nombre}
                 </Link>
-                <span className="grow text-[12px] text-ink-2">
+                <span className="order-last basis-full text-[12px] text-ink-2 md:order-none md:grow md:basis-auto">
                   {advertencia(desarrollo) ?? "Revisar campos pendientes"}
                 </span>
-                <span className="text-[11.5px] font-semibold">{score}%</span>
+                <span className="ml-auto text-[11.5px] font-semibold md:ml-0">{score}%</span>
                 <Link
                   href={`/propiedades/${desarrollo.id}#confiabilidad`}
-                  className="flex h-8 items-center rounded-[3px] border border-[#C9C1B6] px-3 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface"
+                  className="flex h-10 items-center rounded-[3px] border border-[#C9C1B6] px-3 text-[10.5px] font-bold tracking-[0.06em] hover:bg-surface md:h-8"
                 >
                   VALIDAR
                 </Link>
@@ -184,39 +185,39 @@ export default async function InicioPage() {
           </Link>
         }
       >
-        <div className="flex flex-col">
-          <div className="flex rounded-[3px] bg-surface">
-            <span className="w-65 px-3.5 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted">CLIENTE</span>
-            <span className="grow px-3.5 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted">PROPIEDADES</span>
-            <span className="w-35 px-3.5 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted">ENVIADA</span>
-            <span className="w-24 px-3.5 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted">VISTAS</span>
-            <span className="w-45 px-3.5 py-3 text-[9.5px] font-bold tracking-[0.12em] text-muted">ESTADO</span>
-          </div>
-          {filas.map(({ propuesta, cliente }) => (
-            <div key={propuesta.id} className="flex items-center border-b border-line">
+        <Tabla
+          columnas={[
+            { titulo: "Cliente", ancho: "md:w-65", principal: true },
+            { titulo: "Propiedades" },
+            { titulo: "Enviada", ancho: "md:w-35" },
+            { titulo: "Vistas", ancho: "md:w-24" },
+            { titulo: "Estado", ancho: "md:w-45" },
+          ]}
+          filas={filas.map(({ propuesta, cliente }) => ({
+            clave: propuesta.id,
+            celdas: [
               <Link
+                key="cliente"
                 href={`/clientes/${propuesta.clienteId}`}
-                className="w-65 px-3.5 py-3.5 text-[13px] font-bold hover:text-tan-deep"
+                className="font-bold hover:text-tan-deep"
               >
                 {cliente?.nombre ?? "[CLIENTE]"}
-              </Link>
-              <span className="grow px-3.5 py-3.5 text-[12px] text-ink-2">
+              </Link>,
+              <span key="props" className="text-[12px] text-ink-2">
                 {propuesta.items.length} propiedades
-              </span>
-              <span className="w-35 px-3.5 py-3.5 text-[12px] text-ink-2">
+              </span>,
+              <span key="enviada" className="text-[12px] text-ink-2">
                 {propuesta.enviadaEl ?? "sin enviar"}
-              </span>
-              <span className="w-24 px-3.5 py-3.5 text-[12px] font-bold">
+              </span>,
+              <span key="vistas" className="text-[12px] font-bold">
                 {propuesta.vistas || "—"}
-              </span>
-              <span className="w-45 px-3.5 py-3.5">
-                <Badge tono={tonoEstadoPropuesta[propuesta.estado]}>
-                  {etiquetaEstadoPropuesta[propuesta.estado]}
-                </Badge>
-              </span>
-            </div>
-          ))}
-        </div>
+              </span>,
+              <Badge key="estado" tono={tonoEstadoPropuesta[propuesta.estado]}>
+                {etiquetaEstadoPropuesta[propuesta.estado]}
+              </Badge>,
+            ],
+          }))}
+        />
       </Seccion>
     </div>
   );

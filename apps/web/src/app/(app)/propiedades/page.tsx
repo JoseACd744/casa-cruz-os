@@ -35,7 +35,7 @@ function Chip({
   return (
     <Link
       href={url}
-      className={`flex h-9.5 items-center gap-2 rounded-[3px] border px-3.5 text-[11.5px] font-semibold ${
+      className={`flex h-10 shrink-0 items-center gap-2 rounded-[3px] border px-3.5 text-[11.5px] font-semibold whitespace-nowrap md:h-9.5 ${
         activo
           ? "border-tan bg-tan-soft text-tan-deep"
           : "border-line bg-surface text-ink-2 hover:border-[#C9C1B6]"
@@ -88,8 +88,8 @@ export default async function PropiedadesPage({
 
   return (
     <>
-      <header className="flex h-19 shrink-0 items-center gap-4 border-b border-line bg-panel px-8">
-        <form action="/propiedades" className="flex h-10.5 w-full max-w-115 items-center gap-2.5 rounded-[3px] border border-line bg-surface px-3.5">
+      <header className="flex shrink-0 items-center gap-3 border-b border-line bg-panel px-4 py-3 md:h-19 md:gap-4 md:px-8 md:py-0">
+        <form action="/propiedades" className="flex h-11 min-w-0 flex-1 items-center gap-2.5 md:h-10.5 md:w-full md:max-w-115 md:flex-none rounded-[3px] border border-line bg-surface px-3.5">
           <label htmlFor="q" className="sr-only">
             Buscar propiedad, desarrollador o zona
           </label>
@@ -105,20 +105,21 @@ export default async function PropiedadesPage({
             className="w-full bg-transparent text-[13px] outline-none"
           />
         </form>
-        <div className="grow" />
-        <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">RIVIERA MAYA</span>
+        <div className="hidden grow md:block" />
+        <span className="hidden text-[11px] font-semibold tracking-[0.1em] text-muted md:inline">RIVIERA MAYA</span>
         <Link
           href="/alta"
-          className="flex h-10 items-center gap-2 rounded-[3px] border border-ink px-4 text-[11px] font-bold tracking-[0.1em] hover:bg-ink hover:text-white"
+          aria-label="Nueva propiedad"
+          className="flex size-11 shrink-0 items-center justify-center gap-2 rounded-[3px] border border-ink text-[11px] font-bold tracking-[0.1em] hover:bg-ink hover:text-white md:h-10 md:w-auto md:px-4"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 5v14M5 12h14" />
           </svg>
-          NUEVA PROPIEDAD
+          <span className="hidden md:inline">NUEVA PROPIEDAD</span>
         </Link>
       </header>
 
-      <div className="flex h-17 shrink-0 items-center gap-2 border-b border-line bg-panel px-8">
+      <div data-scroll-x className="flex h-16 shrink-0 items-center gap-2 overflow-x-auto border-b border-line bg-panel px-4 md:h-17 md:px-8">
         <Chip activo={sp.ciudad === "Playa del Carmen"} url={href(sp, { ciudad: sp.ciudad === "Playa del Carmen" ? undefined : "Playa del Carmen" })}>
           Playa del Carmen
         </Chip>
@@ -132,13 +133,13 @@ export default async function PropiedadesPage({
           3+ recámaras
         </Chip>
         <div className="grow" />
-        <Link href="/propiedades" className="p-2 text-[11px] font-semibold tracking-[0.08em] text-muted hover:text-ink">
+        <Link href="/propiedades" className="shrink-0 p-2 text-[11px] font-semibold tracking-[0.08em] whitespace-nowrap text-muted hover:text-ink">
           LIMPIAR FILTROS
         </Link>
       </div>
 
-      <div className="grow overflow-auto px-8 pt-6.5">
-        <div className="flex items-baseline gap-3 pb-4.5">
+      <div className="grow overflow-auto px-4 pt-5 md:px-8 md:pt-6.5">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 pb-4.5">
           <h1 className="text-[22px] font-bold tracking-[-0.01em]">
             {vistas.length} {vistas.length === 1 ? "propiedad" : "propiedades"}
           </h1>
@@ -153,7 +154,7 @@ export default async function PropiedadesPage({
             Ninguna propiedad cumple ese filtro. Prueba quitando alguno.
           </p>
         ) : (
-          <div className="grid grid-cols-3 gap-6 pb-8">
+          <div className="grid grid-cols-1 gap-4 pb-8 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
             {vistas.map((p) => (
               <TarjetaPropiedad key={p.id} p={p} />
             ))}

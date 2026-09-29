@@ -15,7 +15,7 @@ export function FormCliente({ cliente, plazas }: { cliente: Cliente | null; plaz
 
   return (
     <form action={accion} className="flex flex-col gap-5">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <CampoTexto nombre="nombre" etiqueta="Nombre" valor={cliente?.nombre} requerido ancho="col-span-2" placeholder="Como aparece en Kommo" />
         <CampoTexto nombre="kommoLeadId" etiqueta="Lead de Kommo" valor={cliente?.kommoLeadId} inputMode="numeric" placeholder="Opcional" />
         <CampoTexto nombre="telefono" etiqueta="Teléfono" valor={cliente?.telefono} tipo="tel" />
