@@ -143,14 +143,28 @@ presentación) se escalan al ancho de la pantalla.
 
 - **Instalarla** (se abre a pantalla completa, con el ícono de Casa Cruz): en iPhone, Safari →
   Compartir → *Añadir a pantalla de inicio*; en Android, Chrome → menú → *Instalar app*.
-- No funciona sin internet a propósito: siempre consulta la API, así nunca muestra precios viejos.
-  No hay service worker ni caché de datos.
+- También puedes instalarla desde el botón del acceso o desde *Más → Instalar Casa Cruz en mi celular*.
+  La instalación requiere que la web esté publicada con HTTPS.
+- Siempre consulta la API. Sin internet, al abrir una pantalla se muestra un aviso para reintentar.
+  El service worker sólo guarda ese aviso genérico; nunca guarda precios, clientes, sesiones ni
+  respuestas de la API. Se registra en producción y permite usar el teléfono también en horizontal.
+- Verificación de diseño: con la web local en modo demostración (sin `API_URL`), ejecutar
+  `node apps/web/scripts/mobile-audit.cjs`. Recorre rutas, pestañas y el menú a 320, 390, 768,
+  1024, 1280 y 1440 px; guarda resultados y capturas de incidencias en `apps/web/.next/mobile-qa`.
+  Usa Playwright, ya incluido en el monorepo por la API. `MOBILE_QA_URL` permite cambiar la URL local.
+  Para revisar administración y cambiar clave, usar una API local en memoria y definir
+  `MOBILE_QA_API=http://127.0.0.1:4100` (usa la cuenta corporativa de demostración;
+  `MOBILE_QA_CORREO` permite elegir otro rol). No ejecutar contra producción.
+  `node apps/web/scripts/pwa-audit.cjs` verifica instalación, íconos y el aviso offline sobre
+  una compilación local de producción; nunca envía formularios comerciales.
 - Piezas compartidas: `Tabla.tsx` (fila en escritorio, tarjeta en teléfono), `NavegacionMovil.tsx`,
   `LaminaEscalada.tsx`, y las utilidades `encabezado`, `tocable` y `pie-movil` de `globals.css`.
 - Al agregar una pantalla: móvil primero, `app:` para escritorio, botones de al menos 40 px y
   campos a 16 px (iOS acerca la pantalla al enfocar campos más chicos).
 - Los íconos de la app instalable están en `apps/web/public/icons` y salen de
   `pnpm --filter @casacruz/api marca`; el manifiesto, en `apps/web/src/app/manifest.ts`.
+- Las fuentes se sirven desde la propia web (`src/app/fonts`, con sus licencias OFL):
+  compilar y cargar la interfaz no requiere conectarse a Google Fonts.
 
 ## Marca
 
