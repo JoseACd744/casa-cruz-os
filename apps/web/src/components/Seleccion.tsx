@@ -102,7 +102,7 @@ export function BotonSeleccion({ id }: { id: string }) {
       onClick={() => alternar(id)}
       aria-pressed={activo}
       aria-label={activo ? "Quitar de la propuesta" : "Agregar a la propuesta"}
-      className={`flex size-7 items-center justify-center rounded-[3px] border transition-colors ${
+      className={`flex size-11 shrink-0 items-center justify-center rounded-[3px] border transition-colors app:size-7 ${
         activo ? "border-ink bg-ink" : "border-[#C9C1B6] bg-panel hover:border-ink"
       }`}
     >
@@ -126,23 +126,23 @@ export function BarraSeleccion({ catalogo }: { catalogo: { id: string; nombre: s
 
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2.5 bg-ink px-4 py-3 app:h-19 app:flex-nowrap app:px-8 app:py-0">
-      <span className="text-[12px] font-semibold text-white">
+      <span className="basis-full text-[12px] font-semibold text-white app:basis-auto">
         {ids.length} {ids.length === 1 ? "propiedad seleccionada" : "propiedades seleccionadas"}
       </span>
       <span className="hidden text-[11.5px] text-[#A09991] app:inline">{nombres}</span>
       <div className="hidden grow app:block" />
       <Link
         href="/comparar"
-        className="flex h-11 flex-1 items-center justify-center rounded-[3px] border border-[#55504A] px-4 app:h-10.5 app:flex-none text-[11px] font-bold tracking-[0.1em] text-ground hover:bg-[#2E2C28]"
+        className="flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-[3px] border border-[#55504A] px-3 py-2 app:min-h-0 app:h-10.5 app:flex-none app:px-4 app:py-0 text-[11px] font-bold tracking-[0.1em] text-ground hover:bg-[#2E2C28]"
       >
         COMPARAR
       </Link>
       <Link
         href="/propuestas/nueva"
-        className="flex h-11 flex-[2] items-center justify-center gap-2.5 rounded-[3px] bg-tan px-5 app:h-10.5 app:flex-none text-[11px] font-bold tracking-[0.1em] text-ink hover:brightness-105"
+        className="flex min-h-11 min-w-0 flex-[2] items-center justify-center gap-2 rounded-[3px] bg-tan px-3 py-2 app:min-h-0 app:h-10.5 app:flex-none app:px-5 app:py-0 text-[11px] font-bold tracking-[0.06em] app:tracking-[0.1em] text-ink hover:brightness-105"
       >
         GENERAR PROPUESTA
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1C1B19" strokeWidth="2">
+        <svg className="shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1C1B19" strokeWidth="2">
           <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
       </Link>

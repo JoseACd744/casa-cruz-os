@@ -359,7 +359,7 @@ export function FormMultimedia({ id, sinAlmacenamiento }: { id: string; sinAlmac
   const [estado, accion] = useActionState(subirMultimedia.bind(null, id), ESTADO_INICIAL);
   return (
     <form action={accion} className="flex flex-col gap-3 rounded-[3px] border border-dashed border-[#C9C1B6] p-4.5">
-      <div className="flex items-end gap-4">
+      <div className="flex flex-col items-stretch gap-4 app:flex-row app:items-end">
         <CampoOpciones
           nombre="tipo"
           etiqueta="Qué es"
@@ -372,7 +372,7 @@ export function FormMultimedia({ id, sinAlmacenamiento }: { id: string; sinAlmac
             { valor: "brochure", texto: "Brochure (PDF)" },
           ]}
         />
-        <div className="flex grow flex-col gap-2">
+        <div className="flex min-w-0 grow flex-col gap-2">
           <label htmlFor="archivos" className="eyebrow">
             Archivos
           </label>

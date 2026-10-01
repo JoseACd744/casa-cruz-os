@@ -39,7 +39,7 @@ export function Tabla({
 }) {
   if (filas.length === 0 && vacio) return <>{vacio}</>;
   return (
-    <div className="flex flex-col gap-2.5 app:gap-0">
+    <div className="flex min-w-0 flex-col gap-2.5 app:gap-0">
       <div className="hidden rounded-[3px] bg-surface app:flex">
         {columnas.map((c, i) => (
           <span key={i} className={`${encabezado} ${c.ancho ?? "grow"}`}>
@@ -70,7 +70,7 @@ export function Tabla({
                 <div
                   key={i}
                   className={`flex min-w-0 items-center gap-3 app:block app:px-3.5 app:py-3.5 ${
-                    acciones ? "flex-wrap pt-1" : "justify-between"
+                    acciones ? "flex-wrap pt-1" : "flex-wrap justify-between app:flex-nowrap"
                   } ${c.ancho ?? "grow"}`}
                 >
                   {acciones ? null : <span className="eyebrow shrink-0 app:hidden">{c.titulo}</span>}

@@ -48,10 +48,10 @@ function Galeria({ d }: { d: Desarrollo }) {
     return ordenarMultimedia.bind(null, d.id, urls);
   };
   const flecha =
-    "flex size-8 items-center justify-center rounded-[3px] border border-line bg-panel text-[12px] font-bold hover:border-ink disabled:opacity-30";
+    "flex size-11 shrink-0 items-center justify-center rounded-[3px] border border-line bg-panel text-[12px] font-bold hover:border-ink disabled:opacity-30 app:size-8";
 
   return (
-    <div className="grid grid-cols-3 gap-3.5">
+    <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 app:grid-cols-3">
       {lista.map((m, i) => {
         const imagen = m.tipo === "foto" || m.tipo === "render" || m.tipo === "plano";
         return (
@@ -68,7 +68,7 @@ function Galeria({ d }: { d: Desarrollo }) {
                 Abrir {ETIQUETA_TIPO[m.tipo]}
               </a>
             )}
-            <div className="flex items-center gap-2 p-2.5">
+            <div className="flex flex-wrap items-center gap-2 p-2.5">
               <span className="text-[11px] font-bold">{ETIQUETA_TIPO[m.tipo]}</span>
               {m.url === principal ? (
                 <span className="rounded-[2px] bg-tan-soft px-1.5 py-0.5 text-[9px] font-bold tracking-[0.1em] text-tan-deep">

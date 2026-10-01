@@ -54,7 +54,7 @@ export function Simulador({
   }, [precio, enganche, plazo, tasa]);
 
   const pill = (on: boolean) =>
-    `h-11 flex-1 rounded-[3px] border px-3 text-[13px] font-bold app:flex-none app:px-5 ${
+    `min-h-11 min-w-0 flex-1 rounded-[3px] border px-3 py-2 text-[13px] font-bold app:flex-none app:px-5 ${
       on ? "border-ink bg-ink text-white" : "border-[#C9C1B6] bg-panel hover:bg-surface"
     }`;
 
@@ -62,16 +62,15 @@ export function Simulador({
     <div className="flex flex-col gap-5 overflow-auto p-4 app:flex-row app:items-start app:gap-6 app:p-7">
       <div className="flex w-full flex-col gap-4.5 app:w-175 app:min-w-0 app:shrink">
         <Card className="flex flex-col gap-4.5 p-4 app:p-5.5">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="h-16 w-21.5 shrink-0 rounded-[3px] bg-placeholder" />
-            <div className="flex flex-col gap-1">
+            <div className="flex min-w-0 flex-1 basis-32 flex-col gap-1">
               <span className="text-[18px] font-bold">{nombre}</span>
               <span className="text-[11.5px] font-semibold tracking-[0.06em] text-muted uppercase">
                 {subtitulo}
               </span>
             </div>
-            <div className="grow" />
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex basis-full flex-col gap-1 app:basis-auto app:items-end">
               <Eyebrow>Precio de venta</Eyebrow>
               <span className="text-[24px] font-extrabold tracking-[-0.02em]">{money(precio)}</span>
             </div>
@@ -83,7 +82,7 @@ export function Simulador({
             <Eyebrow>Unidad</Eyebrow>
             <div className="flex flex-wrap gap-2.5">
               {opciones.map((o) => (
-                <button key={o.id} type="button" onClick={() => setOpcionId(o.id)} className={pill(o.id === opcionId)}>
+                <button key={o.id} type="button" onClick={() => setOpcionId(o.id)} className={`${pill(o.id === opcionId)} basis-32 app:basis-auto`}>
                   {o.etiqueta}
                 </button>
               ))}
@@ -130,7 +129,7 @@ export function Simulador({
           <span className="text-[10px] font-bold tracking-[0.18em] text-tan">
             MENSUALIDAD ESTIMADA
           </span>
-          <div className="flex items-baseline gap-2.5">
+          <div className="flex flex-wrap items-baseline gap-2.5">
             <span className="text-[38px] font-extrabold app:text-[50px] tracking-[-0.03em] text-white">
               {money(calculo.pago)}
             </span>
@@ -152,12 +151,12 @@ export function Simulador({
         </div>
 
         <Card className="flex flex-col gap-3.5 p-5.5">
-          <div className="flex items-baseline justify-between">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
             <span className="text-[12.5px] text-ink-2">Total pagado al final del crédito</span>
             <span className="text-[16px] font-bold">{money(calculo.total)}</span>
           </div>
           <div className="h-px bg-line" />
-          <div className="flex items-baseline justify-between">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
             <span className="text-[12.5px] text-ink-2">Ingreso familiar sugerido</span>
             <span className="text-[16px] font-bold">{money(calculo.ingreso)}</span>
           </div>
@@ -166,7 +165,7 @@ export function Simulador({
           </span>
         </Card>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <button
             type="button"
             onClick={() => window.print()}

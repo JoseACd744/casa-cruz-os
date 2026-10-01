@@ -30,7 +30,7 @@ export function Card({
   as?: "div" | "section" | "article";
 }) {
   return (
-    <Tag className={`rounded-card border border-line bg-panel ${className}`}>{children}</Tag>
+    <Tag className={`min-w-0 shrink-0 rounded-card border border-line bg-panel app:shrink ${className}`}>{children}</Tag>
   );
 }
 
@@ -47,7 +47,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center rounded-[2px] border px-2 py-[5px] text-[9.5px] font-bold tracking-[0.12em] uppercase ${tonos[tono]}`}
+      className={`inline-flex max-w-full items-center rounded-[2px] border px-2 py-[5px] text-[9.5px] font-bold tracking-[0.12em] uppercase ${tonos[tono]}`}
     >
       {children}
     </span>
@@ -116,7 +116,7 @@ export function Campo({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex min-w-0 flex-col gap-1.5">
       <Eyebrow>{label}</Eyebrow>
       <span className="text-[15px] font-bold">{children}</span>
     </div>
@@ -136,7 +136,7 @@ export function Seccion({
 }) {
   return (
     <Card className={`flex flex-col gap-4 p-5 ${className}`}>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Eyebrow>{titulo}</Eyebrow>
         <div className="grow" />
         {accion}

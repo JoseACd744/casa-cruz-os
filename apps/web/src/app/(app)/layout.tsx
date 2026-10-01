@@ -29,7 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {/* h-dvh: en el teléfono la barra del navegador no tapa el pie de la pantalla. */}
       <div className="flex h-dvh overflow-hidden bg-ground print:h-auto print:overflow-visible print:bg-white">
         <Sidebar usuario={menu} />
-        <main className="pie-movil flex min-w-0 grow flex-col">{children}</main>
+        <main className="pie-movil flex min-h-0 min-w-0 flex-1 flex-col">{children}</main>
         <NavegacionMovil usuario={menu} />
       </div>
     </SeleccionProvider>

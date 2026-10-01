@@ -319,15 +319,15 @@ export default async function PropiedadPage({
                           <span className="w-33 font-mono text-[11px] text-muted">{c.fecha}</span>
                           <span className="w-32 grow text-[12px] font-semibold @min-[920px]:grow-0">{c.usuario}</span>
                           {/* Angosta: el cambio y su fuente bajan a su propio renglón; el estado queda arriba. */}
-                          <div className="order-last flex grow basis-full gap-4.5 @min-[920px]:order-none @min-[920px]:basis-auto">
-                            <div className="flex grow flex-col gap-1.5">
+                          <div className="order-last flex min-w-0 grow basis-full flex-col gap-4.5 @min-[920px]:order-none @min-[920px]:basis-auto @min-[920px]:flex-row">
+                            <div className="flex min-w-0 grow flex-col gap-1.5">
                               <span className="text-[12.5px]">{c.campo}</span>
                               <span className="text-[12px] text-muted">
                                 {c.valorAnterior} → <span className="font-bold text-ink">{c.valorNuevo}</span>
                               </span>
                               {c.nota ? <span className="text-[11.5px] text-ink-2">“{c.nota}”</span> : null}
                             </div>
-                            <div className="flex w-62 flex-col gap-1 self-center">
+                            <div className="flex w-full min-w-0 flex-col gap-1 @min-[920px]:w-62 @min-[920px]:self-center">
                               <span className="text-[11px] text-tan-deep">{etiquetaFuente[c.fuente]}</span>
                               {c.evidencia && /^https?:\/\//.test(c.evidencia) ? (
                                 <a

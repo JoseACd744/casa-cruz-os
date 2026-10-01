@@ -170,6 +170,9 @@ export function Comparador({ catalogo }: { catalogo: FilaComparable[] }) {
 
       <div
         data-scroll-x
+        tabIndex={0}
+        role="region"
+        aria-label="Comparativo de propiedades; desliza para ver más opciones"
         className="shrink-0 overflow-x-auto rounded-card border border-line bg-panel app:overflow-hidden"
       >
         <div className="w-max min-w-full app:w-auto">
@@ -180,7 +183,7 @@ export function Comparador({ catalogo }: { catalogo: FilaComparable[] }) {
             {cols.map((d) => (
               <div
                 key={d.id}
-                className="flex min-w-60 grow gap-3.5 border-l border-line p-4.5 app:min-w-0"
+                className="flex w-64 shrink-0 flex-wrap gap-3.5 border-l border-line p-4.5 app:w-0 app:min-w-0 app:grow"
               >
                 <Foto src={d.foto} className="h-17 w-23 shrink-0" />
                 <div className="flex flex-col gap-1">
@@ -241,7 +244,7 @@ export function Comparador({ catalogo }: { catalogo: FilaComparable[] }) {
                   return (
                     <span
                       key={d.id}
-                      className={`min-w-60 grow border-l border-line px-4.5 py-3.5 text-[13px] app:min-w-0 ${
+                      className={`w-64 shrink-0 border-l border-line px-4.5 py-3.5 text-[13px] app:w-0 app:min-w-0 app:grow ${
                         i === mejor ? "bg-tan-soft font-bold" : "font-medium"
                       } ${falta ? "text-alert" : ""}`}
                     >

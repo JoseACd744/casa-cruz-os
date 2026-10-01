@@ -59,7 +59,7 @@ function Bloque({
   const fotos = galeria(d);
   return (
     <section className="flex flex-col gap-5 border-t border-line-strong px-6 py-8 md:px-16 md:py-11">
-      <div className="flex items-end gap-3.5">
+      <div className="flex flex-wrap items-end gap-3.5">
         <div className="flex flex-col gap-2">
           <span className="text-[11px] font-bold tracking-[0.22em] text-tan-deep">
             OPCIÓN {orden}
@@ -70,7 +70,7 @@ function Bloque({
           </span>
         </div>
         <div className="grow" />
-        <div className="flex flex-col items-end gap-1">
+        <div className="flex basis-full flex-col gap-1 sm:basis-auto sm:items-end">
           <span className="eyebrow">Desde</span>
           <span
             className={`text-[30px] font-extrabold tracking-[-0.02em] ${
@@ -274,7 +274,8 @@ export default async function PropuestaPublicaPage({
         <h2 className="text-[26px] font-extrabold tracking-[-0.01em]">
           Comparativo de las opciones
         </h2>
-        <div className="overflow-x-auto rounded-[3px] border border-line bg-panel">
+        <p className="text-[12px] text-muted md:hidden">Desliza el comparativo para ver todas las opciones.</p>
+        <div data-scroll-x tabIndex={0} role="region" aria-label="Comparativo de propiedades" className="overflow-x-auto rounded-[3px] border border-line bg-panel">
           <div className="flex min-w-160 bg-tan">
             <span className="w-45 px-4 py-3" />
             {resueltos.map((r) => (

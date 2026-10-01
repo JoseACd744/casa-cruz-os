@@ -36,6 +36,7 @@ export function LaminaEscalada({
   return (
     <div
       ref={marco}
+      data-document-sheet
       style={estilo}
       className="w-full max-app:h-[calc(var(--alto)*var(--k))] max-app:overflow-hidden app:w-auto print:h-auto print:overflow-visible"
     >

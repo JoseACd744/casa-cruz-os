@@ -48,6 +48,7 @@
     background: var(--color-ground);
     color: var(--color-ink);
     font-family: var(--font-sans);
+    overflow-wrap: anywhere;
   }
   ::placeholder {
     color: var(--color-faint);
@@ -88,7 +89,6 @@
    desde app (1280 px) es la franja de 60 px de siempre. */
 @utility encabezado {
   display: flex;
-  flex-shrink: 0;
   flex-wrap: wrap;
   align-items: center;
   column-gap: 0.875rem;
@@ -97,15 +97,16 @@
   padding: 0.5rem 1rem;
   border-bottom: 1px solid var(--color-line);
   background: var(--color-panel);
+  flex-shrink: 0;
   @media (min-width: 80rem) {
     flex-wrap: nowrap;
     padding: 0 2rem;
   }
 }
 
-/* Objetivo táctil cómodo en teléfono (40 px); en escritorio recupera su tamaño. */
+/* Objetivo táctil cómodo en teléfono (44 px); en escritorio recupera su tamaño. */
 @utility tocable {
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   @media (min-width: 80rem) {
     min-height: 0;
   }
@@ -122,6 +123,12 @@
 /* Sin capa a propósito: gana a las utilidades. Un campo de menos de 16 px hace que iOS
    acerque la pantalla al enfocarlo; en teléfono todos van a 16 px. */
 @media (max-width: 79.99rem) {
+  input,
+  select,
+  textarea {
+    min-width: 0;
+    max-width: 100%;
+  }
   input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
   select,
   textarea {

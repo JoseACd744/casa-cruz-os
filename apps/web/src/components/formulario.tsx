@@ -9,7 +9,7 @@ import type { EstadoAccion } from "@/lib/acciones/tipos";
  * falta capturar, no un error.
  */
 
-const base = "rounded-[3px] border px-3.5 text-[13.5px]";
+const base = "w-full min-w-0 rounded-[3px] border px-3.5 text-[13.5px]";
 
 function clases(falta: boolean, bloqueado: boolean) {
   if (bloqueado) return `${base} border-line bg-surface text-ink-2`;
@@ -45,7 +45,7 @@ export function CampoTexto({
   const vacio = valor === null || valor === undefined || valor === "";
   const idCampo = id ?? nombre;
   return (
-    <div className={`flex flex-col gap-2 ${ancho}`}>
+    <div className={`flex min-w-0 flex-col gap-2 ${ancho}`}>
       <label htmlFor={idCampo} className="eyebrow">
         {etiqueta}
       </label>
@@ -82,7 +82,7 @@ export function CampoArea({
 }) {
   const texto = Array.isArray(valor) ? valor.join("\n") : (valor ?? "");
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex min-w-0 flex-col gap-2">
       <label htmlFor={nombre} className="eyebrow">
         {etiqueta}
       </label>
@@ -115,7 +115,7 @@ export function CampoOpciones({
   ayuda?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex min-w-0 flex-col gap-2">
       <label htmlFor={nombre} className="eyebrow">
         {etiqueta}
       </label>
@@ -156,7 +156,7 @@ export function CampoCasillas({
   // Lo elegido que ya no está entre las opciones también se muestra, para no perderlo.
   for (const e of elegidas) if (!lista.some((o) => o.valor === e)) lista.push({ valor: e, texto: e });
   return (
-    <fieldset className="flex flex-col gap-2.5">
+    <fieldset className="flex min-w-0 flex-col gap-2.5">
       <legend className="eyebrow pb-2.5">{etiqueta}</legend>
       <div className="flex flex-wrap gap-2.5">
         {lista.map((o) => (

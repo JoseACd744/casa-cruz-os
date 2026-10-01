@@ -150,18 +150,18 @@ export function ConstructorPropuesta({
           lateral. Con menos de 840px (lo que pide una propiedad en un renglón), el cliente y cada
           propiedad se acomodan en dos renglones. */}
       <div className="@container flex w-full flex-col gap-4.5 app:w-220 app:min-w-140">
-        <Card className="flex items-start gap-5 p-5 @min-[840px]:items-center">
+        <Card className="flex flex-wrap items-start gap-3 p-5 @min-[840px]:flex-nowrap @min-[840px]:items-center @min-[840px]:gap-5">
           <span className="flex size-5.5 shrink-0 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-white">
             1
           </span>
-          <div className="flex min-w-0 grow flex-wrap items-center gap-x-5 gap-y-3.5">
-            <div className="flex w-58 grow flex-col gap-1 @min-[840px]:grow-0">
+          <div className="flex min-w-0 flex-1 basis-44 flex-wrap items-center gap-x-5 gap-y-3.5">
+            <div className="flex min-w-0 flex-1 basis-58 flex-col gap-1 @min-[840px]:grow-0">
               <Eyebrow>Cliente</Eyebrow>
               <Link href={`/clientes/${cliente.id}`} className="text-[16px] font-bold hover:text-tan-deep">
                 {cliente.nombre}
               </Link>
             </div>
-            <div className="flex basis-full gap-5 @min-[840px]:basis-auto">
+            <div className="flex basis-full flex-wrap gap-5 @min-[840px]:basis-auto">
               <div className="flex flex-col gap-1">
                 <Eyebrow>Presupuesto</Eyebrow>
                 <span className="text-[13.5px] font-semibold">{cliente.presupuesto}</span>
@@ -176,13 +176,13 @@ export function ConstructorPropuesta({
               </div>
             </div>
           </div>
-          <Link href="/propuestas/nueva" className="text-[11px] font-semibold text-tan-deep underline hover:text-ink">
+          <Link href="/propuestas/nueva" className="tocable flex shrink-0 items-center text-[11px] font-semibold text-tan-deep underline hover:text-ink">
             Cambiar
           </Link>
         </Card>
 
         <Card className="flex flex-col gap-3.5 p-5">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <span className="flex size-5.5 items-center justify-center rounded-full bg-ink text-[11px] font-bold text-white">
               2
             </span>
@@ -190,7 +190,7 @@ export function ConstructorPropuesta({
             <div className="grow" />
             <Link
               href="/propiedades"
-              className="flex h-8.5 items-center rounded-[3px] border border-line bg-surface px-3.5 text-[10.5px] font-bold tracking-[0.08em] hover:border-[#C9C1B6]"
+              className="tocable flex h-8.5 items-center rounded-[3px] border border-line bg-surface px-3.5 text-[10.5px] font-bold tracking-[0.08em] hover:border-[#C9C1B6]"
             >
               + AGREGAR PROPIEDAD
             </Link>
@@ -217,9 +217,9 @@ export function ConstructorPropuesta({
                     d.motivo ? "border-alert/50 bg-alert-soft/30" : "border-line"
                   }`}
                 >
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-3 @min-[840px]:flex-nowrap">
-                    <Foto src={d.foto} className="h-14 w-19 shrink-0" />
-                    <div className="flex w-40 flex-col gap-1">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-3 @min-[840px]:flex-nowrap @min-[840px]:gap-x-4">
+                    <Foto src={d.foto} className="h-14 w-14 shrink-0 @min-[840px]:w-19" />
+                    <div className="flex min-w-0 flex-1 basis-20 flex-col gap-1 @min-[840px]:w-40 @min-[840px]:flex-none">
                       <span className="text-[14.5px] font-bold">{d.nombre}</span>
                       <span className="text-[11px] text-muted">
                         {d.ciudad} · {d.entrega ?? "[entrega]"}
@@ -284,7 +284,7 @@ export function ConstructorPropuesta({
                       type="button"
                       onClick={() => quitar(d.id)}
                       aria-label={`Quitar ${d.nombre} de la propuesta`}
-                      className="flex size-8 shrink-0 items-center justify-center rounded-[3px] border border-line hover:border-alert"
+                      className="flex size-11 shrink-0 items-center justify-center rounded-[3px] border border-line hover:border-alert app:size-8"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#96402F" strokeWidth="2">
                         <path d="M6 6l12 12M18 6L6 18" />

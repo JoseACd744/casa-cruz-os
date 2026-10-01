@@ -84,7 +84,7 @@ export function AsistenteIA({ respuestas }: { respuestas: Respuesta[] }) {
               <div className="flex flex-wrap items-center gap-3">
                 <Link
                   href="/propuestas/nueva"
-                  className="flex h-11 items-center gap-2.5 rounded-[3px] bg-tan px-5 text-[11px] font-bold tracking-[0.1em] text-ink"
+                  className="flex min-h-11 items-center gap-2.5 rounded-[3px] bg-tan px-4 py-2 text-[11px] font-bold tracking-[0.1em] text-ink"
                 >
                   GENERAR PROPUESTA CON ESTAS
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1C1B19" strokeWidth="2">
@@ -138,13 +138,13 @@ export function AsistenteIA({ respuestas }: { respuestas: Respuesta[] }) {
             id="pregunta"
             disabled
             placeholder="La pregunta libre llega con la capa de IA. Por ahora, elige una de las de arriba."
-            className="grow bg-transparent text-[13.5px] outline-none disabled:cursor-not-allowed"
+            className="min-w-0 flex-1 bg-transparent text-[13.5px] outline-none disabled:cursor-not-allowed"
           />
           <button
             type="button"
             disabled
             aria-label="Enviar pregunta"
-            className="flex size-10 items-center justify-center rounded-[3px] bg-ink disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex size-11 shrink-0 items-center justify-center rounded-[3px] bg-ink disabled:cursor-not-allowed disabled:opacity-40"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
               <path d="M5 12h14M13 6l6 6-6 6" />
