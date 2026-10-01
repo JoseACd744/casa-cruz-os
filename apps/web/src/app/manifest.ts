@@ -2,19 +2,20 @@ import type { MetadataRoute } from "next";
 
 /**
  * Lo mínimo para que el teléfono ofrezca «Instalar / Añadir a inicio»: se abre a
- * pantalla completa, con el ícono de Casa Cruz. No hay service worker ni caché:
- * la app siempre consulta la API, así no se muestran precios viejos.
+ * pantalla completa, con el ícono de Casa Cruz. El worker sólo guarda el aviso
+ * sin conexión; la app siempre consulta la API.
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Casa Cruz OS",
+    id: "/",
     short_name: "Casa Cruz",
     description: "Producto, conocimiento comercial y propuestas de Casa Cruz.",
     lang: "es-MX",
     start_url: "/inicio",
     scope: "/",
     display: "standalone",
-    orientation: "portrait",
+    orientation: "any",
     background_color: "#1C1B19",
     theme_color: "#1C1B19",
     icons: [

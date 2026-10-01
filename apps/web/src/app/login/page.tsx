@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usandoApi } from "@/lib/api";
 import { COOKIE_SESION } from "@/lib/sesion";
 import { MarcaOS } from "@/components/Marca";
+import { InstalarApp } from "@/components/InstalarApp";
 
 /** En local se precargan las credenciales de demostración; en producción, nunca. */
 const PRECARGA = process.env.NODE_ENV !== "production";
@@ -171,6 +172,7 @@ export default async function LoginPage({
               Entrar sin sesión (sólo demostración)
             </Link>
           )}
+          <InstalarApp />
         </form>
       </div>
     </div>

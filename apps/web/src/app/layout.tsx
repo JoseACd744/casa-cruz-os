@@ -1,17 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+import { RegistroPwa } from "@/components/RegistroPwa";
+import { InstalacionProvider } from "@/components/InstalarApp";
 
-const montserrat = Montserrat({
+const montserrat = localFont({
+  src: "./fonts/Montserrat-variable.woff2",
   variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: "100 900",
+  display: "swap",
 });
 
-const jetbrains = JetBrains_Mono({
+const jetbrains = localFont({
+  src: [
+    { path: "./fonts/JetBrainsMono-Regular.woff2", weight: "400" },
+    { path: "./fonts/JetBrainsMono-Medium.woff2", weight: "500" },
+  ],
   variable: "--font-jetbrains",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -36,7 +42,8 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${montserrat.variable} ${jetbrains.variable} antialiased`}>
-        {children}
+        <RegistroPwa />
+        <InstalacionProvider>{children}</InstalacionProvider>
       </body>
     </html>
   );
