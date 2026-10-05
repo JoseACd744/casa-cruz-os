@@ -1,5 +1,7 @@
 "use client";
 
+import { conSubidaDirecta } from "@/lib/subida-directa";
+
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Card, Eyebrow } from "@/components/ui";
@@ -52,7 +54,7 @@ export function FormCambio({
   ahora: string;
   puedeAdjuntar: boolean;
 }) {
-  const [estado, accion, enviando] = useActionState(registrarCambio, ESTADO_INICIAL);
+  const [estado, accion, enviando] = useActionState(conSubidaDirecta(registrarCambio, "evidencia", "evidencia", desarrollo.id), ESTADO_INICIAL);
 
   const conNiveles = desarrollo.tipologias.filter((t) => t.niveles.length > 0);
   const [campo, setCampo] = useState<CampoCambiable>(campoInicial);

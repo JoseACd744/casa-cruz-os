@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { enviar } from "@/lib/api";
+import { confirmarSubida } from "./subidas";
 import { subirSiViene } from "./archivos";
 import { texto, type EstadoAccion } from "./tipos";
 
@@ -14,7 +15,12 @@ import { texto, type EstadoAccion } from "./tipos";
 export async function registrarCambio(_previo: EstadoAccion, datos: FormData): Promise<EstadoAccion> {
   const desarrolloId = texto(datos, "desarrolloId");
 
-  const evidencia = await subirSiViene(datos.get("evidencia"), "/archivos?proposito=evidencia");
+  const ticket = texto(datos, "evidenciaTicket");
+  const confirmacion = ticket ? await confirmarSubida(ticket, "evidencia", desarrolloId) : null;
+  if (confirmacion && !confirmacion.ok) return { error: confirmacion.error };
+  const evidencia = confirmacion?.ok
+    ? { ok: true as const, url: confirmacion.datos.url }
+    : await subirSiViene(datos.get("evidencia"), "/archivos?proposito=evidencia");
   if (!evidencia.ok) return { error: evidencia.error };
 
   const r = await enviar<{ requiereAprobacion: boolean }>("POST", "/cambios", {

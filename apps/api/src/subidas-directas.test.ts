@@ -160,7 +160,7 @@ if (process.env.SUBIDAS_QA_WEB === "1") {
       await page.goto(`${web}/propiedades/${desarrollo.id}/editar?paso=4`);
       await page.locator('input[name="archivos"]').setInputFiles([archivo, { ...archivo, name: "auditoria-2.pdf" }]);
       await page.locator('input[name="archivos"]').locator('xpath=ancestor::form').getByRole("button", { name: "SUBIR", exact: true }).click();
-      await page.getByText("2 archivo(s) cargado(s).", { exact: true }).waitFor();
+      await page.getByText("2 archivos cargados.", { exact: true }).waitFor();
       await page.goto(`${web}/propiedades/${desarrollo.id}/editar?paso=6`);
       await page.locator('input[name="archivo"]').setInputFiles(archivo);
       await page.locator('input[name="archivo"]').locator('xpath=ancestor::form').getByRole("button", { name: "SUBIR", exact: true }).click();

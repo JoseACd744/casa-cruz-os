@@ -1,5 +1,7 @@
 "use client";
 
+import { conSubidaDirecta } from "@/lib/subida-directa";
+
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { etiquetaFuente, money, type Desarrollo, type FuenteTipo, type Plaza, type Tipologia } from "@casacruz/core";
@@ -356,7 +358,7 @@ export function PasoCondiciones({ d, protegido }: { d: Desarrollo; protegido: bo
 // ── Paso 4 · Multimedia (la carga; la galería la pinta la página) ────────
 
 export function FormMultimedia({ id, sinAlmacenamiento }: { id: string; sinAlmacenamiento: boolean }) {
-  const [estado, accion] = useActionState(subirMultimedia.bind(null, id), ESTADO_INICIAL);
+  const [estado, accion] = useActionState(conSubidaDirecta(subirMultimedia.bind(null, id), "archivos", "multimedia", id), ESTADO_INICIAL);
   return (
     <form action={accion} className="flex flex-col gap-3 rounded-[3px] border border-dashed border-[#C9C1B6] p-4.5">
       <div className="flex flex-col items-stretch gap-4 app:flex-row app:items-end">
@@ -483,7 +485,7 @@ export function PasoInterna({ d, esCorporativo }: { d: Desarrollo; esCorporativo
 const TIPOS_DOCUMENTO: FuenteTipo[] = ["convenio", "contrato", "lista_precios", "brochure", "correo", "otro"];
 
 export function FormDocumento({ id, sinAlmacenamiento }: { id: string; sinAlmacenamiento: boolean }) {
-  const [estado, accion] = useActionState(subirDocumento.bind(null, id), ESTADO_INICIAL);
+  const [estado, accion] = useActionState(conSubidaDirecta(subirDocumento.bind(null, id), "archivo", "documento", id), ESTADO_INICIAL);
   return (
     <form action={accion} className="flex flex-col gap-3 rounded-[3px] border border-dashed border-[#C9C1B6] p-4">
       <div className="grid grid-cols-1 items-end gap-3 app:grid-cols-[10rem_1fr_1fr_auto]">

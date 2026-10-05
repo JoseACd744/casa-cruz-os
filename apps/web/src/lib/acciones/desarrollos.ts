@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Desarrollo, EstatusListing } from "@casacruz/core";
 import { enviar } from "@/lib/api";
+import { confirmarSubida } from "./subidas";
 import { conTipo } from "./archivos";
 import { lineas, numero, opcional, texto, type EstadoAccion } from "./tipos";
 
@@ -174,6 +175,15 @@ export async function subirMultimedia(
   _previo: EstadoAccion,
   datos: FormData,
 ): Promise<EstadoAccion> {
+  const tickets = datos.getAll("archivosTicket").filter((t): t is string => typeof t === "string");
+  if (tickets.length) {
+    for (const ticket of tickets) {
+      const r = await confirmarSubida(ticket, "multimedia", id);
+      if (!r.ok) { refresh(); return { error: r.error }; }
+    }
+    refresh();
+    return { ok: tickets.length === 1 ? "Archivo cargado." : `${tickets.length} archivos cargados.` };
+  }
   const tipo = texto(datos, "tipo") || "foto";
   const archivos = datos.getAll("archivos").filter((a): a is File => a instanceof File && a.size > 0);
   if (!archivos.length) return { error: "Elige al menos un archivo." };
@@ -249,6 +259,13 @@ export async function subirDocumento(
   _previo: EstadoAccion,
   datos: FormData,
 ): Promise<EstadoAccion> {
+  const ticket = texto(datos, "archivoTicket");
+  if (ticket) {
+    const r = await confirmarSubida(ticket, "documento", id);
+    if (!r.ok) return { error: r.error };
+    refresh();
+    return { ok: "Documento cargado." };
+  }
   const archivo = datos.get("archivo");
   if (!(archivo instanceof File) || archivo.size === 0) return { error: "Elige el documento." };
 
