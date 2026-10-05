@@ -325,6 +325,7 @@ export function fuenteMock(): FuenteDeDatos {
     async agregarMultimedia(desarrolloId, item: Multimedia) {
       const d = buscar(desarrolloId);
       if (!d) return null;
+      if (d.multimedia?.some(m => m.url === item.url)) return d.multimedia;
       d.multimedia = [...(d.multimedia ?? []), item].sort((a, b) => a.orden - b.orden);
       return d.multimedia;
     },
@@ -354,6 +355,7 @@ export function fuenteMock(): FuenteDeDatos {
     async agregarDocumento(desarrolloId, documento) {
       const d = buscar(desarrolloId);
       if (!d) return null;
+      if (d.interna.documentos.some(d => d.url === documento.url)) return d.interna.documentos;
       d.interna.documentos = [{ ...documento, cargadoHaceDias: 0 }, ...d.interna.documentos];
       return d.interna.documentos;
     },

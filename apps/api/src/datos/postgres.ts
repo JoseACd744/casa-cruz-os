@@ -518,8 +518,11 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
     },
 
     async agregarMultimedia(desarrolloId, item) {
-      await db.multimedia.create({
-        data: { desarrolloId, tipo: item.tipo, url: item.url, orden: item.orden },
+      await enLote(async tx => {
+        await tx.$queryRaw`SELECT id FROM desarrollos WHERE id = ${desarrolloId} FOR UPDATE`;
+        if (!await tx.multimedia.findFirst({ where: { desarrolloId, url: item.url } })) {
+          await tx.multimedia.create({ data: { desarrolloId, tipo: item.tipo, url: item.url, orden: item.orden } });
+        }
       });
       const desarrollo = await this.obtenerDesarrollo(desarrolloId);
       return desarrollo?.multimedia ?? null;
@@ -557,7 +560,12 @@ export function fuentePostgres(db: Cliente_ = prisma): FuenteDeDatos {
         create: { desarrolloId },
         update: {},
       });
-      await db.documento.create({ data: { desarrolloId, ...documento } });
+      await enLote(async tx => {
+        await tx.$queryRaw`SELECT id FROM desarrollos WHERE id = ${desarrolloId} FOR UPDATE`;
+        if (!await tx.documento.findFirst({ where: { desarrolloId, url: documento.url } })) {
+          await tx.documento.create({ data: { desarrolloId, ...documento } });
+        }
+      });
       const desarrollo = await this.obtenerDesarrollo(desarrolloId);
       return desarrollo?.interna.documentos ?? null;
     },

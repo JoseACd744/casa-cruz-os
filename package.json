@@ -19,5 +19,11 @@
   "devDependencies": {
     "turbo": "^2.5.8",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "@smithy/types": "4.19.0",
+      "@smithy/core": "3.35.1"
+    }
   }
 }

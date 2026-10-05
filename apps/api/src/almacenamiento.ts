@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { config } from "./config";
 
 /**
@@ -39,6 +40,7 @@ function obtenerCliente(): S3Client {
       },
       // Los buckets tipo MinIO (Railway) usan ruta, no subdominio.
       forcePathStyle: true,
+      requestChecksumCalculation: "WHEN_REQUIRED",
     });
   }
   return cliente;
@@ -69,6 +71,19 @@ export function claveDeArchivo(carpeta: string, prefijo: string, contentType: st
 function baseUrl(): string {
   if (almacenamientoLocal) return `${config.urlApi}/archivos`;
   return (config.s3.urlPublica ?? `${config.s3.endpoint}/${config.s3.bucket}`).replace(/\/$/, "");
+}
+
+export async function firmarSubida(clave: string, tipo: string, bytes: number) {
+  const url = await getSignedUrl(obtenerCliente(), new PutObjectCommand({
+    Bucket: config.s3.bucket!, Key: clave, ContentType: tipo, ContentLength: bytes,
+  }), { expiresIn: 300, signableHeaders: new Set(["content-type", "content-length"]) });
+  return { url, headers: { "Content-Type": tipo } };
+}
+
+export async function verificarSubida(clave: string, tipo: string, bytes: number) {
+  const objeto = await obtenerCliente().send(new HeadObjectCommand({ Bucket: config.s3.bucket!, Key: clave }));
+  if (objeto.ContentLength !== bytes || objeto.ContentType !== tipo) throw new Error("Archivo distinto al autorizado");
+  return `${baseUrl()}/${clave}`;
 }
 
 /** Sube el archivo y devuelve la URL pública con la que se va a mostrar. */

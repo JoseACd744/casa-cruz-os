@@ -1,3 +1,4 @@
+import { rutasSubidasDirectas } from "./subidas-directas";
 import { z } from "zod";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
@@ -61,6 +62,7 @@ async function recibirArchivo(
 export async function rutasArchivos(instancia: FastifyInstance) {
   const app = instancia.withTypeProvider<ZodTypeProvider>();
   const datos = await fuente();
+  await rutasSubidasDirectas(instancia);
 
   app.post(
     "/archivos",
